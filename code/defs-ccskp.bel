@@ -1,0 +1,144 @@
+%%% Semantics of CCSKP %%%
+
+module ccskp = struct
+
+% Proof keyed labels 
+LF pr_lab: type =
+  | pr_base: labels → keys → pr_lab
+  | pr_suml: pr_lab → pr_lab
+  | pr_sumr: pr_lab → pr_lab
+  | pr_parl: pr_lab → pr_lab
+  | pr_parr: pr_lab → pr_lab
+  | pr_sync: pr_lab → pr_lab → pr_lab
+;
+
+% Open proof keyed labels
+LF open_pr_lab: type =
+  | open: (names → pr_lab) → open_pr_lab
+;
+
+% Label of a proof keyed label
+LF lab: pr_lab → labels → type =
+  | lab_base: lab (pr_base A K) A
+  | lab_suml: lab T A → lab (pr_suml T) A
+  | lab_sumr: lab T A → lab (pr_sumr T) A
+  | lab_parl: lab T A → lab (pr_parl T) A
+  | lab_parr: lab T A → lab (pr_parr T) A
+  | lab_sync: lab (pr_sync T1 T2) tau
+;
+
+% Key of a proof keyed label
+LF key: pr_lab → keys → type =
+  | key_base: key (pr_base A K) K
+  | key_suml: key T K → key (pr_suml T) K
+  | key_sumr: key T K → key (pr_sumr T) K
+  | key_parl: key T K → key (pr_parl T) K
+  | key_parr: key T K → key (pr_parr T) K
+  | key_sync: key T1 K → key (pr_sync T1 T2) K
+;
+
+% Occurrence of names in proof keyed labels
+LF occurs: names → pr_lab → type =
+  | occ_basel: occurs A (pr_base (inp A) K)
+  | occ_baser: occurs A (pr_base (out A) K)
+  | occ_suml: occurs A T → occurs A (pr_suml T)
+  | occ_sumr: occurs A T → occurs A (pr_sumr T)
+  | occ_parl: occurs A T → occurs A (pr_parl T)
+  | occ_parr: occurs A T → occurs A (pr_parr T)
+  | occ_sync: occurs A T1 → occurs A (pr_sync T1 T2)
+;
+
+% Type family to encode valid proof labels
+LF valid: pr_lab → type =
+  | v_base: valid (pr_base A K)
+  | v_suml: valid T → valid (pr_suml T)
+  | v_sumr: valid T → valid (pr_sumr T)
+  | v_parl: valid T → valid (pr_parl T)
+  | v_parr: valid T → valid (pr_parr T)
+  | v_synl: valid T1 → valid T2 → lab T1 (inp A) → key T1 K
+          → lab T2 (out A) → key T2 K → valid (pr_sync T1 T2)
+  | v_synr: valid T1 → valid T2 → lab T1 (out A) → key T1 K
+          → lab T2 (inp A) → key T2 K → valid (pr_sync T1 T2)
+;
+
+% Closed forward transitions
+LF fstep_closed: proc → pr_lab → proc → type =
+  | fc_pref: std X → fstep_closed (pref A X) (pr_base A K) (kpref A K X)
+  | fc_kpref: fstep_closed X T X' → key T M → neq K M
+            → fstep_closed (kpref A K X) T (kpref A K X')
+  | fc_suml: fstep_closed X T X' → std Y → fstep_closed (sum X Y) (pr_suml T) (sum X' Y)
+  | fc_sumr: fstep_closed Y T Y' → std X → fstep_closed (sum X Y) (pr_sumr T) (sum X Y')
+  | fc_parl: fstep_closed X T X' → key T K → notin K Y
+           → fstep_closed (par X Y) (pr_parl T) (par X' Y)
+  | fc_parr: fstep_closed Y T Y' → key T K → notin K X
+           → fstep_closed (par X Y) (pr_parr T) (par X Y')
+  | fc_synl: fstep_closed X T1 X' → lab T1 (inp L) → key T1 K
+           → fstep_closed Y T2 Y' → lab T2 (out L) → key T2 K
+           → fstep_closed (par X Y) (pr_sync T1 T2) (par X' Y')
+  | fc_synr: fstep_closed X T1 X' → lab T1 (out L) → key T1 K
+           → fstep_closed Y T2 Y' → lab T2 (inp L) → key T2 K
+           → fstep_closed (par X Y) (pr_sync T1 T2) (par X' Y')
+  | fc_nu: ({a:names} fstep_closed (X a) T (X' a)) → fstep_closed (nu X) T (nu X')
+;
+
+% Open forward transitions
+LF fstep_open: proc → open_pr_lab → proc → type =
+  | fo_nu_closed: ({a:names} occurs a (T a)) → ({a:names} lab (T a) A)
+                → ({a:names} fstep_closed (X a) (T a) (X' a))
+                → fstep_open (nu X) (open T) (nu X')
+  | fo_kpref: fstep_open X (open T) X' → ({a:names} key (T a) M) → neq K M
+            → fstep_open (kpref A K X) (open T) (kpref A K X')
+  | fo_suml: fstep_open X (open \a.(T a)) X' → std Y
+           → fstep_open (sum X Y) (open \a.(pr_suml (T a))) (sum X' Y)
+  | fo_sumr: fstep_open Y (open \a.(T a)) Y' → std X
+           → fstep_open (sum X Y) (open \a.(pr_sumr (T a))) (sum X Y')
+  | fo_parl: fstep_open X (open \a.(T a)) X' → ({a:names} key (T a) K) → notin K Y
+           → fstep_open (par X Y) (open \a.(pr_parl (T a))) (par X' Y)
+  | fo_parr: fstep_open Y (open \a.(T a)) Y' → ({a:names} key (T a) K) → notin K X
+           → fstep_open (par X Y) (open \a.(pr_parr (T a))) (par X Y')
+  | fo_nu_open: ({a:names} fstep_open (X a) T (X' a))
+              → fstep_open (nu X) T (nu X')
+;
+
+
+% Closed backward transitions
+LF bstep_closed: proc → pr_lab → proc → type =
+  | bc_pref: std X → bstep_closed (kpref A K X) (pr_base A K) (pref A X)
+  | bc_kpref: bstep_closed X' T X → key T M → neq K M
+            → bstep_closed (kpref A K X') T (kpref A K X)
+  | bc_suml: bstep_closed X' T X → std Y → bstep_closed (sum X' Y) (pr_suml T) (sum X Y)
+  | bc_sumr: bstep_closed Y' T Y → std X → bstep_closed (sum X Y') (pr_sumr T) (sum X Y)
+  | bc_parl: bstep_closed X' T X → key T K → notin K Y
+           → bstep_closed (par X' Y) (pr_parl T) (par X Y)
+  | bc_parr: bstep_closed Y' T Y → key T K → notin K X
+           → bstep_closed (par X Y') (pr_parr T) (par X Y)
+  | bc_synl: bstep_closed X' T1 X → lab T1 (inp L) → key T1 K
+           → bstep_closed Y' T2 Y → lab T2 (out L) → key T2 K
+           → bstep_closed (par X' Y') (pr_sync T1 T2) (par X Y)
+  | bc_synr: bstep_closed X' T1 X → lab T1 (out L) → key T1 K
+           → bstep_closed Y' T2 Y → lab T2 (inp L) → key T2 K
+           → bstep_closed (par X' Y') (pr_sync T1 T2) (par X Y)
+  | bc_nu: ({a:names} bstep_closed (X' a) T (X a)) → bstep_closed (nu X') T (nu X)
+;
+
+% Open backward transitions
+LF bstep_open: proc → open_pr_lab → proc → type =
+  | bo_nu_closed: ({a:names} occurs a (T a))
+                → ({a:names} lab (T a) A)
+                → ({a:names} bstep_closed (X' a) (T a) (X a))
+                → bstep_open (nu X') (open T) (nu X)
+  | bo_kpref: bstep_open X' (open T) X → ({a:names} key (T a) M) → neq K M
+            → bstep_open (kpref A K X') (open T) (kpref A K X)
+  | bo_suml: bstep_open X' (open \a.(T a)) X → std Y
+           → bstep_open (sum X' Y) (open \a.(pr_suml (T a))) (sum X Y)
+  | bo_sumr: bstep_open Y' (open \a.(T a)) Y → std X
+           → bstep_open (sum X Y') (open \a.(pr_sumr (T a))) (sum X Y)
+  | bo_parl: bstep_open X' (open \a.(T a)) X → ({a:names} key (T a) K) → notin K Y
+           → bstep_open (par X' Y) (open \a.(pr_parl (T a))) (par X Y)
+  | bo_parr: bstep_open Y' (open \a.(T a)) Y → ({a:names} key (T a) K) → notin K X
+           → bstep_open (par X Y') (open \a.(pr_parr (T a))) (par X Y)
+  | bo_nu_open: ({a:names} bstep_open (X' a) T (X a))
+              → bstep_open (nu X') T (nu X)
+;
+
+end;

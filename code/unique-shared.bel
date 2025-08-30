@@ -1,0 +1,88 @@
+%%% Uniqueness proofs shared by CCSK and CCSKP %%%
+
+% Equality of derivations of [g ⊢ less K[] M[]]
+inductive eqls: (g:ctx) [g ⊢ less K[] M[]] → [g ⊢ less K[] M[]] → ctype =
+  | refls: {L:[g ⊢ less K[] M[]]} eqls [g ⊢ L] [g ⊢ L]
+;
+
+% Uniqueness of the derivation of N < M
+rec unique_less: (g:ctx) {L1:[g ⊢ less N[] M[]]} {L2:[g ⊢ less N[] M[]]} → eqls [g ⊢ L1] [g ⊢ L2] =
+/ total l1 (unique_less _ _ _ l1 _) /
+mlam L1,L2 ⇒
+case [_ ⊢ L1] of
+  | [g ⊢ lzero _] ⇒ let [g ⊢ lzero _] = [g ⊢ L2] in refls [g ⊢ L1] 
+  | [g ⊢ lsucc L1'] ⇒ let [g ⊢ lsucc L2'] = [g ⊢ L2] in
+                       let refls [g ⊢ L1'] = unique_less [g ⊢ L1'] [g ⊢ L2'] in refls [g ⊢ L1]
+;
+
+% Equality of derivations of [g ⊢ neq K[] M[]]
+inductive eqnq: (g:ctx) [g ⊢ neq K[] M[]] → [g ⊢ neq K[] M[]] → ctype =
+  | refnq: {I:[g ⊢ neq K[] M[]]} eqnq [g ⊢ I] [g ⊢ I]
+;
+
+% Proof that N < M and M < N is absurd
+rec less_or_great: (g:ctx) [g ⊢ less K[] M[]] → [g ⊢ less M[] K[]] → [g ⊢ false] =
+/ total l (less_or_great _ _ _ l _) /
+fn l1,l2 ⇒ case l1 of
+  | [g ⊢ lzero _] ⇒ impossible l2
+  | [g ⊢ lsucc L1'] ⇒ let [g ⊢ lsucc L2'] = l2 in less_or_great [g ⊢ L1'] [g ⊢ L2']
+;
+
+% Uniqueness of the derivation of N != M
+rec unique_neq: (g:ctx) {I1:[g ⊢ neq K[] M[]]} {I2:[g ⊢ neq K[] M[]]} eqnq [g ⊢ I1] [g ⊢ I2] =
+/ total i1 (unique_neq _ _ _ i1 _) /
+mlam I1,I2 ⇒ case [_ ⊢ I1] of
+  | [g ⊢ nless L1] ⇒ (case [g ⊢ I2] of
+       | [g ⊢ nless L2] ⇒ let refls [g ⊢ L1] = unique_less [g ⊢ L1] [g ⊢ L2] in refnq [g ⊢ I1]
+       | [g ⊢ ngreat L2] ⇒ impossible less_or_great [g ⊢ L1] [g ⊢ L2])
+  | [g ⊢ ngreat L1] ⇒ (case [g ⊢ I2] of
+       | [g ⊢ nless L2] ⇒ impossible less_or_great [g ⊢ L1] [g ⊢ L2]
+       | [g ⊢ ngreat L2] ⇒ let refls [g ⊢ L1] = unique_less [g ⊢ L1] [g ⊢ L2] in refnq [g ⊢ I1])
+;
+
+% Equality of derivations of std X
+LF eqsd: std X1 → std X2 → type =
+  | refsd: eqsd D D
+;
+
+% Uniqueness of the derivation of std X
+rec unique_std: (g:ctx) {D1:[g ⊢ std X]} {D2:[g ⊢ std X]} [g ⊢ eqsd D1 D2] =
+/ total d1 (unique_std _ _ d1 _) /
+mlam D1 D2 ⇒ case [_ ⊢ D1] of
+  | [g ⊢ std_null] ⇒ let [g ⊢ std_null] = [g ⊢ D2] in [g ⊢ refsd]
+  | [g ⊢ std_pref D1'] ⇒ let [g ⊢ std_pref D2'] = [g ⊢ D2] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1'] [g ⊢ D2'] in [g ⊢ refsd]
+  | [g ⊢ std_sum D1' D1''] ⇒ let [g ⊢ std_sum D2' D2''] = [g ⊢ D2] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1'] [g ⊢ D2'] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1''] [g ⊢ D2''] in [g ⊢ refsd]
+  | [g ⊢ std_par D1' D1''] ⇒ let [g ⊢ std_par D2' D2''] = [g ⊢ D2] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1'] [g ⊢ D2'] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1''] [g ⊢ D2''] in [g ⊢ refsd]
+  | [g ⊢ std_nu \a.D1'] ⇒ let [g ⊢ std_nu \a.D2'] = [g ⊢ D2] in
+    let [g,a:names ⊢ refsd] = unique_std [g,a:names ⊢ D1'] [g,a:names ⊢ D2'] in [g ⊢ refsd]
+;
+
+% Equality of derivations of notin K X
+LF eqn: notin K X1 → notin M X2 → type =
+  | refn: eqn N N
+;
+
+% Uniqueness of the derivation of notin K X
+rec unique_notin: (g:ctx) {N1:[g ⊢ notin K[] X]} {N2:[g ⊢ notin K[] X]} [g ⊢ eqn N1 N2] =
+/ total n1 (unique_notin _ _ _ n1 _) /
+mlam N1 N2 ⇒ case [_ ⊢ N1] of
+  | [g ⊢ not_null] ⇒ let [g ⊢ not_null] = [g ⊢ N2] in [g ⊢ refn]
+  | [g ⊢ not_pref N1'] ⇒ let [g ⊢ not_pref N2'] = [g ⊢ N2] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1'] [g ⊢ N2'] in [g ⊢ refn]
+  | [g ⊢ not_kpref I1 N1'] ⇒ let [g ⊢ not_kpref I2 N2'] = [g ⊢ N2] in
+    let refnq [g ⊢ I1] = unique_neq [g ⊢ I1] [g ⊢ I2] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1'] [g ⊢ N2'] in [g ⊢ refn]
+  | [g ⊢ not_sum N1' N1''] ⇒ let [g ⊢ not_sum N2' N2''] = [g ⊢ N2] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1'] [g ⊢ N2'] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1''] [g ⊢ N2''] in [g ⊢ refn]
+  | [g ⊢ not_par N1' N1''] ⇒ let [g ⊢ not_par N2' N2''] = [g ⊢ N2] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1'] [g ⊢ N2'] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1''] [g ⊢ N2''] in [g ⊢ refn]
+  | [g ⊢ not_nu \a.N1'] ⇒ let [g ⊢ not_nu \a.N2'] = [g ⊢ N2] in
+    let [g,a:names ⊢ refn] = unique_notin [g,a:names ⊢ N1'] [g,a:names ⊢ N2'] in [g ⊢ refn]
+;

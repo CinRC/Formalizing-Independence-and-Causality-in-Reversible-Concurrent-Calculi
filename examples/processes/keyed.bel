@@ -1,0 +1,19 @@
+%%% CCSK processes with keys %%%
+
+% a[k] is a term of type proc.
+let p1:[a:names,k:keys ⊢ proc] = [a:names,k:keys ⊢ kpref (inp a) k null];
+
+% a[k].b is a term of type proc.
+let p2:[a:names,b:names,k:keys ⊢ proc] = [a:names,b:names,k:keys ⊢ kpref (inp a) k (pref (inp b) null)];
+
+% a[k].b[m] is a term of type proc.
+let p3:[a:names,b:names,k:keys,m:keys ⊢ proc] = [a:names,b:names,k:keys,m:keys ⊢ kpref (inp a) k (kpref (inp b) m null)];
+
+% (a[k].P)\b is a term of type proc, if P is a term of type proc.
+let p4:[a:names,k:keys,P:proc ⊢ proc] = [a:names,k:keys,P:proc ⊢ nu \b.(kpref (inp a) k P)];
+
+% a[k].P | a'.Q is a term of type proc, if P and Q are terms of type proc.
+let p5:[a:names,k:keys,P:proc,Q:proc ⊢ proc] = [a:names,k:keys,P:proc,Q:proc ⊢ par (kpref (inp a) k P) (pref (out a) Q)];
+
+% a[k].P | a'[k].Q is a term of type proc, if P and Q are terms of type proc.
+let p6:[a:names,k:keys,P:proc,Q:proc ⊢ proc] = [a:names,k:keys,P:proc,Q:proc ⊢ par (kpref (inp a) k P) (kpref (out a) k Q)];

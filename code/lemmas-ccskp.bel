@@ -1,0 +1,472 @@
+%%% Auxiliary lemmas for CCSKP %%%
+
+--open ccskp.
+
+% Given a derivation of lab T A in a context [g,a:names],
+% with 'a' not occurring in T, then we can obtain a derivation
+% of lab T A in the stronger context [g].
+inductive ex_str_labl: (g:ctx) [g,a:names ⊢ lab T[..] A] → ctype =
+  | ex_sll: {L:[g,a:names ⊢ lab T[..] A]} [g ⊢ lab T A']
+    → [g,a:names ⊢ eql A A'[..]] → ex_str_labl [g,a:names ⊢ L]
+;
+
+rec str_labl: (g:ctx) {L:[g,a:names ⊢ lab (T[..]) A]} ex_str_labl [g,a:names ⊢ L] =
+/ total l (str_labl _ _ _ l) /
+mlam L ⇒ case [_,a:names ⊢ L] of
+  | [g,a:names ⊢ lab_base] ⇒ ex_sll [g,a:names ⊢ L] [g ⊢ lab_base] [g,a:names ⊢ refl]
+  | [g,a:names ⊢ lab_suml L1] ⇒ let ex_sll [g,a:names ⊢ L1] [g ⊢ L1'] e = str_labl [g,a:names ⊢ L1] in
+    let [g,a:names ⊢ refl] = e in ex_sll [g,a:names ⊢ L] [g ⊢ lab_suml L1'] [g,a:names ⊢ refl]
+  | [g,a:names ⊢ lab_sumr L1] ⇒ let ex_sll [g,a:names ⊢ L1] [g ⊢ L1'] e = str_labl [g,a:names ⊢ L1] in
+    let [g,a:names ⊢ refl] = e in ex_sll [g,a:names ⊢ L] [g ⊢ lab_sumr L1'] [g,a:names ⊢ refl]
+  | [g,a:names ⊢ lab_parl L1] ⇒ let ex_sll [g,a:names ⊢ L1] [g ⊢ L1'] e = str_labl [g,a:names ⊢ L1] in
+    let [g,a:names ⊢ refl] = e in ex_sll [g,a:names ⊢ L] [g ⊢ lab_parl L1'] [g,a:names ⊢ refl]
+  | [g,a:names ⊢ lab_parr L1] ⇒ let ex_sll [g,a:names ⊢ L1] [g ⊢ L1'] e = str_labl [g,a:names ⊢ L1] in
+    let [g,a:names ⊢ refl] = e in ex_sll [g,a:names ⊢ L] [g ⊢ lab_parr L1'] [g,a:names ⊢ refl]
+  | [g,a:names ⊢ lab_sync] ⇒ ex_sll [g,a:names ⊢ L] [g ⊢ lab_sync] [g,a:names ⊢ refl]
+;
+
+
+% Given a derivation of lab T A in a context [g,a:names],
+% with 'a' not occurring in A, then we can obtain a derivation
+% of lab T A in the stronger context [g].
+% Equality of proof keyed labels
+LF eqpl: pr_lab → pr_lab → type =
+  | refpl: eqpl T T
+;
+
+inductive ex_str_labr: (g:ctx) [g,a:names ⊢ lab T[..] A[..]] → ctype =
+  | ex_slr: {L:[g,a:names ⊢ lab T[..] A[..]]} [g ⊢ lab T A]
+	    → ex_str_labr [g,a:names ⊢ L]
+;
+
+rec str_labr: (g:ctx) {L:[g,a:names ⊢ lab T[..] A[..]]} ex_str_labr [g,a:names ⊢ L] =
+/ total l (str_labr _ _ _ l) /
+mlam L ⇒ case [_,a:names ⊢ L] of
+  | [g,a:names ⊢ lab_base] ⇒ ex_slr [g,a:names ⊢ L] [g ⊢ lab_base]
+  | [g,a:names ⊢ lab_suml L1] ⇒ let ex_slr [g,a:names ⊢ L1] [g ⊢ L1'] = str_labr [g,a:names ⊢ L1] in
+    ex_slr [g,a:names ⊢ L] [g ⊢ lab_suml L1']
+  | [g,a:names ⊢ lab_sumr L1] ⇒ let ex_slr [g,a:names ⊢ L1] [g ⊢ L1'] = str_labr [g,a:names ⊢ L1] in
+    ex_slr [g,a:names ⊢ L] [g ⊢ lab_sumr L1']
+  | [g,a:names ⊢ lab_parl L1] ⇒ let ex_slr [g,a:names ⊢ L1] [g ⊢ L1'] = str_labr [g,a:names ⊢ L1] in
+    ex_slr [g,a:names ⊢ L] [g ⊢ lab_parl L1']
+  | [g,a:names ⊢ lab_parr L1] ⇒ let ex_slr [g,a:names ⊢ L1] [g ⊢ L1'] = str_labr [g,a:names ⊢ L1] in
+    ex_slr [g,a:names ⊢ L] [g ⊢ lab_parr L1']
+  | [g,a:names ⊢ lab_sync]:[g,a:names ⊢ lab (pr_sync T1 T2) tau] ⇒ ex_slr [g,a:names ⊢ L] [g ⊢ lab_sync]
+;
+
+
+% Given a derivation of key T K in a context [g,a:names],
+% with 'a' not occurring in T, then we can obtain a derivation
+% of key T K in the stronger context [g].
+rec str_key: (g:ctx) {H:[g,a:names |- key (T[..]) K[]]} [g ⊢ key T K[]] =
+/ total h (str_key _ _ _ h) /
+mlam H ⇒ case [_,a:names ⊢ H] of
+  | [g,a:names ⊢ key_base] ⇒ [g ⊢ key_base]
+  | [g,a:names ⊢ key_suml H1] ⇒ let [g ⊢ H1'] = str_key [g,a:names ⊢ H1] in [g ⊢ key_suml H1']
+  | [g,a:names ⊢ key_sumr H1] ⇒ let [g ⊢ H1'] = str_key [g,a:names ⊢ H1] in [g ⊢ key_sumr H1']
+  | [g,a:names ⊢ key_parl H1] ⇒ let [g ⊢ H1'] = str_key [g,a:names ⊢ H1] in [g ⊢ key_parl H1']
+  | [g,a:names ⊢ key_parr H1] ⇒ let [g ⊢ H1'] = str_key [g,a:names ⊢ H1] in [g ⊢ key_parr H1']
+  | [g,a:names ⊢ key_sync H1] ⇒ let [g ⊢ H1'] = str_key [g,a:names ⊢ H1] in [g ⊢ key_sync H1']
+;
+
+% Given a derivation of valid T in a context [g,a:names],
+% with 'a' not occurring in T, then we can obtain a derivation
+% of valid T in the stronger context [g].
+rec str_val: (g:ctx) [g,a:names |- valid T[..]] → [g ⊢ valid T] =
+/ total v (str_val _ _ v) /
+fn v ⇒ case v of
+  | [g,a:names ⊢ v_base] ⇒ [g ⊢ v_base]
+  | [g,a:names ⊢ v_suml V] ⇒ let [g ⊢ V'] = str_val [g,a:names ⊢ V] in [g ⊢ v_suml V']
+  | [g,a:names ⊢ v_sumr V] ⇒ let [g ⊢ V'] = str_val [g,a:names ⊢ V] in [g ⊢ v_sumr V']
+  | [g,a:names ⊢ v_parl V] ⇒ let [g ⊢ V'] = str_val [g,a:names ⊢ V] in [g ⊢ v_parl V']
+  | [g,a:names ⊢ v_parr V] ⇒ let [g ⊢ V'] = str_val [g,a:names ⊢ V] in [g ⊢ v_parr V']
+  | [g,a:names ⊢ v_synl V1 V2 L1 H1 L2 H2] ⇒
+	let [g ⊢ V1'] = str_val [g,a:names ⊢ V1] in
+	let [g ⊢ V2'] = str_val [g,a:names ⊢ V2] in
+	let ex_sll [g,a:names ⊢ L1] [g ⊢ L1'] e1 = str_labl [g,a:names ⊢ L1] in
+	let [g,a:names ⊢ refl] = e1 in
+	let [g ⊢ H1'] = str_key [g,a:names ⊢ H1] in
+	let ex_sll [g,a:names ⊢ L2] [g ⊢ L2'] e2 = str_labl [g,a:names ⊢ L2] in
+	let [g,a:names ⊢ refl] = e2 in
+	let [g ⊢ H2'] = str_key [g,a:names ⊢ H2] in [g ⊢ v_synl V1' V2' L1' H1' L2' H2']
+  | [g,a:names ⊢ v_synr V1 V2 L1 H1 L2 H2] ⇒
+	let [g ⊢ V1'] = str_val [g,a:names ⊢ V1] in
+	let [g ⊢ V2'] = str_val [g,a:names ⊢ V2] in
+	let ex_sll [g,a:names ⊢ L1] [g ⊢ L1'] e1 = str_labl [g,a:names ⊢ L1] in
+	let [g,a:names ⊢ refl] = e1 in
+	let [g ⊢ H1'] = str_key [g,a:names ⊢ H1] in
+	let ex_sll [g,a:names ⊢ L2] [g ⊢ L2'] e2 = str_labl [g,a:names ⊢ L2] in
+	let [g,a:names ⊢ refl] = e2 in
+	let [g ⊢ H2'] = str_key [g,a:names ⊢ H2] in [g ⊢ v_synr V1' V2' L1' H1' L2' H2']
+;
+
+% The proof label of a closed forward transition is valid
+rec valid_pr_lab_in_fstep_closed: (g:ctx) {F:[g ⊢ fstep_closed X T X']} → [g ⊢ valid T] =
+/ total f (valid_pr_lab_in_fstep_closed _ _ _ _ f) /
+mlam F ⇒ case [_ ⊢ F] of
+  | [g ⊢ fc_pref _] ⇒ [g ⊢ v_base]
+  | [g ⊢ fc_kpref F' _ _] ⇒ valid_pr_lab_in_fstep_closed [g ⊢ F']
+  | [g ⊢ fc_suml F' _] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F'] in [g ⊢ v_suml V]
+  | [g ⊢ fc_sumr F' _] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F'] in [g ⊢ v_sumr V]
+  | [g ⊢ fc_parl F' _ _] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F'] in [g ⊢ v_parl V]
+  | [g ⊢ fc_parr F' _ _] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F'] in [g ⊢ v_parr V]
+  | [g ⊢ fc_synl FL LL HL FR LR HR] ⇒ let [g ⊢ VL] = valid_pr_lab_in_fstep_closed [g ⊢ FL] in
+    let [g ⊢ VR] = valid_pr_lab_in_fstep_closed [g ⊢ FR] in [g ⊢ v_synl VL VR LL HL LR HR]
+  | [g ⊢ fc_synr FL LL HL FR LR HR] ⇒ let [g ⊢ VL] = valid_pr_lab_in_fstep_closed [g ⊢ FL] in
+    let [g ⊢ VR] = valid_pr_lab_in_fstep_closed [g ⊢ FR] in [g ⊢ v_synr VL VR LL HL LR HR]
+  | [g ⊢ fc_nu \a.F'] ⇒ let [g,a:names ⊢ V] = valid_pr_lab_in_fstep_closed [g,a:names ⊢ F'] in str_val [g,a:names ⊢ V]
+;
+
+% The proof label of a closed backward transition is valid
+rec valid_pr_lab_in_bstep_closed: (g:ctx) {B:[g ⊢ bstep_closed X' T X]} → [g ⊢ valid T] =
+/ total b (valid_pr_lab_in_bstep_closed _ _ _ _ b) /
+mlam B ⇒ case [_ ⊢ B] of
+  | [g ⊢ bc_pref _] ⇒ [g ⊢ v_base]
+  | [g ⊢ bc_kpref B' _ _] ⇒ valid_pr_lab_in_bstep_closed [g ⊢ B']
+  | [g ⊢ bc_suml B' _] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_closed [g ⊢ B'] in [g ⊢ v_suml V]
+  | [g ⊢ bc_sumr B' _] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_closed [g ⊢ B'] in [g ⊢ v_sumr V]
+  | [g ⊢ bc_parl B' _ _] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_closed [g ⊢ B'] in [g ⊢ v_parl V]
+  | [g ⊢ bc_parr B' _ _] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_closed [g ⊢ B'] in [g ⊢ v_parr V]
+  | [g ⊢ bc_synl BL LL HL BR LR HR] ⇒ let [g ⊢ VL] = valid_pr_lab_in_bstep_closed [g ⊢ BL] in
+    let [g ⊢ VR] = valid_pr_lab_in_bstep_closed [g ⊢ BR] in [g ⊢ v_synl VL VR LL HL LR HR]
+  | [g ⊢ bc_synr BL LL HL BR LR HR] ⇒ let [g ⊢ VL] = valid_pr_lab_in_bstep_closed [g ⊢ BL] in
+    let [g ⊢ VR] = valid_pr_lab_in_bstep_closed [g ⊢ BR] in [g ⊢ v_synr VL VR LL HL LR HR]
+  | [g ⊢ bc_nu \a.B'] ⇒ let [g,a:names ⊢ V] = valid_pr_lab_in_bstep_closed [g,a:names ⊢ B'] in str_val [g,a:names ⊢ V]
+;
+
+% If "a" occurs in T, but not in the label of T, then such label is tau
+rec occur_in_pr_lab: (g:ctx) [g,a:names ⊢ occurs a T] → [g,a:names ⊢ lab T A[..]] → [g,a:names ⊢ lab T tau] =
+/ total o (occur_in_pr_lab _ _ _ o _) /
+fn o,l ⇒ case o of
+  | [g,a:names ⊢ occ_basel] ⇒ impossible l
+  | [g,a:names ⊢ occ_baser] ⇒ impossible l
+  | [g,a:names ⊢ occ_suml O] ⇒ let [g,a:names ⊢ lab_suml L] = l in
+	let [g,a:names ⊢ L'] = occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_suml L']
+  | [g,a:names ⊢ occ_sumr O] ⇒ let [g,a:names ⊢ lab_sumr L] = l in
+	let [g,a:names ⊢ L'] = occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_sumr L']
+  | [g,a:names ⊢ occ_parl O] ⇒ let [g,a:names ⊢ lab_parl L] = l in
+	let [g,a:names ⊢ L'] = occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_parl L']
+  | [g,a:names ⊢ occ_parr O] ⇒ let [g,a:names ⊢ lab_parr L] = l in
+	let [g,a:names ⊢ L'] = occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_parr L']
+  | [g,a:names ⊢ occ_sync O] ⇒ [g,a:names ⊢ lab_sync]
+;
+
+% Given an open forward transition labelled by T, the label of T is tau
+rec lab_of_fstep_open: (g:ctx) {F:[g ⊢ fstep_open X (open \a.T) X']} [g,a:names ⊢ lab T[..,a] tau] =
+/ total f (lab_of_fstep_open _ _ _ _ f) /
+mlam F ⇒ case [_ ⊢ F] of
+  | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\_._)] ⇒ occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L]
+  | [g ⊢ fo_kpref F' (\_._) _] ⇒ lab_of_fstep_open [g ⊢ F']
+  | [g ⊢ fo_suml F' _] ⇒ let [g,a:names ⊢ L] = lab_of_fstep_open [g ⊢ F'] in [g,a:names ⊢ lab_suml L]
+  | [g ⊢ fo_sumr F' _] ⇒ let [g,a:names ⊢ L] = lab_of_fstep_open [g ⊢ F'] in [g,a:names ⊢ lab_sumr L]
+  | [g ⊢ fo_parl F' (\_._) _] ⇒ let [g,a:names ⊢ L] = lab_of_fstep_open [g ⊢ F'] in [g,a:names ⊢ lab_parl L]
+  | [g ⊢ fo_parr F' (\_._) _] ⇒ let [g,a:names ⊢ L] = lab_of_fstep_open [g ⊢ F'] in [g,a:names ⊢ lab_parr L]
+  | [g ⊢ fo_nu_open \a.F'] ⇒ let [g,a:names,b:names ⊢ L] = lab_of_fstep_open [g,a:names ⊢ F'] in [g,a:names ⊢ L[..,a]]
+;
+
+% Given an open backward transition labelled by T, the label of T is tau
+rec lab_of_bstep_open: (g:ctx) {B:[g ⊢ bstep_open X' (open \a.T) X]} [g,a:names ⊢ lab T[..,a] tau] =
+/ total b (lab_of_bstep_open _ _ _ _ b) /
+mlam B ⇒ case [_ ⊢ B] of
+  | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\_._)] ⇒ occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L]
+  | [g ⊢ bo_kpref B' (\_._) _] ⇒ lab_of_bstep_open [g ⊢ B']
+  | [g ⊢ bo_suml B' _] ⇒ let [g,a:names ⊢ L] = lab_of_bstep_open [g ⊢ B'] in [g,a:names ⊢ lab_suml L]
+  | [g ⊢ bo_sumr B' _] ⇒ let [g,a:names ⊢ L] = lab_of_bstep_open [g ⊢ B'] in [g,a:names ⊢ lab_sumr L]
+  | [g ⊢ bo_parl B' (\_._) _] ⇒ let [g,a:names ⊢ L] = lab_of_bstep_open [g ⊢ B'] in [g,a:names ⊢ lab_parl L]
+  | [g ⊢ bo_parr B' (\_._) _] ⇒ let [g,a:names ⊢ L] = lab_of_bstep_open [g ⊢ B'] in [g,a:names ⊢ lab_parr L]
+  | [g ⊢ bo_nu_open \a.B'] ⇒ let [g,a:names,b:names ⊢ L] = lab_of_bstep_open [g,a:names ⊢ B'] in [g,a:names ⊢ L[..,a]]
+;
+
+% If "a" occurs in T, and the label of T is "inp A" for some A, then A=a
+rec occurs_in_inp: (g:ctx) [g,a:names ⊢ occurs a T] → [g,a:names ⊢ lab T (inp A)] → [g,a:names ⊢ lab T (inp a)] =
+/ total o (occurs_in_inp _ _ _ o _) /
+fn o,l ⇒ case o of
+  | [g,a:names ⊢ occ_basel] ⇒ let [g,a:names ⊢ lab_base] = l in l
+  | [g,a:names ⊢ occ_baser] ⇒ impossible l
+  | [g,a:names ⊢ occ_suml O] ⇒ let [g,a:names ⊢ lab_suml L] = l in
+    let [g,a:names ⊢ L'] = occurs_in_inp [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_suml L']
+  | [g,a:names ⊢ occ_sumr O] ⇒ let [g,a:names ⊢ lab_sumr L] = l in
+    let [g,a:names ⊢ L'] = occurs_in_inp [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_sumr L']
+  | [g,a:names ⊢ occ_parl O] ⇒ let [g,a:names ⊢ lab_parl L] = l in
+    let [g,a:names ⊢ L'] = occurs_in_inp [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_parl L']
+  | [g,a:names ⊢ occ_parr O] ⇒ let [g,a:names ⊢ lab_parr L] = l in
+    let [g,a:names ⊢ L'] = occurs_in_inp [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_parr L']
+  | [g,a:names ⊢ occ_sync O] ⇒ impossible l
+;
+
+% If "a" occurs in T, and the label of T is "out A" for some A, then A=a
+rec occurs_in_out: (g:ctx) [g,a:names ⊢ occurs a T] → [g,a:names ⊢ lab T (out A)] → [g,a:names ⊢ lab T (out a)] =
+/ total o (occurs_in_out _ _ _ o _) /
+fn o,l ⇒ case o of
+  | [g,a:names ⊢ occ_basel] ⇒ impossible l
+  | [g,a:names ⊢ occ_baser] ⇒ let [g,a:names ⊢ lab_base] = l in l
+  | [g,a:names ⊢ occ_suml O] ⇒ let [g,a:names ⊢ lab_suml L] = l in
+    let [g,a:names ⊢ L'] = occurs_in_out [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_suml L']
+  | [g,a:names ⊢ occ_sumr O] ⇒ let [g,a:names ⊢ lab_sumr L] = l in
+    let [g,a:names ⊢ L'] = occurs_in_out [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_sumr L']
+  | [g,a:names ⊢ occ_parl O] ⇒ let [g,a:names ⊢ lab_parl L] = l in
+    let [g,a:names ⊢ L'] = occurs_in_out [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_parl L']
+  | [g,a:names ⊢ occ_parr O] ⇒ let [g,a:names ⊢ lab_parr L] = l in
+    let [g,a:names ⊢ L'] = occurs_in_out [g,a:names ⊢ O] [g,a:names ⊢ L] in [g,a:names ⊢ lab_parr L']
+  | [g,a:names ⊢ occ_sync O] ⇒ impossible l
+;
+
+% If "a" does not occur in T, then its label cannot be "inp a"
+rec occurs_not_in_inp: (g:ctx) [g,a:names ⊢ lab T[..] (inp a)] → [g,a:names ⊢ false] =
+/ total l (occurs_not_in_inp _ _ l) /
+fn l ⇒ case l of
+  | [g,a:names ⊢ lab_suml L] ⇒ impossible occurs_not_in_inp [g,a:names ⊢ L]
+  | [g,a:names ⊢ lab_sumr L] ⇒ impossible occurs_not_in_inp [g,a:names ⊢ L]
+  | [g,a:names ⊢ lab_parl L] ⇒ impossible occurs_not_in_inp [g,a:names ⊢ L]
+  | [g,a:names ⊢ lab_parr L] ⇒ impossible occurs_not_in_inp [g,a:names ⊢ L]
+;
+
+% If "a" does not occur in T, then its label cannot be "out a"
+rec occurs_not_in_out: (g:ctx) [g,a:names ⊢ lab T[..] (out a)] → [g,a:names ⊢ false] =
+/ total l (occurs_not_in_out _ _ l) /
+fn l ⇒ case l of
+  | [g,a:names ⊢ lab_suml L] ⇒ impossible occurs_not_in_out [g,a:names ⊢ L]
+  | [g,a:names ⊢ lab_sumr L] ⇒ impossible occurs_not_in_out [g,a:names ⊢ L]
+  | [g,a:names ⊢ lab_parl L] ⇒ impossible occurs_not_in_out [g,a:names ⊢ L]
+  | [g,a:names ⊢ lab_parr L] ⇒ impossible occurs_not_in_out [g,a:names ⊢ L]
+;
+
+% Occurrence or not occurrence of a name in a proof label
+inductive occurs_or_not: (g:ctx) [g,a:names ⊢ pr_lab] → ctype =
+  | oc: {T:[g,a:names ⊢ pr_lab]} [g,a:names ⊢ occurs a T] → occurs_or_not [g,a:names ⊢ T]
+  | noc: {T:[g,a:names ⊢ pr_lab]} [g,a:names ⊢ eqpl T T'[..]] → occurs_or_not [g,a:names ⊢ T]
+;
+
+% Given a valid proof label T in the context [g,a:names], then "a" either occurs in T or not
+rec occur_in_valid_pr_lab: (g:ctx) [g,a:names ⊢ valid T] → occurs_or_not [g,a:names ⊢ T] =
+/ total v (occur_in_valid_pr_lab _ _ v) /
+fn v ⇒ case v of
+  | [g,a:names ⊢ v_base]:[g,a:names ⊢ valid (pr_base A K[])] ⇒ (case [g,a:names ⊢ A] of
+       | [g,a:names ⊢ inp B] ⇒ (case [g,a:names ⊢ B] of
+            | [g,a:names ⊢ #p[..]] ⇒ noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]
+            | [g,a:names ⊢ a] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_basel])
+       | [g,a:names ⊢ out B] ⇒ (case [g,a:names ⊢ B] of
+            | [g,a:names ⊢ #p[..]] ⇒ noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]
+            | [g,a:names ⊢ a] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_baser])
+       | [g,a:names ⊢ tau] ⇒ noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
+  | [g,a:names ⊢ v_suml V] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
+       | oc [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_suml O] 
+       | noc [g,a:names ⊢ _] [g,a:names ⊢ E] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
+         noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
+  | [g,a:names ⊢ v_sumr V] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
+       | oc [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_sumr O] 
+       | noc [g,a:names ⊢ _] [g,a:names ⊢ E] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
+         noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
+  | [g,a:names ⊢ v_parl V] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
+       | oc [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_parl O] 
+       | noc [g,a:names ⊢ _] [g,a:names ⊢ E] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
+         noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
+  | [g,a:names ⊢ v_parr V] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
+       | oc [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_parr O] 
+       | noc [g,a:names ⊢ _] [g,a:names ⊢ E] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
+         noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
+  | [g,a:names ⊢ v_synl V1 V2 L1 _ L2 _] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V1] of
+       | oc [g,a:names ⊢ T1] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_sync O] 
+       | noc [g,a:names ⊢ T1] [g,a:names ⊢ E1] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E1] in
+         (case occur_in_valid_pr_lab [g,a:names ⊢ V2] of
+            | oc [g,a:names ⊢ T2] [g,a:names ⊢ O] ⇒
+              let [g,a:names ⊢ L2'] = occurs_in_out [g,a:names ⊢ O] [g,a:names ⊢ L2] in
+              let [g,a:names ⊢ refl] = uniqueness_of_lab [g,a:names ⊢ L2] [g,a:names ⊢ L2'] in
+              impossible occurs_not_in_inp [g,a:names ⊢ L1]
+            | noc [g,a:names ⊢ T2] [g,a:names ⊢ E2] ⇒
+              let [g,a:names ⊢ refpl] = [g,a:names ⊢ E2] in noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]))
+  | [g,a:names ⊢ v_synr V1 V2 L1 _ L2 _] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V1] of
+       | oc [g,a:names ⊢ T1] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_sync O] 
+       | noc [g,a:names ⊢ T1] [g,a:names ⊢ E1] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E1] in
+         (case occur_in_valid_pr_lab [g,a:names ⊢ V2] of
+            | oc [g,a:names ⊢ T2] [g,a:names ⊢ O] ⇒
+              let [g,a:names ⊢ L2'] = occurs_in_inp [g,a:names ⊢ O] [g,a:names ⊢ L2] in
+              let [g,a:names ⊢ refl] = uniqueness_of_lab [g,a:names ⊢ L2] [g,a:names ⊢ L2'] in
+              impossible occurs_not_in_out [g,a:names ⊢ L1]
+            | noc [g,a:names ⊢ T2] [g,a:names ⊢ E2] ⇒
+              let [g,a:names ⊢ refpl] = [g,a:names ⊢ E2] in noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]))
+;
+
+% If the label of a proof label T is "inp a", then any b!=a does not occur in T.
+% More precisely: given a derivation of "lab T (inp a)" in a context [g,b:names,a:names],
+% then we can obtain such a derivation in the stronger context [g,a:names].
+inductive ex_str_lab_inp: (g:ctx) [g,b:names,a:names ⊢ lab T (inp a)] → ctype =
+  | ex_sli: {L:[g,b:names,a:names ⊢ lab T (inp a)]} [g,b:names,a:names ⊢ lab T'[..,a] (inp a)]
+    → [g,b:names,a:names ⊢ eqpl T T'[..,a]] → ex_str_lab_inp [g,b:names,a:names ⊢ L]
+;
+
+rec str_lab_inp: (g:ctx) {L:[g,b:names,a:names ⊢ lab T (inp a)]} ex_str_lab_inp [g,b:names,a:names ⊢ L] =
+/ total l (str_lab_inp _ _ l) /
+mlam L ⇒ case [_ ⊢ L] of
+  | [g,b:names,a:names ⊢ lab_base] ⇒ ex_sli [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_base] [g,b,a ⊢ refpl]
+  | [g,b:names,a:names ⊢ lab_suml L1] ⇒
+	let ex_sli [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L1'] e = str_lab_inp [g,b:names,a:names ⊢ L1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_sli [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_suml L1'] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ lab_sumr L1] ⇒
+	let ex_sli [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L1'] e = str_lab_inp [g,b:names,a:names ⊢ L1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_sli [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_sumr L1'] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ lab_parl L1] ⇒
+	let ex_sli [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L1'] e = str_lab_inp [g,b:names,a:names ⊢ L1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_sli [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_parl L1'] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ lab_parr L1] ⇒
+	let ex_sli [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L1'] e = str_lab_inp [g,b:names,a:names ⊢ L1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_sli [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_parr L1'] [g,b:names,a:names ⊢ refpl]
+;
+
+% If the label of a proof label T is "out a", then any b!=a does not occur in T.
+% More precisely: given a derivation of "lab T (out a)" in a context [g,b:names,a:names],
+% then we can obtain such a derivation in the stronger context [g,a:names].
+inductive ex_str_lab_out: (g:ctx) [g,b:names,a:names ⊢ lab T (out a)] → ctype =
+  | ex_slo: {L:[g,b:names,a:names ⊢ lab T (out a)]} [g,b:names,a:names ⊢ lab T'[..,a] (out a)]
+          → [g,b:names,a:names ⊢ eqpl T T'[..,a]] → ex_str_lab_out [g,b:names,a:names ⊢ L]
+;
+
+rec str_lab_out: (g:ctx) {L:[g,b:names,a:names ⊢ lab T (out a)]} ex_str_lab_out [g,b:names,a:names ⊢ L] =
+/ total l (str_lab_out _ _ l) /
+mlam L ⇒ case [_ ⊢ L] of
+  | [g,b:names,a:names ⊢ lab_base] ⇒ ex_slo [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_base] [g,b,a ⊢ refpl]
+  | [g,b:names,a:names ⊢ lab_suml L1] ⇒
+	let ex_slo [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L1'] e = str_lab_out [g,b:names,a:names ⊢ L1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_slo [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_suml L1'] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ lab_sumr L1] ⇒
+	let ex_slo [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L1'] e = str_lab_out [g,b:names,a:names ⊢ L1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_slo [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_sumr L1'] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ lab_parl L1] ⇒
+	let ex_slo [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L1'] e = str_lab_out [g,b:names,a:names ⊢ L1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_slo [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_parl L1'] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ lab_parr L1] ⇒
+	let ex_slo [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L1'] e = str_lab_out [g,b:names,a:names ⊢ L1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_slo [g,b:names,a:names ⊢ _] [g,b,a ⊢ lab_parr L1'] [g,b:names,a:names ⊢ refpl]
+;
+
+% Given a derivation of "occurs a T" in a context [g,b:names,a:names],
+% then we can obtain such a derivation in the stronger context [g,a:names].
+inductive ex_str_occ: (g:ctx) [g,b:names,a:names ⊢ occurs a T] → ctype =
+  | ex_soc: {O:[g,b:names,a:names ⊢ occurs a T]} [g,b:names,a:names ⊢ occurs a T'[..,a]]
+          → [g,a:names,b:names ⊢ eqpl T T'[..]] → ex_str_occ [g,b:names,a:names ⊢ O]
+;
+
+rec str_occ: (g:ctx) {O:[g,b:names,a:names ⊢ occurs a T]} [g,b:names,a:names ⊢ valid T] → ex_str_occ [g,b:names,a:names ⊢ O] =
+/ total o (str_occ _ _ o _) /
+mlam O ⇒ fn v ⇒ case [_,b:names,a:names ⊢ O] of
+  | [g,b:names,a:names ⊢ occ_basel] ⇒ ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ occ_basel] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ occ_baser] ⇒ ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ occ_baser] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ occ_suml O1] ⇒
+	let [g,b:names,a:names ⊢ v_suml V1] = v in
+	let ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O1'] e = str_occ [g,b:names,a:names ⊢ O1] [g,b,a ⊢ V1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ occ_suml O1'] [g,b:names,a:names ⊢ refpl]
+  | [g,b:names,a:names ⊢ occ_sumr O1] ⇒
+	let [g,b:names,a:names ⊢ v_sumr V1] = v in
+	let ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O1'] e = str_occ [g,b:names,a:names ⊢ O1] [g,b,a ⊢ V1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ occ_sumr O1'] [g,b:names,a:names ⊢ refpl] 
+  | [g,b:names,a:names ⊢ occ_parl O1] ⇒
+	let [g,b:names,a:names ⊢ v_parl V1] = v in
+	let ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O1'] e = str_occ [g,b:names,a:names ⊢ O1]  [g,b,a ⊢ V1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ occ_parl O1'] [g,b:names,a:names ⊢ refpl] 
+  | [g,b:names,a:names ⊢ occ_parr O1] ⇒
+	let [g,b:names,a:names ⊢ v_parr V1] = v in
+	let ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O1'] e = str_occ [g,b:names,a:names ⊢ O1] [g,b,a ⊢ V1] in
+	let [g,b:names,a:names ⊢ refpl] = e in
+	ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ occ_parr O1'] [g,b:names,a:names ⊢ refpl] 
+  | [g,b:names,a:names ⊢ occ_sync O1] ⇒ (case v of
+       | [g,b:names,a:names ⊢ v_synl V1 V2 L1 H1 L2 H2] ⇒
+         let ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O1'] e = str_occ [g,b:names,a:names ⊢ O1] [g,b,a ⊢ V1] in
+         let [g,b:names,a:names ⊢ refpl] = e in
+         let [g,b:names,a:names ⊢ L1'] = occurs_in_inp [g,b:names,a:names ⊢ O1'] [g,b,a ⊢ L1] in
+         let [g,b:names,a:names ⊢ refl] = uniqueness_of_lab [g,b:names,a:names ⊢ L1] [g,b,a ⊢ L1'] in
+         let ex_slo [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L2'] e = str_lab_out [g,b:names,a:names ⊢ L2] in
+         let [g,b:names,a:names ⊢ refpl] = e in
+         ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ occ_sync O1'] [g,b:names,a:names ⊢ refpl]
+       | [g,b:names,a:names ⊢ v_synr V1 V2 L1 H1 L2 H2] ⇒
+         let ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O1'] e = str_occ [g,b:names,a:names ⊢ O1] [g,b,a ⊢ V1] in
+         let [g,b:names,a:names ⊢ refpl] = e in
+         let [g,b:names,a:names ⊢ L1'] = occurs_in_out [g,b:names,a:names ⊢ O1'] [g,b,a ⊢ L1] in
+         let [g,b:names,a:names ⊢ refl] = uniqueness_of_lab [g,b:names,a:names ⊢ L1] [g,b,a ⊢ L1'] in
+         let ex_sli [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L2'] e = str_lab_inp [g,b:names,a:names ⊢ L2] in
+         let [g,b:names,a:names ⊢ refpl] = e in
+         ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ occ_sync O1'] [g,b:names,a:names ⊢ refpl])
+;
+
+% Given an open forward transition in a context [g,b:names], b does not occur in T.
+inductive ex_str_fstep_open: (g:ctx) [g,b:names ⊢ fstep_open X T X'] → ctype =
+  | ex_sfo: {F:[g,b:names ⊢ fstep_open X (open \a.T) X']} [g,b:names ⊢ fstep_open X (open \a.T'[..,a]) X']
+          → [g,a:names,b:names ⊢ eqpl T T'[..]] → ex_str_fstep_open [g,b:names ⊢ F]
+;
+
+rec str_fstep_open: (g:ctx) {F:[g,b:names ⊢ fstep_open X (open \a.T) X']} ex_str_fstep_open [g,b:names ⊢ F] =
+/ total f (str_fstep_open _ _ _ _ f) /
+mlam F ⇒ case [_,b:names ⊢ F] of
+  | [g,b:names ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F')] ⇒
+    let [g,b:names,a:names ⊢ V]:[g,b:names,a:names ⊢ valid T] = valid_pr_lab_in_fstep_closed [g,b:names,a:names ⊢ F'] in
+    let ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O'] e1 = str_occ [g,b:names,a:names ⊢ O] [g,b,a ⊢ V] in
+    let [g,b:names,a:names ⊢ refpl] = e1 in
+    let ex_sll [g,a:names,b:names ⊢ _] [g,a:names ⊢ L'] e2 = str_labl [g,a:names,b:names ⊢ L[..,b,a]] in
+    let [g,b:names,a:names ⊢ refl] = e2 in
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_nu_closed (\a.O') (\a.L'[..,a]) (\a.F')] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ fo_kpref F1 (\a.H) I] ⇒ let ex_sfo [g,b:names ⊢ F1] [g,b:names ⊢ F1'] e = str_fstep_open [g,b:names ⊢ F1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_kpref F1' (\a.H) I] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ fo_suml F1 D] ⇒ let ex_sfo [g,b:names ⊢ F1] [g,b:names ⊢ F1'] e = str_fstep_open [g,b:names ⊢ F1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_suml F1' D] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ fo_sumr F1 D] ⇒ let ex_sfo [g,b:names ⊢ F1] [g,b:names ⊢ F1'] e = str_fstep_open [g,b:names ⊢ F1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_sumr F1' D] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ fo_parl F1 (\a.H) N] ⇒ let ex_sfo [g,b:names ⊢ F1] [g,b:names ⊢ F1'] e = str_fstep_open [g,b:names ⊢ F1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_parl F1' (\a.H) N] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ fo_parr F1 (\a.H) N] ⇒ let ex_sfo [g,b:names ⊢ F1] [g,b:names ⊢ F1'] e = str_fstep_open [g,b:names ⊢ F1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_parr F1' (\a.H) N] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ fo_nu_open \a.F1[..,a,b]] ⇒ let ex_sfo [g,b:names,a:names ⊢ F1] [g,b:names,a:names ⊢ F1'[..,a,b]] e = str_fstep_open [g,b:names,a:names ⊢ F1] in
+    let [g,c:names,b:names,a:names ⊢ refpl] = e in
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_nu_open \a.F1'] [g,a:names,b:names ⊢ refpl]
+;
+
+% Given an open backward transition in a context [g,b:names], b does not occur in T.
+inductive ex_str_bstep_open: (g:ctx) [g,b:names ⊢ bstep_open X' T X] → ctype =
+  | ex_sbo: {B:[g,b:names ⊢ bstep_open X' (open \a.T) X]} [g,b:names ⊢ bstep_open X' (open \a.T'[..,a]) X]
+          → [g,a:names,b:names ⊢ eqpl T T'[..]] → ex_str_bstep_open [g,b:names ⊢ B]
+;
+
+rec str_bstep_open: (g:ctx) {B:[g,b:names ⊢ bstep_open X' (open \a.T) X]} ex_str_bstep_open [g,b:names ⊢ B] =
+/ total b (str_bstep_open _ _ _ _ b) /
+mlam B ⇒ case [_,b:names ⊢ B] of
+  | [g,b:names ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B')] ⇒
+    let [g,b:names,a:names ⊢ V]:[g,b:names,a:names ⊢ valid T] = valid_pr_lab_in_bstep_closed [g,b:names,a:names ⊢ B'] in
+    let ex_soc [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O'] e1 = str_occ [g,b:names,a:names ⊢ O] [g,b,a ⊢ V] in
+    let [g,b:names,a:names ⊢ refpl] = e1 in
+    let ex_sll [g,a:names,b:names ⊢ _] [g,a:names ⊢ L'] e2 = str_labl [g,a:names,b:names ⊢ L[..,b,a]] in
+    let [g,b:names,a:names ⊢ refl] = e2 in
+    ex_sbo [g,b:names ⊢ _] [g,b:names ⊢ bo_nu_closed (\a.O') (\a.L'[..,a]) (\a.B')] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ bo_kpref B1 (\a.H) I] ⇒ let ex_sbo [g,b:names ⊢ B1] [g,b:names ⊢ B1'] e = str_bstep_open [g,b:names ⊢ B1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sbo [g,b:names ⊢ _] [g,b:names ⊢ bo_kpref B1' (\a.H) I] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ bo_suml B1 D] ⇒ let ex_sbo [g,b:names ⊢ B1] [g,b:names ⊢ B1'] e = str_bstep_open [g,b:names ⊢ B1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sbo [g,b:names ⊢ _] [g,b:names ⊢ bo_suml B1' D] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ bo_sumr B1 D] ⇒ let ex_sbo [g,b:names ⊢ B1] [g,b:names ⊢ B1'] e = str_bstep_open [g,b:names ⊢ B1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sbo [g,b:names ⊢ _] [g,b:names ⊢ bo_sumr B1' D] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ bo_parl B1 (\a.H) N] ⇒ let ex_sbo [g,b:names ⊢ B1] [g,b:names ⊢ B1'] e = str_bstep_open [g,b:names ⊢ B1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sbo [g,b:names ⊢ _] [g,b:names ⊢ bo_parl B1' (\a.H) N] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ bo_parr B1 (\a.H) N] ⇒ let ex_sbo [g,b:names ⊢ B1] [g,b:names ⊢ B1'] e = str_bstep_open [g,b:names ⊢ B1] in
+    let [g,a:names,b:names ⊢ refpl] = e in
+    ex_sbo [g,b:names ⊢ _] [g,b:names ⊢ bo_parr B1' (\a.H) N] [g,a:names,b:names ⊢ refpl]
+  | [g,b:names ⊢ bo_nu_open \a.B1[..,a,b]] ⇒
+    let ex_sbo [g,b:names,a:names ⊢ B1] [g,b:names,a:names ⊢ B1'[..,a,b]] e = str_bstep_open [g,b:names,a:names ⊢ B1] in
+    let [g,c:names,b:names,a:names ⊢ refpl] = e in
+    ex_sbo [g,b:names ⊢ _] [g,b:names ⊢ bo_nu_open \a.B1'] [g,a:names,b:names ⊢ refpl]
+;

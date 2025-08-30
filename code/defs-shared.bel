@@ -1,0 +1,81 @@
+%%% Definitions shared by CCSK and CCSKP %%%
+
+% Names
+LF names: type =
+;
+
+% Keys, implemented as natural numbers
+LF keys: type =
+  | z: keys
+  | s: keys → keys
+;
+
+% Labels
+LF labels: type =
+  | inp: names → labels
+  | out: names → labels
+  | tau: labels
+;
+
+% Processes
+LF proc: type =
+  | null: proc                          % 0
+  | pref: labels → proc → proc          % A.X
+  | kpref: labels → keys → proc → proc  % A[k].X
+  | sum: proc → proc → proc             % X+Y
+  | par: proc → proc → proc             % X|Y
+  | nu: (names → proc) → proc           % X\a
+;
+
+% Context for names
+schema ctx = names;
+
+% Empty type for falsehood
+LF false: type =
+;
+
+% Equality of keys
+LF eqk: keys → keys → type =
+  | refk: eqk K K
+;
+
+% Equality of labels
+LF eql: labels → labels → type =
+  | refl: eql A A
+;
+
+% Equality of processes
+LF eqp: proc → proc → type =
+  | refp: eqp X X
+;
+
+% Strict order relation on keys (nats)
+LF less: keys → keys → type =
+  | lzero: {K:keys} less z (s K)
+  | lsucc: less K M → less (s K) (s M)
+;
+
+% Inequality of keys
+LF neq: keys → keys → type =
+  | nless: less K M → neq K M
+  | ngreat: less M K → neq K M
+;
+
+% Standard processes
+LF std: proc → type =
+  | std_null: std null
+  | std_pref: std X → std (pref A X)
+  | std_sum: std X → std Y → std (sum X Y)
+  | std_par: std X → std Y → std (par X Y)
+  | std_nu: ({a:names} std (X a)) → std (nu X)
+;
+
+% Non occurrence of keys in processes
+LF notin: keys → proc → type =
+  | not_null: notin K null
+  | not_pref: notin K X → notin K (pref A X)
+  | not_kpref: neq K M → notin K X → notin K (kpref A M X)
+  | not_sum: notin K X → notin K Y → notin K (sum X Y)
+  | not_par: notin K X → notin K Y → notin K (par X Y)
+  | not_nu: ({a:names} notin K (X a)) → notin K (nu X)
+;

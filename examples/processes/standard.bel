@@ -1,0 +1,32 @@
+%%% Standard processes %%%
+
+% (a |'a)+(a |'a) is a term of type proc.
+let p1:[a:names ⊢ proc] = [a:names ⊢ sum (par (pref (inp a) null)(pref (out a) null))
+(par (pref (inp a) null)(pref (out a) null))];
+
+% (a |'a)\a is a term of type proc.
+let p2:[⊢ proc] = [⊢ nu \a.(par (pref (inp a) null) (pref (out a) null))];
+
+% a|(b\a) is a term of type proc.
+let p3:[a:names,b:names ⊢ proc] = [a:names,b:names ⊢ par (pref (inp a) null) (nu \a.(pref (inp b) null))];
+
+% a.b.c.d | 'a.'b.'c.'d is a term of type proc.
+let p4:[a:names,b:names,c:names,d:names ⊢ proc] = [a:names,b:names,c:names,d:names ⊢ par
+(pref (inp a) (pref (inp b) (pref (inp c) (pref (inp d) null))))
+(pref (out a) (pref (out b) (pref (out c) (pref (out d) null))))];
+
+% a + ('a | 'b) + b is a term of type proc.
+let p5:[a:names,b:names ⊢ proc] = [a:names,b:names ⊢ 
+sum (sum (pref (inp a) null) (par (pref (out a) null) (pref (out b) null))) (pref (inp b) null)];
+
+% a + b + c + d is a term of type proc.
+let p6:[a:names,b:names,c:names,d:names ⊢ proc] = [a:names,b:names,c:names,d:names ⊢ 
+sum (sum (sum (pref (inp a) null) (pref (inp b) null)) (pref (inp c) null)) (pref (inp d) null)];
+
+% a.a.(b+c) is a term of type proc.
+let p7:[a:names,b:names,c:names ⊢ proc] = [a:names,b:names,c:names ⊢ 
+pref (inp a) (pref (inp a) (sum (pref (inp b) null) (pref (inp c) null)))];
+
+% a.a.b + a.a.c is a term of type proc.  
+let p8:[a:names,b:names,c:names ⊢ proc] = [a:names,b:names,c:names ⊢ 
+sum (pref (inp a) (pref (inp a) (pref (inp b) null))) (pref (inp a) (pref (inp a) (pref (inp c) null)))];

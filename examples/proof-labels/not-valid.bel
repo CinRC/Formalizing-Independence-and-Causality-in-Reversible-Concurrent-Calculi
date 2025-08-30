@@ -1,0 +1,43 @@
+%%% Not valid proof keyed labels %%%
+
+--open ccskp.
+
+% <|_L a[k], |_R a'[m]> is a term of type pr_lab.
+let t1:[a:names,k:keys,m:keys ⊢ pr_lab] = [a:names,k:keys,m:keys ⊢ pr_sync (pr_base (inp a) k) (pr_base (out a) m)];
+
+% <|_L b[k], |_R b[k]> is a term of type pr_lab.
+let t2:[b:names,k:keys ⊢ pr_lab] = [b:names,k:keys ⊢ pr_sync (pr_base (inp b) k) (pr_base (inp b) k)];
+
+% <|_L +_R b[k], |_R a[m]> is a term of type pr_lab.
+let t3:[a:names,b:names,k:keys,m:keys ⊢ pr_lab] = [a:names,b:names,k:keys,m:keys ⊢ pr_sync (pr_sumr (pr_base (inp b) k)) (pr_base (inp a) m)];
+
+
+% <|_L a[k], |_R a'[m]> is not valid.
+rec not_valid_t1: [a:names,k:keys,m:keys ⊢ valid (pr_sync (pr_base (inp a) k) (pr_base (out a) m))] → [⊢ false] =
+/ total 1 / 
+fn v ⇒ case v of
+  | [a:names,k:keys,m:keys ⊢ v_synl _ _ _ H1 _ H2] ⇒
+    let [a:names,k:keys,m:keys ⊢ key_base] = [a:names,k:keys,m:keys ⊢ H1] in
+    impossible [a:names,k:keys,m:keys ⊢ H2]
+  | [a:names,k:keys,m:keys ⊢ v_synr _ _ _ H1 _ H2] ⇒
+    let [a:names,k:keys,m:keys ⊢ key_base] = [a:names,k:keys,m:keys ⊢ H1] in
+    impossible [a:names,k:keys,m:keys ⊢ H2]
+;
+
+% <|_L b[k], |_R b[k]> is not valid.
+rec not_valid_t2: [b:names,k:keys ⊢ valid (pr_sync (pr_base (inp b) k) (pr_base (inp b) k))] → [⊢ false] =
+/ total 1 / 
+fn v ⇒ case v of
+  | [b:names,k:keys ⊢ v_synl _ _ _ _ L2 _] ⇒ impossible [b:names,k:keys ⊢ L2]
+  | [b:names,k:keys ⊢ v_synr _ _ L1 _ _ _] ⇒ impossible [b:names,k:keys ⊢ L1]
+;
+
+% <|_L +_R b[k], |_R a[m]> is not valid.
+rec not_valid_t3: [a:names,b:names,k:keys,m:keys ⊢ valid (pr_sync (pr_sumr (pr_base (inp b) k)) (pr_base (inp a) m))] → [⊢ false] =
+/ total 1 / 
+fn v ⇒ case v of
+  | [a:names,b:names,k:keys,m:keys ⊢ v_synl _ _ _ _ L2 _] ⇒ impossible [a:names,b:names,k:keys,m:keys ⊢ L2]
+  | [a:names,b:names,k:keys,m:keys ⊢ v_synr _ _ L1 _ _ _] ⇒ 
+    let [a:names,b:names,k:keys,m:keys ⊢ lab_sumr L1'] = [a:names,b:names,k:keys,m:keys ⊢ L1] in
+    impossible [a:names,b:names,k:keys,m:keys ⊢ L1']
+;

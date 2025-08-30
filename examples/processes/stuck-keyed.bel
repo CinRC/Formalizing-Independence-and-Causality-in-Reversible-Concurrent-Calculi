@@ -1,0 +1,17 @@
+%%% "Stuck" processes with keys %%%
+
+% a[k] | b[k] is a term of type proc.
+let p1:[a:names,b:names,k:keys ⊢ proc] = [a:names,b:names,k:keys ⊢ par (kpref (inp a) k null) (kpref (inp b) k null)];
+
+% a[k] + b[m] is a term of type proc.
+let p2:[a:names,b:names,k:keys,m:keys ⊢ proc] = [a:names,b:names,k:keys,m:keys ⊢ sum (kpref (inp a) k null) (kpref (inp b) m null)];
+
+% a.b[k] is a term of type proc.
+let p3:[a:names,b:names,k:keys ⊢ proc] = [a:names,b:names,k:keys ⊢ pref (inp a) (kpref (inp b) k null)];
+
+% a[k].b[m] | b'[m].a'[k] is a term of type proc.
+let p4:[a:names,b:names,k:keys,m:keys ⊢ proc] = [a:names,b:names,k:keys,m:keys ⊢
+par (kpref (inp a) k (kpref (inp b) m null)) (kpref (out b) m (kpref (out a) k null))];
+
+% (a[k])\a is a term of type proc.
+let p5:[k:keys ⊢ proc] = [k:keys ⊢ nu \a.(kpref (inp a) k null)];

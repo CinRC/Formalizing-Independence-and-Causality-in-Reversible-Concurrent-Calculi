@@ -1,0 +1,58 @@
+%%% Semantics of CCSK %%%
+
+module ccsk = struct
+
+% Keyed labels
+LF key_lab: type =
+  | kl_base: labels -> keys -> key_lab
+;
+
+% Forward transitions
+LF fstep: proc → key_lab → proc → type =
+  | fs_pref: std X → fstep (pref A X) (kl_base A K) (kpref A K X)
+  | fs_kpref: fstep X (kl_base B M) X' → neq K M
+            → fstep (kpref A K X) (kl_base B M) (kpref A K X')
+  | fs_suml: fstep X (kl_base A K) X' → std Y
+           → fstep (sum X Y) (kl_base A K) (sum X' Y)
+  | fs_sumr: fstep Y (kl_base A K) Y' → std X
+           → fstep (sum X Y) (kl_base A K) (sum X Y')
+  | fs_parl: fstep X (kl_base A K) X' → notin K Y
+           → fstep (par X Y) (kl_base A K) (par X' Y)
+  | fs_parr: fstep Y (kl_base A K) Y' → notin K X
+           → fstep (par X Y) (kl_base A K) (par X Y')
+  | fs_synl: fstep X (kl_base (inp L) K) X' → fstep Y (kl_base (out L) K) Y'
+           → fstep (par X Y) (kl_base tau K) (par X' Y')
+  | fs_synr: fstep X (kl_base (out L) K) X' → fstep Y (kl_base (inp L) K) Y'
+           → fstep (par X Y) (kl_base tau K) (par X' Y')
+  | fs_nu: ({a:names} fstep (X a) (kl_base A K) (X' a))
+           → fstep (nu X) (kl_base A K) (nu X')
+;
+
+% Backward transitions
+LF bstep: proc → key_lab → proc → type =
+  | bs_pref: std X → bstep (kpref A K X) (kl_base A K) (pref A X)
+  | bs_kpref: bstep X' (kl_base B M) X → neq K M
+            → bstep (kpref A K X') (kl_base B M) (kpref A K X)
+  | bs_suml: bstep X' (kl_base A K) X → std Y
+           → bstep (sum X' Y) (kl_base A K) (sum X Y)
+  | bs_sumr: bstep Y' (kl_base A K) Y → std X
+           → bstep (sum X Y') (kl_base A K) (sum X Y)
+  | bs_parl: bstep X' (kl_base A K) X → notin K Y
+           → bstep (par X' Y) (kl_base A K) (par X Y)
+  | bs_parr: bstep Y' (kl_base A K) Y → notin K X
+           → bstep (par X Y') (kl_base A K) (par X Y)
+  | bs_synl: bstep X' (kl_base (inp L) K) X → bstep Y' (kl_base (out L) K) Y
+           → bstep (par X' Y') (kl_base tau K) (par X Y)
+  | bs_synr: bstep X' (kl_base (out L) K) X → bstep Y' (kl_base (inp L) K) Y
+           → bstep (par X' Y') (kl_base tau K) (par X Y)
+  | bs_nu: ({a:names} bstep (X' a) (kl_base A K) (X a))
+           → bstep (nu X') (kl_base A K) (nu X)
+;
+
+% Combined transitions
+LF step: proc → key_lab → proc → type =
+  | fw: fstep X T X' → step X T X'
+  | bw: bstep X' T X → step X' T X
+;
+
+end;

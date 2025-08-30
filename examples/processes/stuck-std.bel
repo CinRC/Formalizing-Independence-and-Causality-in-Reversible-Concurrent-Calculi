@@ -1,0 +1,10 @@
+%%% "Stuck" standard processes %%%
+
+% a\a is a term of type proc.
+let p1:[⊢ proc] = [⊢ nu \a.(pref (inp a) null)];
+
+% a\'a is a term of type proc.
+let p2:[⊢ proc] = [⊢ nu \a.(pref (out a) null)];
+
+% ((a.b | 'b.'a)\a)\b is a term of type proc.
+let p3:[⊢ proc] = [⊢ nu \b.(nu \a.(par (pref (inp a) (pref (inp b) null)))(pref (out b) (pref (out a) null)))];
