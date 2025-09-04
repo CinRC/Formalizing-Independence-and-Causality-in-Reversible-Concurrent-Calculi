@@ -39,6 +39,8 @@ jobs:
       uses: chetan/git-restore-mtime-action@v2
     - name: Install Opam 🐫
       uses: ocaml/setup-ocaml@v3
+      with:
+            ocaml-compiler: 5
       # https://github.com/marketplace/actions/set-up-ocaml
     - name: Setup Beluga 🐳
       run: |
