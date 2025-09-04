@@ -2,6 +2,7 @@
 
 This repository contains the implementation of reversible concurrent calculi in [Beluga](https://complogic.cs.mcgill.ca/beluga/index.html).
 
+[![Code Type Reconstruction](https://github.com/CinRC/Formalizing-Independence-and-Causality-in-Reversible-Concurrent-Calculi/actions/workflows/main.yml/badge.svg)](https://github.com/CinRC/Formalizing-Independence-and-Causality-in-Reversible-Concurrent-Calculi/actions/workflows/main.yml)
 
 ## Repository structure
 
