@@ -35,13 +35,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Opam 🐫
-      run: |
-        sudo apt-get install opam
-        opam init
+      uses: ocaml/setup-ocaml@v3
+      # https://github.com/marketplace/actions/set-up-ocaml
     - name: Setup Beluga 🐳
       run: |
          opam install --yes beluga
     - name: Code Type Reconstruction ♺
       run: | 
-          eval $(opam env)
           make run/code.cfg
