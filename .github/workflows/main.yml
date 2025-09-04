@@ -1,0 +1,47 @@
+# Validate the file using e.g.
+# https://rhysd.github.io/actionlint/
+
+name: Code Type Reconstruction 
+
+# "Every time a push is made on the main branch, that changes one of the file in the code/ folder or the run/code.cfg file…"
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'code/**'
+      - 'run/code.cfg'
+  workflow_dispatch:
+
+# "workflow_dispatch" is here to allow the action to be triggered manually.
+# Go to https://github.com/CinRC/Formalizing-Independence-and-Causality-in-Reversible-Concurrent-Calculi/actions/workflows/build.yaml
+# and click on "Run workflow" next to "This workflow has a workflow_dispatch event trigger."
+# to run the workflow manually, if needed.
+
+# This will allow a run to be stopped if another run is requested before it terminated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# This is the series of action we want to do:
+# 1. on ubuntu-latest,
+# 2. checkout the current repository,
+# 3. Install Opam,
+# 4. Install Beluga
+# 5. Compile the code/ folder using the makefile.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Opam 🐫
+      run: |
+        sudo apt-get install opam
+        opam init
+    - name: Setup Beluga 🐳
+      run: |
+         opam install --yes beluga
+    - name: Code Type Reconstruction ♺
+      run: | 
+          eval $(opam env)
+          make run/code.cfg
