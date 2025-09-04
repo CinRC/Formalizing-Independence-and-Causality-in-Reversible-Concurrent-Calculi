@@ -35,6 +35,8 @@ jobs:
     steps:
     - name: Checking out files 📁
       uses: actions/checkout@v4
+      with:
+            fetch-depth: 0
     - name: Restoring file timestamps ⌛ 
       uses: chetan/git-restore-mtime-action@v2
     - name: Install Opam 🐫
