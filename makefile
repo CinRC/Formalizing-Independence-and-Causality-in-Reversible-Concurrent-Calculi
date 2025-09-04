@@ -9,7 +9,7 @@ run/code.cfg: code/*.bel
 	beluga $@
 
 # This rule means that the run/ex-%.cfg files (with % being replaced by some actual name)
-# require the .bel files in the examples/%/ folder and are compiled using beluga.
+# require the .bel files in the examples/%/ and code/ folders and are compiled using beluga.
 
-run/ex-%.cfg: examples/%/*.bel
+run/ex-%.cfg: examples/%/*.bel code/*.bel
 	beluga $@
