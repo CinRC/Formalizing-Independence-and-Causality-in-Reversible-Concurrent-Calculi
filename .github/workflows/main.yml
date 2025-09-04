@@ -33,7 +33,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checking out files 📁
+      uses: actions/checkout@v4
+    - name: Restoring file timestamps ⌛ 
+      uses: chetan/git-restore-mtime-action@v2
     - name: Install Opam 🐫
       uses: ocaml/setup-ocaml@v3
       # https://github.com/marketplace/actions/set-up-ocaml
