@@ -79,3 +79,4 @@ LF notin: keys → proc → type =
   | not_par: notin K X → notin K Y → notin K (par X Y)
   | not_nu: ({a:names} notin K (X a)) → notin K (nu X)
 ;
+
