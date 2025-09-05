@@ -1,0 +1,27 @@
+%%% Proof that stuck standard processes do not make any forward transitions %%%
+
+--open ccsk.
+
+% a\a does not make any forward transition.
+rec stuck_p1_closed: (g:ctx) [g ⊢ fstep (nu \a.(pref (inp a) null)) T X'] → [⊢ false] =
+/ total 1 /
+fn f ⇒ let [g ⊢ fs_nu \a.F] = f in impossible [g,a:names ⊢ F]
+;
+
+% 'a\a does not make any forward transition.
+rec stuck_p2: (g:ctx) [g ⊢ fstep (nu \a.(pref (out a) null)) T X'] → [⊢ false] =
+/ total 1 /
+fn f ⇒ let [g ⊢ fs_nu \a.F] = f in impossible [g,a:names ⊢ F]
+;
+
+% ((a.b | 'b.'a)\a)\b does not make any forward transition.
+rec stuck_p3: (g:ctx) [g ⊢ fstep (nu \b.(nu \a.(par (pref (inp a) (pref (inp b) null)))(pref (out b) (pref (out a) null)))) T X'] → [⊢ false] =
+/ total 1 /
+fn f ⇒ let [g ⊢ fs_nu \b.F] = f in
+let [g,b:names ⊢ fs_nu \a.F1] = [g,b:names ⊢ F] in
+case [g,b:names,a:names ⊢ F1] of
+  | [g,b:names,a:names ⊢ fs_parl F2 _] ⇒ impossible [g,b:names,a:names ⊢ F2]
+  | [g,b:names,a:names ⊢ fs_parr F2 _] ⇒ impossible [g,b:names,a:names ⊢ F2]
+  | [g,b:names,a:names ⊢ fs_synl FL FR] ⇒ let [g,b:names,a:names ⊢ fs_pref D] = [g,b:names,a:names ⊢ FL] in
+                                           impossible [g,b:names,a:names ⊢ FR]
+;
