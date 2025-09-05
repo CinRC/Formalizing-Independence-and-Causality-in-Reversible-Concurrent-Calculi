@@ -3,7 +3,7 @@
 % a\a is a term of type proc.
 let p1:[⊢ proc] = [⊢ nu \a.(pref (inp a) null)];
 
-% a\'a is a term of type proc.
+% 'a\a is a term of type proc.
 let p2:[⊢ proc] = [⊢ nu \a.(pref (out a) null)];
 
 % ((a.b | 'b.'a)\a)\b is a term of type proc.
