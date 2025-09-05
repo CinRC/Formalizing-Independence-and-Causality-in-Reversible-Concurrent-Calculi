@@ -1,5 +1,4 @@
-
-## Temporary repository structure
+# Temporary repository structure
 
 - `run\`
   + `code.cfg`: compile to run the source code
