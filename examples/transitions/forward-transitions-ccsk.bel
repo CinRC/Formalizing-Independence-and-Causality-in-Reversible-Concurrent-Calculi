@@ -42,33 +42,38 @@ let f8:[a:names,b:names,k:keys,X:proc,N:notin k X,Y:proc,D:std Y ⊢
 fstep (par (pref (inp a) X) (pref (inp b) Y)) (kl_base (inp b) k) (par (pref (inp a) X) (kpref (inp b) k Y))]
 = [a:names,b:names,k:keys,X:proc,N:notin k X,Y:proc,D:std Y ⊢ fs_parr (fs_pref D) (not_pref N)];
 
+% a.X | b[k].Y  -[ a[m] ]->  a[m].X | b[k].Y, if X is standard, m does not occur in Y and m != k
+let f9:[a:names,b:names,m:keys,k:keys,X:proc,D:std X,Y:proc,N:notin m Y,I:neq m k ⊢
+fstep (par (pref (inp a) X) (kpref (inp b) k Y)) (kl_base (inp a) m) (par (kpref (inp a) m X) (kpref (inp b) k Y))]
+= [a:names,b:names,m:keys,k:keys,X:proc,D:std X,Y:proc,N:notin m Y,I:neq m k ⊢ fs_parl (fs_pref D) (not_kpref I N)];
+
 % a.X | 'a.Y  -[ tau[k] ]->  a[k].X | 'a[k].Y, if X and Y are standard
-let f9:[a:names,k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢
+let f10:[a:names,k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢
 fstep (par (pref (inp a) X) (pref (out a) Y)) (kl_base tau k) (par (kpref (inp a) k X) (kpref (out a) k Y))]
 = [a:names,k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fs_synl (fs_pref DX) (fs_pref DY)];
 
 % (a.X)\b -[ a[k] ]-> (a[k].X)\b, if X is standard
-let f10:[a:names,k:keys,X:proc,D:std X ⊢
+let f11:[a:names,k:keys,X:proc,D:std X ⊢
 fstep (nu \b.(pref (inp a) X)) (kl_base (inp a) k) (nu \b.(kpref (inp a) k X))]
 = [a:names,k:keys,X:proc,D:std X ⊢ fs_nu \b.(fs_pref D)];
 
 % (a.X | 'a.Y)\a  -[ tau[k] ]->  (a[k].X | 'a[k].Y)\a, if X and Y are standard
-let f11:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep (nu \a.(par (pref (inp a) X) (pref (out a) Y)))
+let f12:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep (nu \a.(par (pref (inp a) X) (pref (out a) Y)))
 (kl_base tau k) (nu \a.(par (kpref (inp a) k X) (kpref (out a) k Y)))]
 = [k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fs_nu (\a.(fs_synl (fs_pref DX) (fs_pref DY)))];
 
 % (a.X | 'a.Y)\a + Z  -[ tau[k] ]->  (a[k].X | 'a[k].Y)\a + Z, if X, Y and Z are standard
-let f12:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y,Z:proc,DZ:std Z ⊢ fstep (sum (nu \a.(par (pref (inp a) X) (pref (out a) Y))) Z)
+let f13:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y,Z:proc,DZ:std Z ⊢ fstep (sum (nu \a.(par (pref (inp a) X) (pref (out a) Y))) Z)
 (kl_base tau k) (sum (nu \a.(par (kpref (inp a) k X) (kpref (out a) k Y))) Z)]
 = [k:keys,X:proc,DX:std X,Y:proc,DY:std Y,Z:proc,DZ:std Z ⊢
 fs_suml (fs_nu \a.(fs_synl (fs_pref DX) (fs_pref DY))) DZ];
 
 % ((a.X | 'a.Y)\a)\b  -[ tau[k] ]->  ((a[k].X | 'a[k].Y)\a)\b, if X and Y are standard
-let f13:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep (nu \b.(nu \a.(par (pref (inp a) X) (pref (out a) Y))))
+let f14:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep (nu \b.(nu \a.(par (pref (inp a) X) (pref (out a) Y))))
 (kl_base tau k) (nu \b.(nu \a.(par (kpref (inp a) k X) (kpref (out a) k Y))))]
 = [k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fs_nu (\b.fs_nu (\a.(fs_synl (fs_pref DX) (fs_pref DY))))];
 
 % ((a.X | 'a.Y)\b)\a  -[ tau[k] ]->  ((a[k].X | 'a[k].Y)\b)\a, if X and Y are standard
-let f14:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep (nu \a.(nu \b.(par (pref (inp a) X) (pref (out a) Y))))
+let f15:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep (nu \a.(nu \b.(par (pref (inp a) X) (pref (out a) Y))))
 (kl_base tau k) (nu \a.(nu \b.(par (kpref (inp a) k X) (kpref (out a) k Y))))]
 = [k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fs_nu (\a.(fs_nu \b.(fs_synl (fs_pref DX) (fs_pref DY))))];

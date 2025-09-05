@@ -1,0 +1,44 @@
+%%% Forward transitions for CCSK %%%
+
+--open ccsk.
+
+% a[k] ~[ a[k] ]~> a
+% The transition above is encoded by the type family "bstep (kpref (inp a) k null) (kl_base (inp a) k) (pref (inp a) null)".
+% We show that such type family is inhabited, in particular by the term "bs_pref std_null".
+let b1:[a:names,k:keys ⊢ bstep (kpref (inp a) k null) (kl_base (inp a) k) (pref (inp a) null)] 
+= [a:names,k:keys ⊢ bs_pref std_null];
+
+% a[k].b[m].X ~[ b[m] ]~> a[k].b.X, if X is standard and k != m
+let b2:[a:names,b:names,k:keys,m:keys,X:proc,D:std X,I:neq k m ⊢ 
+bstep (kpref (inp a) k (kpref (inp b) m X)) (kl_base (inp b) m) (kpref (inp a) k (pref (inp b) X))]
+= [a:names,b:names,k:keys,m:keys,X:proc,D:std X,I:neq k m ⊢ bs_kpref (bs_pref D) I];
+
+% a[k].b.X ~[ a[k] ]~> a.b.X, if X is standard
+let b3:[a:names,b:names,k:keys,X:proc,D:std X ⊢ 
+bstep (kpref (inp a) k (pref (inp b) X)) (kl_base (inp a) k) (pref (inp a) (pref (inp b) X))]
+= [a:names,b:names,k:keys,X:proc,D:std X ⊢ bs_pref (std_pref D)];
+
+% a[k].X + b.Y ~[ a[k] ]~> a.X + b.Y, if X and Y are standard
+let b4:[a:names,b:names,k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢
+bstep (sum (kpref (inp a) k X) (pref (inp b) Y)) (kl_base (inp a) k) (sum (pref (inp a) X) (pref (inp b) Y))]
+= [a:names,b:names,k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ bs_suml (bs_pref DX) (std_pref DY)];
+
+% a[m].X | b[k].Y  ~[ a[m] ]~>  a.X | b[k].Y, if X is standard, m does not occur in Y and m != k
+let b5:[a:names,b:names,m:keys,k:keys,X:proc,D:std X,Y:proc,N:notin m Y,I:neq m k ⊢
+bstep (par (kpref (inp a) m X) (kpref (inp b) k Y)) (kl_base (inp a) m) (par (pref (inp a) X) (kpref (inp b) k Y))]
+= [a:names,b:names,m:keys,k:keys,X:proc,D:std X,Y:proc,N:notin m Y,I:neq m k ⊢ bs_parl (bs_pref D) (not_kpref I N)];
+
+% a.X | b[k].Y  ~[ b[k] ]~>  a.X | b.Y, if Y is standard and k does not occur in X
+let b6:[a:names,b:names,k:keys,X:proc,N:notin k X,Y:proc,D:std Y ⊢
+bstep (par (pref (inp a) X) (kpref (inp b) k Y)) (kl_base (inp b) k) (par (pref (inp a) X) (pref (inp b) Y))]
+= [a:names,b:names,k:keys,X:proc,N:notin k X,Y:proc,D:std Y ⊢ bs_parr (bs_pref D) (not_pref N)];
+
+% (a[k].X | 'a[k].Y)\a  ~[ tau[k] ]~>  (a.X | 'a.Y)\a, if X and Y are standard
+let b7:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ bstep (nu \a.(par (kpref (inp a) k X) (kpref (out a) k Y)))
+(kl_base tau k) (nu \a.(par (pref (inp a) X) (pref (out a) Y)))]
+= [k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ bs_nu (\a.(bs_synl (bs_pref DX) (bs_pref DY)))];
+
+% ((a[k].X | 'a[k].Y)\b)\a  ~[ tau[k] ]~>  ((a.X | 'a.Y)\b)\a, if X and Y are standard
+let b8:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ bstep (nu \a.(nu \b.(par (kpref (inp a) k X) (kpref (out a) k Y))))
+(kl_base tau k) (nu \a.(nu \b.(par (pref (inp a) X) (pref (out a) Y))))]
+= [k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ bs_nu (\a.(bs_nu \b.(bs_synl (bs_pref DX) (bs_pref DY))))];
