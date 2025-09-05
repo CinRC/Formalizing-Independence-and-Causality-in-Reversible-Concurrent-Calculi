@@ -25,7 +25,6 @@ concurrency:
 # This is the series of action we want to do:
 # 1. on ubuntu-latest,
 # 2. checkout the current repository,
-# 3. restore the original timestamps (for makefile),
 # 3. install Opam,
 # 4. install Beluga
 # 5. compile the code/ folder using the makefile.
@@ -36,19 +35,15 @@ jobs:
     steps:
     - name: Checking out files 📁
       uses: actions/checkout@v4
-      with:
-            fetch-depth: 0
-    - name: Restoring file timestamps ⌛ 
-      uses: chetan/git-restore-mtime-action@v2
     - name: Install Opam 🐫
       uses: ocaml/setup-ocaml@v3
       with:
             ocaml-compiler: 5
       # https://github.com/marketplace/actions/set-up-ocaml
-    - name: Setup Beluga 🐳
+    - name: Install Beluga 🐳
       run: |
          opam install --yes beluga
     - name: Code Type Reconstruction ♺
       run: |
           eval $(opam env)
-          make run/code.cfg
+          make code

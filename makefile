@@ -8,20 +8,24 @@
 # re-compiled.
 # # # # # # # # # # # # # # # # # # # #
 
-# Compiling all means compiling all the .success 
-# files, using the .cfg sources in the run/ folder.
+all: code test
 
-SOURCES := $(wildcard run/*.cfg)
-TARGETS := $(patsubst %.cfg,%.success,$(SOURCES))
+# The source of the test are the .cfg 
+# files in run/ that begins with ex-
+# The targets are obtained by replacing
+# .cfg by .success.
+TEST-SOURCES := $(wildcard run/ex-*.cfg)
+TEST-TARGETS := $(patsubst %.cfg,%.success,$(TEST-SOURCES))
 
-all: $(TARGETS)
+code: run/code.success
+test: $(TEST-TARGETS)
 
 # This rule implies that the run/code.cfg file requires the .bel files in the code/ folder.
 
 run/code.cfg: code/*.bel
 	@touch $@
 
-# This rule means that the run/ex-%.cfg files (with % being replaced by some actual name)
+# This rule implies that the run/ex-%.cfg files (with % being replaced by some actual name)
 # require the .bel files in the examples/%/ and code/ folders.
 # The % is pattern-matched on both sides, while the * is just a wildcard.
 
