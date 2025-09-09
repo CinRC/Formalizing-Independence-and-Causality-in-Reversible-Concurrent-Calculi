@@ -141,4 +141,59 @@ LF bstep_open: proc → open_pr_lab → proc → type =
               → bstep_open (nu X') T (nu X)
 ;
 
+%%% Connectivity, dependence and independence of proof keyed labels %%%
+
+% Connectivity
+LF conn: pr_lab → pr_lab → type =
+  | c_a1: conn (pr_base A K) T
+  | c_a2: conn T (pr_base A K)
+  | c_c1l: conn T1 T2 → conn (pr_suml T1) (pr_suml T2)
+  | c_c1r: conn T1 T2 → conn (pr_sumr T1) (pr_sumr T2)
+  | c_c2l: conn (pr_suml T1) (pr_sumr T2)
+  | c_c2r: conn (pr_sumr T1) (pr_suml T2)
+  | c_p1l: conn T1 T2 → conn (pr_parl T1) (pr_parl T2)
+  | c_p1r: conn T1 T2 → conn (pr_parr T1) (pr_parr T2)
+  | c_p2l: conn (pr_parl T1) (pr_parr T2)
+  | c_p2r: conn (pr_parr T1) (pr_parl T2)
+  | c_s1l: conn T TL → conn (pr_parl T) (pr_sync TL TR)
+  | c_s1r: conn T TR → conn (pr_parr T) (pr_sync TL TR)
+  | c_s2l: conn TL T → conn (pr_sync TL TR) (pr_parl T)
+  | c_s2r: conn TR T → conn (pr_sync TL TR) (pr_parr T)
+  | c_s3: conn T1 T1' → conn T2 T2' → conn (pr_sync T1 T2) (pr_sync T1' T2');
+
+% Dependence
+LF dep: pr_lab → pr_lab → type =
+  | d_a1: dep (pr_base A K) T
+  | d_a2: dep T (pr_base A K)
+  | d_c1l: dep T1 T2 → dep (pr_suml T1) (pr_suml T2)
+  | d_c1r: dep T1 T2 → dep (pr_sumr T1) (pr_sumr T2)
+  | d_c2l: dep (pr_suml T1) (pr_sumr T2)
+  | d_c2r: dep (pr_sumr T1) (pr_suml T2)
+  | d_p1l: dep T1 T2 → dep (pr_parl T1) (pr_parl T2)
+  | d_p1r: dep T1 T2 → dep (pr_parr T1) (pr_parr T2)
+  | d_p2l: key T1 K → key T2 K → dep (pr_parl T1) (pr_parr T2)
+  | d_p2r: key T1 K → key T2 K → dep (pr_parr T1) (pr_parl T2)
+  | d_s1l: dep T TL → dep (pr_parl T) (pr_sync TL TR)
+  | d_s1r: dep T TR → dep (pr_parr T) (pr_sync TL TR)
+  | d_s2l: dep TL T → dep (pr_sync TL TR) (pr_parl T)
+  | d_s2r: dep TR T → dep (pr_sync TL TR) (pr_parr T)
+  | d_s3l: dep T1 T1' → conn T2 T2' → dep (pr_sync T1 T2) (pr_sync T1' T2')
+  | d_s3r: conn T1 T1' → dep T2 T2' → dep (pr_sync T1 T2) (pr_sync T1' T2')
+;
+
+% Independence
+LF indep: pr_lab → pr_lab → type =
+  | i_c1l: indep T1 T2 → indep (pr_suml T1) (pr_suml T2)
+  | i_c1r: indep T1 T2 → indep (pr_sumr T1) (pr_sumr T2)
+  | i_p1l: indep T1 T2 → indep (pr_parl T1) (pr_parl T2)
+  | i_p1r: indep T1 T2 → indep (pr_parr T1) (pr_parr T2)
+  | i_p2l: key T1 K → key T2 M → neq K M → indep (pr_parl T1) (pr_parr T2)
+  | i_p2r: key T1 K → key T2 M → neq K M → indep (pr_parr T1) (pr_parl T2)
+  | i_s1l: indep T TL → indep (pr_parl T) (pr_sync TL TR)
+  | i_s1r: indep T TR → indep (pr_parr T) (pr_sync TL TR)
+  | i_s2l: indep TL T → indep (pr_sync TL TR) (pr_parl T)
+  | i_s2r: indep TR T → indep (pr_sync TL TR) (pr_parr T)
+  | i_s3: indep T1 T1' → indep T2 T2' → indep (pr_sync T1 T2) (pr_sync T1' T2')
+;
+
 end;

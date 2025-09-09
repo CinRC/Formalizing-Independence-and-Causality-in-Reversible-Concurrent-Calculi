@@ -1,0 +1,23 @@
+%%% Dependent proof keyed labels %%%
+
+--open ccskp.
+
+% a[k] and +_L a[k] are dependent.
+let d1:[a:names,k:keys ⊢ dep (pr_base (inp a) k) (pr_suml (pr_base (inp a) k))] = [a:names,k:keys ⊢ d_a1];
+
+% |_L |_L a[k] and |_L |_R b[k] are dependent.
+let d2:[a:names,b:names,k:keys ⊢ 
+dep (pr_parl (pr_parl (pr_base (inp a) k))) (pr_parl (pr_parr (pr_base (inp b) k)))] =
+[a:names,b:names,k:keys ⊢ d_p1l (d_p2l key_base key_base)];
+
+% <|_L b[m], |_R b'[m]> and |_L |_R b[m] are dependent.
+let d3:[b:names,m:keys ⊢ 
+dep (pr_sync (pr_base (inp b) m) (pr_base (out b) m)) (pr_parl (pr_parr (pr_base (inp b) m)))] =
+[b:names,m:keys ⊢ d_s2l d_a1];
+
+
+% +_L a[k] and |_L b[m] are not dependent.
+rec not_dep: [a:names,b:names,k:keys,m:keys ⊢ dep (pr_suml (pr_base (inp a) k)) (pr_parl (pr_base (inp b) m))] → [⊢ false] =
+/ total 1 /
+fn d ⇒ impossible d
+;
