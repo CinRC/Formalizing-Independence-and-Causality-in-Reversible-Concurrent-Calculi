@@ -2,16 +2,16 @@
 
 ## Overview
 
-This repository contains the implementation of reversible concurrent calculi in [Beluga](https://complogic.cs.mcgill.ca/beluga/index.html).
+This repository contains a formalization of reversible concurrent calculi in [Beluga](https://complogic.cs.mcgill.ca/beluga/index.html).
 
-It extends and refines the [implementation of CCSKP in Beluga](https://github.com/CinRC/A-Beluga-Formalization-of-CCSKP) presented in [*A Formalization of the Reversible Concurrent Calculus CCSKP in Beluga*](https://cgi.cse.unsw.edu.au/~eptcs/paper.cgi?ICE2025.5) with additional results from [*Independence and Causality in the Reversible Concurrent Setting.*](https://doi.org/10.1007/978-3-031-97063-4_2).
+It extends and refines the [formalization of CCSKP in Beluga](https://github.com/CinRC/A-Beluga-Formalization-of-CCSKP) presented in [*A Formalization of the Reversible Concurrent Calculus CCSKP in Beluga*](https://cgi.cse.unsw.edu.au/~eptcs/paper.cgi?ICE2025.5) with additional results from [*Independence and Causality in the Reversible Concurrent Setting.*](https://doi.org/10.1007/978-3-031-97063-4_2).
 
 [![Code Type Reconstruction](https://github.com/CinRC/Formalizing-Independence-and-Causality-in-Reversible-Concurrent-Calculi/actions/workflows/main.yml/badge.svg)](https://github.com/CinRC/Formalizing-Independence-and-Causality-in-Reversible-Concurrent-Calculi/actions/workflows/main.yml)
 [![Example Tests](https://github.com/CinRC/Formalizing-Independence-and-Causality-in-Reversible-Concurrent-Calculi/actions/workflows/test.yml/badge.svg)](https://github.com/CinRC/Formalizing-Independence-and-Causality-in-Reversible-Concurrent-Calculi/actions/workflows/test.yml)
 
 ## Usage instructions
 
-Once beluga is installed and the correct opam switch is enabled (cf. [the installation instructions](#installation-instructions)), it suffices to run
+Once Beluga is installed and the correct opam switch is enabled (cf. [the installation instructions](#installation-instructions)), it suffices to run
 
 ```
 beluga run/code.cfg 
@@ -111,18 +111,20 @@ $ opam install --deps-only ./beluga.opam
 ## Repository structure
 
 - `run\`: Contains the `.cfg` files requires to compile…
-  + `code.cfg`: … the actual implementation (in `code/` folder)
+  + `code.cfg`: … the actual formalization (in `code/` folder)
   + `ex-processes.cfg`: … test examples on processes (in `examples` folder)
   + `ex-proof-labels.cfg`: … test examples on proof labels (in `examples` folder)
-- `code\`: Contains the Beluga implementation of …
+  + `ex-transitions.cfg`: … test examples on transitions (in `examples` folder)
+  + `ex-causality-relations.cfg`: … test examples on connectivity, dependence and independence (in `examples` folder)
+- `code\`: Contains the Beluga formalization of …
   + `defs-shared.bel`: … shared definitions
   + `unique-shared.cfg`: … shared proofs of uniqueness
-  + `defs-ccskp.bel`: … ccskp definitions
-  + `unique-ccskp.cfg`: … uniqueness of ccskp predicates
-  + `unique-step-ccskp.cfg`: … uniqueness of ccskp transitions
-  + `lemmas-ccskp.cfg`: … auxiliary lemmas for ccskp
-  + `defs-ccsk.bel`: … ccsk definitions
-  + `unique-step-ccsk.cfg`: … uniqueness of ccsk transitions
+  + `defs-ccskp.bel`: … CCSKP definitions
+  + `unique-ccskp.cfg`: … uniqueness of CCSKP predicates
+  + `unique-step-ccskp.cfg`: … uniqueness of CCSKP transitions
+  + `lemmas-ccskp.cfg`: … auxiliary lemmas for CCSKP
+  + `defs-ccsk.bel`: … CCSK definitions
+  + `unique-step-ccsk.cfg`: … uniqueness of CCSK transitions
 - `examples\`: Contains examples serving as tests for…
   + `processes\`: … processes that …
     * `standard.bel`: … are standard
@@ -132,5 +134,18 @@ $ opam install --deps-only ./beluga.opam
   + `proof-labels\`: … proof labels that …
     * `valid.bel`: … are valid
     * `not-valid.bel`: … are not valid
+  + `transitions\`: … transitions, in particular …
+    * `forward-transitions-ccsk.bel`: … forward transitions in CCSK
+    * `backward-transitions-ccsk.bel`: … backward transitions in CCSK
+    * `stuck-std-ccsk.bel`: … proofs that some standard processes are stuck in CCSK
+    * `stuck-keyed-ccsk.bel`: … proofs that some processes containing keys are stuck in CCSK
+    * `forward-transitions-ccskp.bel`: … forward transitions in CCSKP
+    * `backward-transitions-ccskp.bel`: … backward transitions in CCSKP
+    * `stuck-std-ccskp.bel`: … proofs that some standard processes are stuck in CCSKP
+    * `stuck-keyed-ccskp.bel`: … proofs that some processes containing keys are stuck in CCSKP
+  + `causality-relations\`: … causality relations on proof labels, in particular …
+    * `connectivity.bel`: … connected proof labels
+    * `dependence.bel`: … dependent proof labels
+    * `independence.bel`: … independent proof labels
 
 The `.github\workflows\` repository contains workflows used to build automatically the code and run the tests.
