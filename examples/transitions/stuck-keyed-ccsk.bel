@@ -1,0 +1,78 @@
+%%% Proof that stuck processes containing keys do not make any transition %%%
+
+--open ccsk.
+
+% Auxiliary lemmas
+rec irreflexive_less: (g:ctx) [g ⊢ less K[] K[]] → [⊢ false] =
+/ total 1 /
+fn l ⇒ let [g ⊢ lsucc L] = l in irreflexive_less [g ⊢ L]
+;
+
+rec irreflexive_neq: (g:ctx) [g ⊢ neq K[] K[]] → [⊢ false] =
+/ total 1 /
+fn i ⇒ case i of
+  | [g ⊢ nless L] ⇒ irreflexive_less [g ⊢ L]
+  | [g ⊢ ngreat L] ⇒ irreflexive_less [g ⊢ L]
+;
+
+
+% a[k] | b[k] does not make any backward transition.
+rec stuck_p1: (g:ctx) [g ⊢ bstep (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
+/ total 1 /
+fn b ⇒ case b of
+  | [g ⊢ bs_parl B N] ⇒ let [g ⊢ bs_pref D] = [g ⊢ B] in
+                         let [g ⊢ not_kpref I N1] = [g ⊢ N] in impossible irreflexive_neq [g ⊢ I]
+  | [g ⊢ bs_parr B N] ⇒ let [g ⊢ bs_pref D] = [g ⊢ B] in
+                         let [g ⊢ not_kpref I N1] = [g ⊢ N] in impossible irreflexive_neq [g ⊢ I]
+  | [g ⊢ bs_synl _ B] ⇒ let [g ⊢ bs_kpref B1 _] = [g ⊢ B] in impossible [g ⊢ B1]
+  | [g ⊢ bs_synr B _] ⇒ let [g ⊢ bs_kpref B1 _] = [g ⊢ B] in impossible [g ⊢ B1]
+;
+
+
+% a[k] + b[m] does not make any backward transition.
+rec stuck_p2: (g:ctx) [g ⊢ bstep (sum (kpref (inp a) k null) (kpref (inp b) m null)) T X'] → [⊢ false] =
+/ total 1 /
+fn b ⇒ case b of
+  | [g ⊢ bs_suml _ D] ⇒ impossible [g ⊢ D]
+  | [g ⊢ bs_sumr _ D] ⇒ impossible [g ⊢ D]
+;
+
+
+% a.b[k] does not make any forward transition.
+rec stuck_p3_forward: (g:ctx) [g ⊢ fstep (pref (inp a) (kpref (inp b) k null)) T X'] → [⊢ false] =
+/ total 1 /
+fn f ⇒ let [g ⊢ fs_pref D] = f in impossible [g ⊢ D]
+;
+
+% a.b[k] does not make any backward transition.
+rec stuck_p3_backward: (g:ctx) [g ⊢ bstep (pref (inp a) (kpref (inp b) k null)) T X'] → [⊢ false] =
+/ total 1 /
+fn b ⇒ impossible b
+;
+
+
+% a[k].b[m] | b'[m].a'[k] does not make any backward transition.
+rec stuck_p4: (g:ctx) [g ⊢ neq k m] → [g ⊢ bstep (par (kpref (inp a) k (kpref (inp b) m null)) (kpref (out b) m (kpref (out a) k null))) T X'] → [⊢ false] =
+/ total 1 /
+fn i,b ⇒ case b of
+  | [g ⊢ bs_parl B N] ⇒
+    let [g ⊢ bs_kpref (bs_pref _) _] = [g ⊢ B] in
+    let [g ⊢ not_kpref I _] = [g ⊢ N] in impossible irreflexive_neq [g ⊢ I]
+  | [g ⊢ bs_parr B N] ⇒
+     let [g ⊢ bs_kpref (bs_pref _) _] = [g ⊢ B] in
+     let [g ⊢ not_kpref I _] = [g ⊢ N] in impossible irreflexive_neq [g ⊢ I]
+  | [g ⊢ bs_synl BL BR] ⇒
+    let [g ⊢ bs_kpref (bs_pref _) _] = [g ⊢ BL] in
+    let [g ⊢ bs_kpref (bs_pref _) _] = [g ⊢ BR] in impossible irreflexive_neq i
+  | [g ⊢ bs_synr B _] ⇒
+     let [g ⊢ bs_kpref (bs_kpref B1 _) _] = [g ⊢ B] in impossible [g ⊢ B1]
+;
+
+
+% (a[k])\a does not make any backward transition.
+rec stuck_p5: (g:ctx) [g ⊢ bstep (nu \a.(kpref (inp a) k null)) T X'] → [⊢ false] =
+/ total 1 /
+fn b ⇒ let [g ⊢ bs_nu \a.B] = b in
+let [g,a:names ⊢ bs_kpref B1 _] = [g,a:names ⊢ B] in
+impossible [g,a:names ⊢ B1]
+;

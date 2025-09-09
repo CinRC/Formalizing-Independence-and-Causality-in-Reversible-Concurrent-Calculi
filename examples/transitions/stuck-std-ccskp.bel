@@ -1,4 +1,4 @@
-%%% Proof that stuck standard processes do not make any forward transitions %%%
+%%% Proof that stuck standard processes do not make any forward transition %%%
 
 --open ccskp.
 
