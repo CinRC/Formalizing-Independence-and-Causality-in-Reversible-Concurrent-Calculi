@@ -17,10 +17,46 @@ Once Beluga is installed and the correct opam switch is enabled (cf. [the instal
 beluga run/code.cfg 
 ```
 
-to perform the type reconstruction of the formalization. Tests can be run using e.g.
+to perform the type reconstruction of the formalization. Expected result, after ±2 seconds, is
+
+```
+## Type Reconstruction begin: run/../code/defs-shared.bel ##
+## Type Reconstruction done:  run/../code/defs-shared.bel ##
+## Type Reconstruction begin: run/../code/unique-shared.bel ##
+## Type Reconstruction done:  run/../code/unique-shared.bel ##
+## Type Reconstruction begin: run/../code/defs-ccskp.bel ##
+## Type Reconstruction done:  run/../code/defs-ccskp.bel ##
+## Type Reconstruction begin: run/../code/unique-ccskp.bel ##
+## Type Reconstruction done:  run/../code/unique-ccskp.bel ##
+## Type Reconstruction begin: run/../code/unique-step-ccskp.bel ##
+## Type Reconstruction done:  run/../code/unique-step-ccskp.bel ##
+## Type Reconstruction begin: run/../code/lemmas-ccskp.bel ##
+## Type Reconstruction done:  run/../code/lemmas-ccskp.bel ##
+## Type Reconstruction begin: run/../code/defs-ccsk.bel ##
+## Type Reconstruction done:  run/../code/defs-ccsk.bel ##
+## Type Reconstruction begin: run/../code/unique-step-ccsk.bel ##
+## Type Reconstruction done:  run/../code/unique-step-ccsk.bel ##
+```
+
+Tests can be run using e.g.
 
 ```
 beluga run/ex-processes.cfg 
+```
+
+For this particular set of example, expected result is, after ±1 second, is
+
+```
+## Type Reconstruction begin: run/../code/defs-shared.bel ##
+## Type Reconstruction done:  run/../code/defs-shared.bel ##
+## Type Reconstruction begin: run/../examples/processes/standard.bel ##
+## Type Reconstruction done:  run/../examples/processes/standard.bel ##
+## Type Reconstruction begin: run/../examples/processes/stuck-std.bel ##
+## Type Reconstruction done:  run/../examples/processes/stuck-std.bel ##
+## Type Reconstruction begin: run/../examples/processes/keyed.bel ##
+## Type Reconstruction done:  run/../examples/processes/keyed.bel ##
+## Type Reconstruction begin: run/../examples/processes/stuck-keyed.bel ##
+## Type Reconstruction done:  run/../examples/processes/stuck-keyed.bel ##
 ```
 
 If Makefile is installed, then the previous commands can be replaced by
@@ -35,7 +71,7 @@ and
 make test
 ```
 
-will perform the type reconstruction of all the tests.
+will perform the type reconstruction of all the tests, and is expected to take ±1 second.
 
 
 ## Installation instructions
@@ -106,7 +142,6 @@ And then, from the Beluga directory:
 ```
 $ opam install --deps-only ./beluga.opam
 ```
-
 
 ## Repository structure
 
