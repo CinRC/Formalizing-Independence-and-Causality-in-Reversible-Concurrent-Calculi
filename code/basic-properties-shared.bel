@@ -1,0 +1,60 @@
+%%% Properties of keys (nats) %%%
+
+% Predicate expressing equality or inequality:
+% eq_or_neq K M holds iff K = M or K != M
+LF eq_or_neq: keys → keys → type =
+  | c_eq: eq_or_neq K K
+  | c_neq: neq K M → eq_or_neq K M
+;
+
+% Given two keys, they are either equal or not equal
+rec compare: {g:ctx} {K:[⊢ keys]} {M:[⊢ keys]} [g ⊢ eq_or_neq K[] M[]] =
+/ total k (compare _ k _) /
+mlam g,K,M ⇒ case [⊢ K] of
+  | [⊢ z] ⇒ (case [⊢ M] of
+     | [⊢ z] ⇒ [_ ⊢ c_eq]
+     | [⊢ s M'] ⇒ [_ ⊢ c_neq (nless (lzero M'[]))])
+  | [⊢ s K'] ⇒ (case [⊢ M] of
+     | [⊢ z] ⇒ [_ ⊢ c_neq (ngreat (lzero K'[]))]
+     | [⊢ s M'] ⇒ (case compare [g] [⊢ K'] [⊢ M'] of
+        | [g ⊢ c_eq] ⇒ [_ ⊢ c_eq]
+        | [g ⊢ c_neq (nless D)] ⇒ [g ⊢ c_neq (nless (lsucc D))]
+        | [g ⊢ c_neq (ngreat D)] ⇒ [g ⊢ c_neq (ngreat (lsucc D))]))
+;
+
+% Proof that < is irreflexive (K < K is absurd)
+rec irreflexive_less: (g:ctx) [g ⊢ less K[] K[]] → [g ⊢ false] =
+/ total l (irreflexive_less _ _ l) /
+fn l ⇒ let [g ⊢ lsucc L] = l in irreflexive_less [g ⊢ L]
+;
+
+% Proof that inequality of keys is irreflexive (K != K is absurd)
+rec irreflexive_neq: (g:ctx) [g ⊢ neq K[] K[]] → [g ⊢ false] =
+/ total i (irreflexive_neq _ _ i) /
+fn i ⇒ case i of
+  | [g ⊢ nless L] ⇒ irreflexive_less [g ⊢ L]
+  | [g ⊢ ngreat L] ⇒ irreflexive_less [g ⊢ L]
+;
+
+% Proof that inequality of keys is symmetric
+rec symmetric_neq: (g:ctx) [g ⊢ neq K[] M[]] → [g ⊢ neq M[] K[]] =
+/ total i (symmetric_neq _ _ _ i) /
+fn i ⇒ case i of
+  | [g ⊢ nless L] ⇒ [g ⊢ ngreat L]
+  | [g ⊢ ngreat L] ⇒ [g ⊢ nless L]
+;
+
+% Type family encoding the existence of a different key
+LF ex_neq: keys → type =
+  | ex_n: neq M K → ex_neq K
+;
+
+% For all keys K there exists a key M with M != K
+rec existence_of_different_key: {g:ctx} {K:[⊢ keys]} [g ⊢ ex_neq K[]] =
+/ total k (existence_of_different_key _ k) /
+mlam g,K ⇒ case [⊢ K] of
+  | [⊢ z] ⇒ [g ⊢ ex_n (ngreat (lzero (s z)))]
+  | [⊢ s M] ⇒ (case existence_of_different_key [g] [⊢ M] of
+       | [g ⊢ ex_n (nless L)] ⇒ [g ⊢ ex_n (nless (lsucc L))]
+       | [g ⊢ ex_n (ngreat L)] ⇒ [g ⊢ ex_n (ngreat (lsucc L))])
+;

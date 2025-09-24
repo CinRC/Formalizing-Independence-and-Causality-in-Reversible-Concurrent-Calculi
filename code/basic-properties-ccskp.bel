@@ -1,0 +1,111 @@
+%%% Non occurrence of keys in standard processes %%%
+
+% For all keys K, K does not occur in a standard process
+rec no_key_in_std: (g:ctx) {K:[⊢ keys]} [g ⊢ std X] → [g ⊢ notin K[] X] =
+/ total d (no_key_in_std _ _ _ d) /
+mlam K ⇒ fn d ⇒ case d of
+  | [g ⊢ std_null] ⇒ [g ⊢ not_null]
+  | [g ⊢ std_pref D] ⇒ let [g ⊢ N] = no_key_in_std [⊢ K] [g ⊢ D] in [g ⊢ not_pref N]
+  | [g ⊢ std_sum D1 D2] ⇒ let [g ⊢ N1] = no_key_in_std [⊢ K] [g ⊢ D1] in
+    let [g ⊢ N2] = no_key_in_std [⊢ K] [g ⊢ D2] in [g ⊢ not_sum N1 N2]
+  | [g ⊢ std_par D1 D2] ⇒ let [g ⊢ N1] = no_key_in_std [⊢ K] [g ⊢ D1] in
+    let [g ⊢ N2] = no_key_in_std [⊢ K] [g ⊢ D2] in [g ⊢ not_par N1 N2]
+  | [g ⊢ std_nu \a.D] ⇒ let [g,a:names ⊢ N] = no_key_in_std [⊢ K] [g,a:names ⊢ D] in [g ⊢ not_nu \a.N]
+;
+
+% Given a proof keyed label T and a standard process X, the key of T does not occur in X.
+% We need an auxiliary type family to encode the conclusion of this lemma.
+LF ex_key_notin: pr_lab → std _ → type =
+  | ex_kn: {D:std X} key T K → notin K X → ex_key_notin T D
+;
+
+% The key of a proof keyed label does not occur in a standard process:
+rec no_key_of_prlab_in_std: (g:ctx) {T:[g ⊢ pr_lab]} {D:[g ⊢ std X]} [g ⊢ ex_key_notin T D] =
+/ total t (no_key_of_prlab_in_std _ t _ _) /
+mlam T,D ⇒ let [g ⊢ ex_k H] = existence_of_key [_ ⊢ T] in
+       let [g ⊢ H]:[g ⊢ key _ K[]] = [g ⊢ H] in
+       let [g ⊢ N] = no_key_in_std [⊢ K] [g ⊢ D] in [g ⊢ ex_kn D H N]
+;
+
+
+%%% Properties of transitions %%%
+
+% Loop lemma - first implication for closed transitions
+rec closed_loop_lemma_one: (g:ctx) [g ⊢ fstep_closed X T X'] → [g ⊢ bstep_closed X' T X] =
+/ total f (closed_loop_lemma_one _ _ _ _ f) /
+fn f ⇒ case f of
+  | [g ⊢ fc_pref D] ⇒ [g ⊢ bc_pref D]
+  | [g ⊢ fc_kpref F H I] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_kpref B H I]
+  | [g ⊢ fc_suml F D] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_suml B D]
+  | [g ⊢ fc_sumr F D] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_sumr B D]
+  | [g ⊢ fc_parl F H N] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_parl B H N]
+  | [g ⊢ fc_parr F H N] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_parr B H N]
+  | [g ⊢ fc_synl F1 L1 H1 F2 L2 H2] ⇒ let [g ⊢ B1] = closed_loop_lemma_one [g ⊢ F1] in
+       let [g ⊢ B2] = closed_loop_lemma_one [g ⊢ F2] in [g ⊢ bc_synl B1 L1 H1 B2 L2 H2]
+  | [g ⊢ fc_synr F1 L1 H1 F2 L2 H2] ⇒ let [g ⊢ B1] = closed_loop_lemma_one [g ⊢ F1] in
+       let [g ⊢ B2] = closed_loop_lemma_one [g ⊢ F2] in [g ⊢ bc_synr B1 L1 H1 B2 L2 H2]
+  | [g ⊢ fc_nu \a.F] ⇒ let [g,a:names ⊢ B] = closed_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bc_nu \a.B]
+;
+
+% Loop lemma - first implication for open transitions
+rec open_loop_lemma_one: (g:ctx) [g ⊢ fstep_open X T X'] → [g ⊢ bstep_open X' T X] =
+/ total f (open_loop_lemma_one _ _ _ _ f) /
+fn f ⇒ case f of
+  | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)] ⇒
+    let [g,a:names ⊢ B] = closed_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B)]
+  | [g ⊢ fo_kpref F (\a.H) I] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_kpref B (\a.H) I]
+  | [g ⊢ fo_suml F D] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_suml B D]
+  | [g ⊢ fo_sumr F D] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_sumr B D]
+  | [g ⊢ fo_parl F (\a.H) N] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_parl B (\a.H) N]
+  | [g ⊢ fo_parr F (\a.H) N] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_parr B (\a.H) N]
+  | [g ⊢ fo_nu_open \a.F] ⇒ let [g,a:names ⊢ B] = open_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_open \a.B]
+;
+
+% Loop lemma - second implication for closed transitions
+rec closed_loop_lemma_two: (g:ctx) [g ⊢ bstep_closed X' T X] → [g ⊢ fstep_closed X T X'] =
+/ total b (closed_loop_lemma_two _ _ _ _ b) /
+fn b ⇒ case b of
+  | [g ⊢ bc_pref D] ⇒ [g ⊢ fc_pref D]
+  | [g ⊢ bc_kpref B H I] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_kpref F H I]
+  | [g ⊢ bc_suml B D] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_suml F D]
+  | [g ⊢ bc_sumr B D] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_sumr F D]
+  | [g ⊢ bc_parl B H N] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_parl F H N]
+  | [g ⊢ bc_parr B H N] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_parr F H N]
+  | [g ⊢ bc_synl B1 L1 H1 B2 L2 H2] ⇒ let [g ⊢ F1] = closed_loop_lemma_two [g ⊢ B1] in
+       let [g ⊢ F2] = closed_loop_lemma_two [g ⊢ B2] in [g ⊢ fc_synl F1 L1 H1 F2 L2 H2]
+  | [g ⊢ bc_synr B1 L1 H1 B2 L2 H2] ⇒ let [g ⊢ F1] = closed_loop_lemma_two [g ⊢ B1] in
+       let [g ⊢ F2] = closed_loop_lemma_two [g ⊢ B2] in [g ⊢ fc_synr F1 L1 H1 F2 L2 H2]
+  | [g ⊢ bc_nu \a.B] ⇒ let [g,a:names ⊢ F] = closed_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fc_nu \a.F]
+;
+
+% Loop lemma - second implication for open transitions
+rec open_loop_lemma_two: (g:ctx) [g ⊢ bstep_open X' T X] → [g ⊢ fstep_open X T X'] =
+/ total b (open_loop_lemma_two _ _ _ _ b) /
+fn b ⇒ case b of
+  | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B)] ⇒
+    let [g,a:names ⊢ F] = closed_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)]
+  | [g ⊢ bo_kpref B (\a.H) I] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_kpref F (\a.H) I]
+  | [g ⊢ bo_suml B D] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_suml F D]
+  | [g ⊢ bo_sumr B D] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_sumr F D]
+  | [g ⊢ bo_parl B (\a.H) N] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_parl F (\a.H) N]
+  | [g ⊢ bo_parr B (\a.H) N] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_parr F (\a.H) N]
+  | [g ⊢ bo_nu_open \a.B] ⇒ let [g,a:names ⊢ F] = open_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_open \a.F]
+;
+
+% Proof that step is symmetric
+rec symmetric_step_closed: (g:ctx) [g ⊢ step_closed X T Y] → [g ⊢ step_closed Y T X] =
+/ total s (symmetric_step_closed _ _ _ s) /
+fn s ⇒ case s of
+    | [g ⊢ fw F] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bw B]
+    | [g ⊢ bw B] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fw F]
+;
+
+% Proof that step*_closed is symmetric
+rec symmetric_step*_closed: (g:ctx) [g ⊢ step*_closed X Y] → [g ⊢ step*_closed Y X] =
+/ total s (symmetric_step*_closed _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
+  | [g ⊢ st_s* S] ⇒ let [g ⊢ S'] = symmetric_step_closed [g ⊢ S] in [g ⊢ st_s* S']
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ S1*'] = symmetric_step*_closed [g ⊢ S1*] in
+       let [g ⊢ S2*'] = symmetric_step*_closed [g ⊢ S2*] in [g ⊢ tr_s* S2*' S1*']
+;

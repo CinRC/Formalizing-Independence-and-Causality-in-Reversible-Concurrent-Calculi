@@ -17,6 +17,12 @@ LF open_pr_lab: type =
   | open: (names → pr_lab) → open_pr_lab
 ;
 
+% Type for the union of proof labels and open proof labels: "generalized" proof labels
+LF gen_pr_lab: type =
+  | gp: pr_lab → gen_pr_lab
+  | go: open_pr_lab → gen_pr_lab 
+;
+
 % Label of a proof keyed label
 LF lab: pr_lab → labels → type =
   | lab_base: lab (pr_base A K) A
@@ -100,6 +106,11 @@ LF fstep_open: proc → open_pr_lab → proc → type =
               → fstep_open (nu X) T (nu X')
 ;
 
+% Forward transitions
+LF fstep: proc → gen_pr_lab → proc → type =
+  | fc: fstep_closed X T X' → fstep X (gp T) X'
+  | fo: fstep_open X T X' → fstep X (go T) X'
+;
 
 % Closed backward transitions
 LF bstep_closed: proc → pr_lab → proc → type =
@@ -139,6 +150,47 @@ LF bstep_open: proc → open_pr_lab → proc → type =
            → bstep_open (par X Y') (open \a.(pr_parr (T a))) (par X Y)
   | bo_nu_open: ({a:names} bstep_open (X' a) T (X a))
               → bstep_open (nu X') T (nu X)
+;
+
+% Backward transitions
+LF bstep: proc → gen_pr_lab → proc → type =
+  | bc: bstep_closed X T X' → bstep X (gp T) X'
+  | bo: bstep_open X T X' → bstep X (go T) X'
+;
+
+% Closed combined transitions
+LF step_closed: proc → pr_lab → proc → type =
+  | fwc: fstep_closed X T X' → step_closed X T X'
+  | bwc: bstep_closed X' T X → step_closed X' T X
+;
+
+% Open combined transitions
+LF step_open: proc → open_pr_lab → proc → type =
+  | fwo: fstep_open X T X' → step_open X T X'
+  | bwo: bstep_open X' T X → step_open X' T X
+;
+
+% Combined transitions
+LF step: proc → gen_pr_lab → proc → type =
+  | sc: step_closed X T X' → step X (gp T) X'
+  | so: step_open X T X' → step X (go T) X'
+;
+
+% Paths
+LF step*: proc → proc → type =
+  | id_s*: step* X X
+  | st_s*: step X T Y → step* X Y
+  | tr_s*: step* X Y → step* Y Z → step* X Z
+;
+
+% Reachable processes
+LF reachable: proc → type =
+  | rch: std X → step* X Y → reachable Y
+;
+
+% Connected transitions
+LF conn_tr: step X T1 X' → step Y T2 Y' → type =
+  | ct: {S1:step X T1 X'}{S2: step Y T2 Y'} step* X Y' → conn_tr S1 S2
 ;
 
 %%% Connectivity, dependence and independence of proof keyed labels %%%
