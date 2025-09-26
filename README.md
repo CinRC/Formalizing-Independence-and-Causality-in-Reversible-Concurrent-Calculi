@@ -20,22 +20,26 @@ beluga run/code.cfg
 to perform the type reconstruction of the formalization. Expected result, after ±2 seconds, is
 
 ```
-## Type Reconstruction begin: run/../code/defs-shared.bel ##
-## Type Reconstruction done:  run/../code/defs-shared.bel ##
-## Type Reconstruction begin: run/../code/unique-shared.bel ##
-## Type Reconstruction done:  run/../code/unique-shared.bel ##
-## Type Reconstruction begin: run/../code/defs-ccskp.bel ##
-## Type Reconstruction done:  run/../code/defs-ccskp.bel ##
-## Type Reconstruction begin: run/../code/unique-ccskp.bel ##
-## Type Reconstruction done:  run/../code/unique-ccskp.bel ##
-## Type Reconstruction begin: run/../code/unique-step-ccskp.bel ##
-## Type Reconstruction done:  run/../code/unique-step-ccskp.bel ##
-## Type Reconstruction begin: run/../code/lemmas-ccskp.bel ##
-## Type Reconstruction done:  run/../code/lemmas-ccskp.bel ##
-## Type Reconstruction begin: run/../code/defs-ccsk.bel ##
-## Type Reconstruction done:  run/../code/defs-ccsk.bel ##
-## Type Reconstruction begin: run/../code/unique-step-ccsk.bel ##
-## Type Reconstruction done:  run/../code/unique-step-ccsk.bel ##
+## Type Reconstruction begin: run/../code/shared/definitions.bel ##
+## Type Reconstruction done:  run/../code/shared/definitions.bel ##
+## Type Reconstruction begin: run/../code/shared/unique.bel ##
+## Type Reconstruction done:  run/../code/shared/unique.bel ##
+## Type Reconstruction begin: run/../code/shared/basic-properties.bel ##
+## Type Reconstruction done:  run/../code/shared/basic-properties.bel ##
+## Type Reconstruction begin: run/../code/ccsk/definitions.bel ##
+## Type Reconstruction done:  run/../code/ccsk/definitions.bel ##
+## Type Reconstruction begin: run/../code/ccsk/unique-step.bel ##
+## Type Reconstruction done:  run/../code/ccsk/unique-step.bel ##
+## Type Reconstruction begin: run/../code/ccskp/definitions.bel ##
+## Type Reconstruction done:  run/../code/ccskp/definitions.bel ##
+## Type Reconstruction begin: run/../code/ccskp/unique.bel ##
+## Type Reconstruction done:  run/../code/ccskp/unique.bel ##
+## Type Reconstruction begin: run/../code/ccskp/basic-properties.bel ##
+## Type Reconstruction done:  run/../code/ccskp/basic-properties.bel ##
+## Type Reconstruction begin: run/../code/ccskp/unique-step.bel ##
+## Type Reconstruction done:  run/../code/ccskp/unique-step.bel ##
+## Type Reconstruction begin: run/../code/ccskp/lemmas.bel ##
+## Type Reconstruction done:  run/../code/ccskp/lemmas.bel ##
 ```
 
 Tests can be run using e.g.
@@ -47,8 +51,8 @@ beluga run/ex-processes.cfg
 For this particular set of example, expected result is, after ±1 second, is
 
 ```
-## Type Reconstruction begin: run/../code/defs-shared.bel ##
-## Type Reconstruction done:  run/../code/defs-shared.bel ##
+## Type Reconstruction begin: run/../code/shared/definitions.bel ##
+## Type Reconstruction done:  run/../code/shared/definitions.bel ##
 ## Type Reconstruction begin: run/../examples/processes/standard.bel ##
 ## Type Reconstruction done:  run/../examples/processes/standard.bel ##
 ## Type Reconstruction begin: run/../examples/processes/stuck-std.bel ##
@@ -152,14 +156,20 @@ $ opam install --deps-only ./beluga.opam
   + `ex-transitions.cfg`: … test examples on transitions (in `examples` folder)
   + `ex-causality-relations.cfg`: … test examples on connectivity, dependence and independence (in `examples` folder)
 - `code\`: Contains the Beluga formalization of …
-  + `defs-shared.bel`: … shared definitions
-  + `unique-shared.cfg`: … shared proofs of uniqueness
-  + `defs-ccskp.bel`: … CCSKP definitions
-  + `unique-ccskp.cfg`: … uniqueness of CCSKP predicates
-  + `unique-step-ccskp.cfg`: … uniqueness of CCSKP transitions
-  + `lemmas-ccskp.cfg`: … auxiliary lemmas for CCSKP
-  + `defs-ccsk.bel`: … CCSK definitions
-  + `unique-step-ccsk.cfg`: … uniqueness of CCSK transitions
+  + `shared\`: … shared …
+    * `definitions.bel`: … definitions
+    * `unique.cfg`: … proofs of uniqueness
+    * `basic-properties.cfg`: … properties of keys
+  + `ccsk\`: … CCSK …
+    * `definitions.bel`: … definitions
+    * `unique-step.cfg`: … uniqueness of transitions
+  + `ccskp\`: … CCSKP …
+    * `definitions.bel`: … definitions
+    * `unique.cfg`: … uniqueness of predicates
+    * `basic-properties.cfg`: … basic properties (e.g. loop lemma, symmetry of transitions and paths)
+    * `unique-step.cfg`: … uniqueness of transitions
+    * `lemmas.cfg`: … auxiliary lemmas
+
 - `examples\`: Contains examples serving as tests for…
   + `processes\`: … processes that …
     * `standard.bel`: … are standard
