@@ -22,7 +22,7 @@ test: $(TEST-TARGETS)
 
 # This rule implies that the run/code.cfg file requires the .bel files in the code/ folder.
 
-run/code.cfg: code/*.bel
+run/code.cfg: code/*/*.bel
 	@touch $@
 
 # This rule implies that the run/ex-%.cfg files (with % being replaced by some actual name)
