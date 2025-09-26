@@ -1,5 +1,7 @@
 %%% Non occurrence of keys in standard processes %%%
 
+--open ccskp.
+
 % For all keys K, K does not occur in a standard process
 rec no_key_in_std: (g:ctx) {K:[⊢ keys]} [g ⊢ std X] → [g ⊢ notin K[] X] =
 / total d (no_key_in_std _ _ _ d) /
@@ -61,6 +63,14 @@ fn f ⇒ case f of
   | [g ⊢ fo_nu_open \a.F] ⇒ let [g,a:names ⊢ B] = open_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_open \a.B]
 ;
 
+% Loop lemma - first implication
+rec loop_lemma_one: (g:ctx) [g ⊢ fstep X T X'] → [g ⊢ bstep X' T X] =
+/ total f (loop_lemma_one _ _ _ _ f) /
+fn f ⇒ case f of
+  | [g ⊢ fc F] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc B]
+  | [g ⊢ fo F] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo B]
+;
+
 % Loop lemma - second implication for closed transitions
 rec closed_loop_lemma_two: (g:ctx) [g ⊢ bstep_closed X' T X] → [g ⊢ fstep_closed X T X'] =
 / total b (closed_loop_lemma_two _ _ _ _ b) /
@@ -92,20 +102,44 @@ fn b ⇒ case b of
   | [g ⊢ bo_nu_open \a.B] ⇒ let [g,a:names ⊢ F] = open_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_open \a.F]
 ;
 
-% Proof that step is symmetric
+% Loop lemma - second implication
+rec loop_lemma_two: (g:ctx) [g ⊢ bstep X' T X] → [g ⊢ fstep X T X'] =
+/ total b (loop_lemma_two _ _ _ _ b) /
+fn b ⇒ case b of
+  | [g ⊢ bc B] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc F]
+  | [g ⊢ bo B] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo F]
+;
+
+% Proof that step is symmetric for closed transitions
 rec symmetric_step_closed: (g:ctx) [g ⊢ step_closed X T Y] → [g ⊢ step_closed Y T X] =
 / total s (symmetric_step_closed _ _ _ s) /
 fn s ⇒ case s of
-    | [g ⊢ fw F] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bw B]
-    | [g ⊢ bw B] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fw F]
+    | [g ⊢ fwc F] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bwc B]
+    | [g ⊢ bwc B] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fwc F]
 ;
 
-% Proof that step*_closed is symmetric
-rec symmetric_step*_closed: (g:ctx) [g ⊢ step*_closed X Y] → [g ⊢ step*_closed Y X] =
-/ total s (symmetric_step*_closed _ _ _ s) /
+% Proof that step is symmetric for open transitions
+rec symmetric_step_open: (g:ctx) [g ⊢ step_open X T Y] → [g ⊢ step_open Y T X] =
+/ total s (symmetric_step_open _ _ _ s) /
+fn s ⇒ case s of
+    | [g ⊢ fwo F] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bwo B]
+    | [g ⊢ bwo B] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fwo F]
+;
+
+% Proof that step is symmetric
+rec symmetric_step: (g:ctx) [g ⊢ step X T Y] → [g ⊢ step Y T X] =
+/ total s (symmetric_step _ _ _ s) /
+fn s ⇒ case s of
+    | [g ⊢ sc S] ⇒ let [g ⊢ S'] = symmetric_step_closed [g ⊢ S] in [g ⊢ sc S']
+    | [g ⊢ so S] ⇒ let [g ⊢ S'] = symmetric_step_open [g ⊢ S] in [g ⊢ so S']
+;
+
+% Proof that step* is symmetric
+rec symmetric_step*: (g:ctx) [g ⊢ step* X Y] → [g ⊢ step* Y X] =
+/ total s (symmetric_step* _ _ _ s) /
 fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
-  | [g ⊢ st_s* S] ⇒ let [g ⊢ S'] = symmetric_step_closed [g ⊢ S] in [g ⊢ st_s* S']
-  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ S1*'] = symmetric_step*_closed [g ⊢ S1*] in
-       let [g ⊢ S2*'] = symmetric_step*_closed [g ⊢ S2*] in [g ⊢ tr_s* S2*' S1*']
+  | [g ⊢ st_s* S] ⇒ let [g ⊢ S'] = symmetric_step [g ⊢ S] in [g ⊢ st_s* S']
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ S1*'] = symmetric_step* [g ⊢ S1*] in
+       let [g ⊢ S2*'] = symmetric_step* [g ⊢ S2*] in [g ⊢ tr_s* S2*' S1*']
 ;
