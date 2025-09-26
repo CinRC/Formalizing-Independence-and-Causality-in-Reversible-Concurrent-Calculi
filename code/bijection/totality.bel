@@ -30,7 +30,7 @@ LF ex_benrich: ccsk.bstep X' T X → type =
   | ex_boen: bo_enrich B1 B2 → ex_benrich B1
 ;
 
-%{
+
 % Existential type denoting existence of a transition S2 such that forget(S1) = S2
 LF ex_forget: ccskp.step X T X' → type =
   | ex_fg: forget S1 S2 → ex_forget S1
@@ -40,7 +40,7 @@ LF ex_forget: ccskp.step X T X' → type =
 LF ex_enrich: ccsk.step X T X' → type =
   | ex_en: enrich S1 S2 → ex_enrich S1
 ;
-}%
+
 
 % Given a CCSKP closed forward transition F1, there exists a CCSK transition F2 such that fc_forget(F1)=F2
 rec exists_fcforget: (g:ctx) {F:[g ⊢ ccskp.fstep_closed X T X']} [g ⊢ ex_fcforget F] =
@@ -203,15 +203,16 @@ mlam B ⇒ case [_ ⊢ B] of
     [g ⊢ ex_bofg (bo_fg B (ccsk.bs_nu \a.B1') \a.H[..,a])]
 ;
 
-%{
+
 % Given a CCSKP combined transition S1, there exists a CCSK transition S2 such that forget(S1)=S2
 rec exists_forget: (g:ctx) {S:[g ⊢ ccskp.step X T X']} [g ⊢ ex_forget S] =
 / total s (exists_forget s _ _ _ _) /
 mlam S ⇒ case [_ ⊢ S] of
-  | [g ⊢ ccskp.fw F] ⇒ let [g ⊢ ex_ffg D] = exists_fforget [g ⊢ F] in [g ⊢ ex_fg (f_fg D)]
-  | [g ⊢ ccskp.bw B] ⇒ let [g ⊢ ex_bfg D] = exists_bforget [g ⊢ B] in [g ⊢ ex_fg (b_fg D)]
+  | [g ⊢ ccskp.sc (ccskp.fwc F)] ⇒ let [g ⊢ ex_fcfg D] = exists_fcforget [g ⊢ F] in [g ⊢ ex_fg (fcfg D)]
+  | [g ⊢ ccskp.so (ccskp.fwo F)] ⇒ let [g ⊢ ex_fofg D] = exists_foforget [g ⊢ F] in [g ⊢ ex_fg (fofg D)]
+  | [g ⊢ ccskp.sc (ccskp.bwc B)] ⇒ let [g ⊢ ex_bcfg D] = exists_bcforget [g ⊢ B] in [g ⊢ ex_fg (bcfg D)]
+  | [g ⊢ ccskp.so (ccskp.bwo B)] ⇒ let [g ⊢ ex_bofg D] = exists_boforget [g ⊢ B] in [g ⊢ ex_fg (bofg D)]
 ;
-}%
 
 
 
@@ -321,4 +322,18 @@ mlam B ⇒ case [_ ⊢ B] of
          let ex_sbo [g,b:names ⊢ B1'] [g,b:names ⊢ B1''] e = str_bstep_open [g,b:names ⊢ B1'] in
          let [g,a:names,b:names ⊢ refpl] = e in
          [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_open \a.B1'') \a.H[..,a])])
+;
+
+
+
+% Given a CCSK combined transition S1, there exists a CCSKP transition S2 such that enrich(S1)=S2
+rec exists_enrich: (g:ctx) {S:[g ⊢ ccsk.step X T X']} [g ⊢ ex_enrich S] =
+/ total s (exists_enrich s _ _ _ _) /
+mlam S ⇒ case [_ ⊢ S] of
+  | [g ⊢ ccsk.fw F] ⇒ (case exists_fenrich [g ⊢ F] of
+       | [g ⊢ ex_fcen D] ⇒ [g ⊢ ex_en (fcen D)]
+       | [g ⊢ ex_foen D] ⇒ [g ⊢ ex_en (foen D)])
+  | [g ⊢ ccsk.bw B] ⇒ (case exists_benrich [g ⊢ B] of
+       | [g ⊢ ex_bcen D] ⇒ [g ⊢ ex_en (bcen D)]
+       | [g ⊢ ex_boen D] ⇒ [g ⊢ ex_en (boen D)])
 ;

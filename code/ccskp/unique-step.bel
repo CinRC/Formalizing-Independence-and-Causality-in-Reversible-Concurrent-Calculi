@@ -433,3 +433,8 @@ mlam B1 B2 ⇒ case [_ ⊢ B1] of
        | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B2')] ⇒ impossible no_bstep_closed_and_open [g,a:names ⊢ B2'] [g,a:names ⊢ B1']
        | [g ⊢ bo_nu_open \a.B2'] ⇒ let [g,a:names ⊢ refbo] = unique_bstep_open [g,a:names ⊢ B1'] [g,a:names ⊢ B2'] in [g ⊢ refbo])
 ;
+
+% Equality of derivations of step X T X'
+LF eqst: step X1 T1 X1' → step X2 T2 X2' → type =
+  | refst: eqst S S
+;

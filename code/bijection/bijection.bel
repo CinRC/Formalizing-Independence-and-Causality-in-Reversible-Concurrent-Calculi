@@ -65,6 +65,26 @@ no_bstep_closed_and_open [g ⊢ B3] [g ⊢ B1]
 ;
 
 
+
+rec inverse_one: (g:ctx) (S1:[g ⊢ ccskp.step X T1 X']) (S2:[g ⊢ ccsk.step X T2 X'])
+  (S3:[g ⊢ ccskp.step X T3 X']) [g ⊢ forget S1 S2] → [g ⊢ enrich S2 S3] → [g ⊢ eqst S1 S3] =
+/ total s1 (inverse_one _ _ _ _ _ _ s1 _ _ _ _) /
+fn d1,d2 ⇒ case d1 of
+  | [g ⊢ fcfg D1] ⇒ (case d2 of
+       | [g ⊢ fcen D2] ⇒ let [g ⊢ reffc] = inverse_fc_one [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
+       | [g ⊢ foen D2] ⇒ impossible no_fc_fo_one [g ⊢ D1] [g ⊢ D2])
+  | [g ⊢ fofg D1] ⇒ ?
+  | [g ⊢ bcfg D1] ⇒ ?
+  | [g ⊢ bofg D1] ⇒ ?
+%let [g ⊢ fc_en F2 F3 _ _] = d2 in
+%unique_fstep_closed [g ⊢ F1] [g ⊢ F3]
+;
+
+
+
+
+
+
 rec inverse_fc_two: (g:ctx) (F1:[g ⊢ ccsk.fstep X T1 X']) (F2:[g ⊢ ccskp.fstep_closed X T2 X'])
   (F3:[g ⊢ ccsk.fstep X T3 X']) [g ⊢ fc_enrich F1 F2] → [g ⊢ fc_forget F2 F3] → [g ⊢ eqfs F1 F3] =
 / total f1 (inverse_fc_two _ _ _ _ _ _ f1 _ _ _ _) /

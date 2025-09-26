@@ -29,20 +29,21 @@ mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 
-%{
 % Given a CCSKP combined transition S1, the CCSK transition S2 such that forget(S1)=S2 is unique
 rec unique_forget: (g:ctx) {S:[g ⊢ ccskp.step X T X']} {S1:[g ⊢ ccsk.step X T1 X']} {S2:[g ⊢ ccsk.step X T2 X']}
 		   [g ⊢ forget S S1] → [g ⊢ forget S S2] → [g ⊢ eqs S1 S2] =
 / total d1 (unique_forget _ _ _ _ _ _ _ _ _ d1 _) /
 mlam S S1 S2 ⇒ fn d1 d2 ⇒
 case d1 of
-  | [g ⊢ f_fg D1] ⇒ let [g ⊢ f_fg D2] = d2 in
-		    let [g ⊢ reffs] = unique_fforget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
-  | [g ⊢ b_fg D1] ⇒ let [g ⊢ b_fg D2] = d2 in
-		    let [g ⊢ refbs] = unique_bforget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+  | [g ⊢ fcfg D1] ⇒ let [g ⊢ fcfg D2] = d2 in
+		    let [g ⊢ reffs] = unique_fc_forget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+  | [g ⊢ fofg D1] ⇒ let [g ⊢ fofg D2] = d2 in
+		    let [g ⊢ reffs] = unique_fo_forget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+  | [g ⊢ bcfg D1] ⇒ let [g ⊢ bcfg D2] = d2 in
+		    let [g ⊢ refbs] = unique_bc_forget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+  | [g ⊢ bofg D1] ⇒ let [g ⊢ bofg D2] = d2 in
+		    let [g ⊢ refbs] = unique_bo_forget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
 ;
-}%
-
 
 
 
@@ -88,4 +89,26 @@ rec unique_bcbo_enrich: (g:ctx) {B:[g ⊢ ccsk.bstep X T X']} {B1:[g ⊢ ccskp.b
   {B2:[g ⊢ ccskp.bstep_open X T2 X']} [g ⊢ bc_enrich B B1] → [g ⊢ bo_enrich B B2] → [g ⊢ false] =
 / total b (unique_bcbo_enrich _ _ _ _ _ _ b _ _ _ _) /
 mlam B B1 B2 ⇒ fn d1 d2 ⇒ no_bstep_closed_and_open [_ ⊢ B1] [_ ⊢ B2]
+;
+
+
+
+% Given a CCSK combined transition S1, the CCSKP transition S2 such that enrich(S1)=S2 is unique
+rec unique_enrich: (g:ctx) {S:[g ⊢ ccsk.step X T X']} {S1:[g ⊢ ccskp.step X T1 X']} {S2:[g ⊢ ccskp.step X T2 X']}
+		   [g ⊢ enrich S S1] → [g ⊢ enrich S S2] → [g ⊢ eqst S1 S2] =
+/ total d1 (unique_enrich _ _ _ _ _ _ _ _ _ d1 _) /
+mlam S S1 S2 ⇒ fn d1 d2 ⇒
+case d1 of
+  | [g ⊢ fcen D1] ⇒ (case d2 of
+       | [g ⊢ fcen D2] ⇒ let [g ⊢ reffc] = unique_fc_enrich _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
+       | [g ⊢ foen D2] ⇒ impossible unique_fcfo_enrich _ _ _ [g ⊢ D1] [g ⊢ D2])
+  | [g ⊢ foen D1] ⇒ (case d2 of
+       | [g ⊢ fcen D2] ⇒ impossible unique_fcfo_enrich _ _ _ [g ⊢ D2] [g ⊢ D1]
+       | [g ⊢ foen D2] ⇒ let [g ⊢ reffo] = unique_fo_enrich _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst])
+  | [g ⊢ bcen D1] ⇒ (case d2 of
+       | [g ⊢ bcen D2] ⇒ let [g ⊢ refbc] = unique_bc_enrich _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
+       | [g ⊢ boen D2] ⇒ impossible unique_bcbo_enrich _ _ _ [g ⊢ D1] [g ⊢ D2])
+  | [g ⊢ boen D1] ⇒ (case d2 of
+       | [g ⊢ bcen D2] ⇒ impossible unique_bcbo_enrich _ _ _ [g ⊢ D2] [g ⊢ D1]
+       | [g ⊢ boen D2] ⇒ let [g ⊢ refbo] = unique_bo_enrich _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst])
 ;

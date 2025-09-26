@@ -48,16 +48,21 @@ LF bo_enrich: ccsk.bstep X' T1 X → ccskp.bstep_open X' T2 X → type =
            ({a:names} ccskp.key (T2 a) K) → bo_enrich B1 B2
 ;
 
-%{
+
 % Map from combined CCSKP transitions to combined CCSK transitions %
 LF forget: ccskp.step X T1 X' → ccsk.step X T2 X' → type =
-  | f_fg: f_forget F1 F2 → forget (ccskp.fw F1) (ccsk.fw F2)
-  | b_fg: b_forget B1 B2 → forget (ccskp.bw B1) (ccsk.bw B2)
+  | fcfg: fc_forget F1 F2 → forget (ccskp.sc (ccskp.fwc F1)) (ccsk.fw F2)
+  | fofg: fo_forget F1 F2 → forget (ccskp.so (ccskp.fwo F1)) (ccsk.fw F2)
+  | bcfg: bc_forget B1 B2 → forget (ccskp.sc (ccskp.bwc B1)) (ccsk.bw B2)
+  | bofg: bo_forget B1 B2 → forget (ccskp.so (ccskp.bwo B1)) (ccsk.bw B2)
 ;
 
 % Map from combined CCSK transitions to combined CCSKP transitions %
 LF enrich: ccsk.step X T1 X' → ccskp.step X T2 X' → type =
-  | en: {S1: ccsk.step X (ccsk.kl_base A K) X'}{S2: ccskp.step X (ccskp.pr_base A K) X'}
-        enrich S1 S2
+  | fcen: fc_enrich F1 F2 → enrich (ccsk.fw F1) (ccskp.sc (ccskp.fwc F2))
+  | foen: fo_enrich F1 F2 → enrich (ccsk.fw F1) (ccskp.so (ccskp.fwo F2))
+  | bcen: bc_enrich B1 B2 → enrich (ccsk.bw B1) (ccskp.sc (ccskp.bwc B2))
+  | boen: bo_enrich B1 B2 → enrich (ccsk.bw B1) (ccskp.so (ccskp.bwo B2))
+  %| en: {S1: ccsk.step X (ccsk.kl_base A K) X'}{S2: ccskp.step X (ccskp.pr_base A K) X'}
+  %      enrich S1 S2
 ;
-}%
