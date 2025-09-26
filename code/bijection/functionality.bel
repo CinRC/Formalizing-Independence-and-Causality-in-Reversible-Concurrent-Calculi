@@ -1,0 +1,91 @@
+% Proof of functionality of forget and enrich
+
+% Given a CCSKP closed forward transition F1, the CCSK transition F2 such that fc_forget(F1)=F2 is unique
+rec unique_fc_forget: (g:ctx) {F:[g ⊢ ccskp.fstep_closed X T X']} {F1:[g ⊢ ccsk.fstep X T1 X']}
+  {F2:[g ⊢ ccsk.fstep X T2 X']} [g ⊢ fc_forget F F1] → [g ⊢ fc_forget F F2] → [g ⊢ eqfs F1 F2] =
+/ total f (unique_fc_forget _ _ _ _ _ _ f _ _ _ _) /
+mlam F F1 F2 ⇒ fn d1 d2 ⇒ unique_fstep [_ ⊢ F1] [_ ⊢ F2]
+;
+
+% Given a CCSKP open forward transition F1, the CCSK transition F2 such that fo_forget(F1)=F2 is unique
+rec unique_fo_forget: (g:ctx) {F:[g ⊢ ccskp.fstep_open X T X']} {F1:[g ⊢ ccsk.fstep X T1 X']}
+  {F2:[g ⊢ ccsk.fstep X T2 X']} [g ⊢ fo_forget F F1] → [g ⊢ fo_forget F F2] → [g ⊢ eqfs F1 F2] =
+/ total f (unique_fo_forget _ _ _ _ _ _ f _ _ _ _) /
+mlam F F1 F2 ⇒ fn d1 d2 ⇒ unique_fstep [_ ⊢ F1] [_ ⊢ F2]
+;
+
+% Given a CCSKP closed backward transition B1, the CCSK transition B2 such that bc_forget(B1)=B2 is unique
+rec unique_bc_forget: (g:ctx) {B:[g ⊢ ccskp.bstep_closed X' T X]} {B1:[g ⊢ ccsk.bstep X' T1 X]}
+  {B2:[g ⊢ ccsk.bstep X' T2 X]} [g ⊢ bc_forget B B1] → [g ⊢ bc_forget B B2] → [g ⊢ eqbs B1 B2] =
+/ total b (unique_bc_forget _ _ _ _ _ _ b _ _ _ _) /
+mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep [_ ⊢ B1] [_ ⊢ B2]
+;
+
+% Given a CCSKP open backward transition B1, the CCSK transition B2 such that bo_forget(B1)=B2 is unique
+rec unique_bo_forget: (g:ctx) {B:[g ⊢ ccskp.bstep_open X' T X]} {B1:[g ⊢ ccsk.bstep X' T1 X]}
+  {B2:[g ⊢ ccsk.bstep X' T2 X]} [g ⊢ bo_forget B B1] → [g ⊢ bo_forget B B2] → [g ⊢ eqbs B1 B2] =
+/ total b (unique_bo_forget _ _ _ _ _ _ b _ _ _ _) /
+mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep [_ ⊢ B1] [_ ⊢ B2]
+;
+
+
+%{
+% Given a CCSKP combined transition S1, the CCSK transition S2 such that forget(S1)=S2 is unique
+rec unique_forget: (g:ctx) {S:[g ⊢ ccskp.step X T X']} {S1:[g ⊢ ccsk.step X T1 X']} {S2:[g ⊢ ccsk.step X T2 X']}
+		   [g ⊢ forget S S1] → [g ⊢ forget S S2] → [g ⊢ eqs S1 S2] =
+/ total d1 (unique_forget _ _ _ _ _ _ _ _ _ d1 _) /
+mlam S S1 S2 ⇒ fn d1 d2 ⇒
+case d1 of
+  | [g ⊢ f_fg D1] ⇒ let [g ⊢ f_fg D2] = d2 in
+		    let [g ⊢ reffs] = unique_fforget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+  | [g ⊢ b_fg D1] ⇒ let [g ⊢ b_fg D2] = d2 in
+		    let [g ⊢ refbs] = unique_bforget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+;
+}%
+
+
+
+
+% Given a CCSK forward transition F1, there is at most one CCSKP closed transition F2 such that f_enrich(F1)=F2
+rec unique_fc_enrich: (g:ctx) {F:[g ⊢ ccsk.fstep X T X']} {F1:[g ⊢ ccskp.fstep_closed X T1 X']}
+  {F2:[g ⊢ ccskp.fstep_closed X T2 X']} [g ⊢ fc_enrich F F1] → [g ⊢ fc_enrich F F2] → [g ⊢ eqfc F1 F2] =
+/ total f (unique_fc_enrich _ _ _ _ _ _ f _ _ _ _) /
+mlam F F1 F2 ⇒ fn d1 d2 ⇒ unique_fstep_closed [_ ⊢ F1] [_ ⊢ F2]
+;
+
+% Given a CCSK forward transition F1, there is at most one CCSKP open transition F2 such that f_enrich(F1)=F2
+rec unique_fo_enrich: (g:ctx) {F:[g ⊢ ccsk.fstep X T X']} {F1:[g ⊢ ccskp.fstep_open X T1 X']}
+  {F2:[g ⊢ ccskp.fstep_open X T2 X']} [g ⊢ fo_enrich F F1] → [g ⊢ fo_enrich F F2] → [g ⊢ eqfo F1 F2] =
+/ total f (unique_fo_enrich _ _ _ _ _ _ f _ _ _ _) /
+mlam F F1 F2 ⇒ fn d1 d2 ⇒ unique_fstep_open [_ ⊢ F1] [_ ⊢ F2]
+;
+
+% Given a CCSK forward transition F1, there aren't a CCSKP closed forward transition F2
+% and a CCSKP open forward transition F2' such that both f_enrich(F1)=F2 and f_enrich(F1)=F2'
+rec unique_fcfo_enrich: (g:ctx) {F:[g ⊢ ccsk.fstep X T X']} {F1:[g ⊢ ccskp.fstep_closed X T1 X']}
+  {F2:[g ⊢ ccskp.fstep_open X T2 X']} [g ⊢ fc_enrich F F1] → [g ⊢ fo_enrich F F2] → [g ⊢ false] =
+/ total f (unique_fcfo_enrich _ _ _ _ _ _ f _ _ _ _) /
+mlam F F1 F2 ⇒ fn d1 d2 ⇒ no_fstep_closed_and_open [_ ⊢ F1] [_ ⊢ F2]
+;
+
+% Given a CCSK backward transition B1, there is at most one CCSKP closed transition B2 such that b_enrich(B1)=B2
+rec unique_bc_enrich: (g:ctx) {B:[g ⊢ ccsk.bstep X T X']} {B1:[g ⊢ ccskp.bstep_closed X T1 X']}
+  {B2:[g ⊢ ccskp.bstep_closed X T2 X']} [g ⊢ bc_enrich B B1] → [g ⊢ bc_enrich B B2] → [g ⊢ eqbc B1 B2] =
+/ total b (unique_bc_enrich _ _ _ _ _ _ b _ _ _ _) /
+mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep_closed [_ ⊢ B1] [_ ⊢ B2]
+;
+
+% Given a CCSK backward transition B1, there is at most one CCSKP open transition B2 such that b_enrich(B1)=B2
+rec unique_bo_enrich: (g:ctx) {B:[g ⊢ ccsk.bstep X T X']} {B1:[g ⊢ ccskp.bstep_open X T1 X']}
+  {B2:[g ⊢ ccskp.bstep_open X T2 X']} [g ⊢ bo_enrich B B1] → [g ⊢ bo_enrich B B2] → [g ⊢ eqbo B1 B2] =
+/ total b (unique_bo_enrich _ _ _ _ _ _ b _ _ _ _) /
+mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep_open [_ ⊢ B1] [_ ⊢ B2]
+;
+
+% Given a CCSK backward transition B1, there aren't a CCSKP closed backward transition B2
+% and a CCSKP open backward transition B2' such that both b_enrich(B1)=B2 and b_enrich(B1)=B2'
+rec unique_bcbo_enrich: (g:ctx) {B:[g ⊢ ccsk.bstep X T X']} {B1:[g ⊢ ccskp.bstep_closed X T1 X']}
+  {B2:[g ⊢ ccskp.bstep_open X T2 X']} [g ⊢ bc_enrich B B1] → [g ⊢ bo_enrich B B2] → [g ⊢ false] =
+/ total b (unique_bcbo_enrich _ _ _ _ _ _ b _ _ _ _) /
+mlam B B1 B2 ⇒ fn d1 d2 ⇒ no_bstep_closed_and_open [_ ⊢ B1] [_ ⊢ B2]
+;

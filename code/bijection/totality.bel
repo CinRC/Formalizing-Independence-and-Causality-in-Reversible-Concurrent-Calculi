@@ -1,0 +1,324 @@
+% Proof of totality of forget and enrich
+
+% Existential type denoting existence of a transition F2 such that f_forget(F1) = F2
+LF ex_fcforget: ccskp.fstep_closed X T X' → type =
+  | ex_fcfg: fc_forget F1 F2 → ex_fcforget F1
+;
+
+LF ex_foforget: ccskp.fstep_open X T X' → type =
+  | ex_fofg: fo_forget F1 F2 → ex_foforget F1
+;
+
+% Existential type denoting existence of a transition B2 such that b_forget(B1) = B2
+LF ex_bcforget: ccskp.bstep_closed X' T X → type =
+  | ex_bcfg: bc_forget B1 B2 → ex_bcforget B1
+;
+
+LF ex_boforget: ccskp.bstep_open X' T X → type =
+  | ex_bofg: bo_forget B1 B2 → ex_boforget B1
+;
+
+% Existential type denoting existence of a transition F2 such that fc_enrich(F1)=F2 or fo_enrich(F1)=F2
+LF ex_fenrich: ccsk.fstep X T X' → type =
+  | ex_fcen: fc_enrich F1 F2 → ex_fenrich F1
+  | ex_foen: fo_enrich F1 F2 → ex_fenrich F1
+;
+
+% Existential type denoting existence of a transition B2 such that bc_enrich(B1)=B2 or bo_enrich(B1)=B2
+LF ex_benrich: ccsk.bstep X' T X → type =
+  | ex_bcen: bc_enrich B1 B2 → ex_benrich B1
+  | ex_boen: bo_enrich B1 B2 → ex_benrich B1
+;
+
+%{
+% Existential type denoting existence of a transition S2 such that forget(S1) = S2
+LF ex_forget: ccskp.step X T X' → type =
+  | ex_fg: forget S1 S2 → ex_forget S1
+;
+
+% Existential type denoting existence of a transition S2 such that enrich(S1) = S2
+LF ex_enrich: ccsk.step X T X' → type =
+  | ex_en: enrich S1 S2 → ex_enrich S1
+;
+}%
+
+% Given a CCSKP closed forward transition F1, there exists a CCSK transition F2 such that fc_forget(F1)=F2
+rec exists_fcforget: (g:ctx) {F:[g ⊢ ccskp.fstep_closed X T X']} [g ⊢ ex_fcforget F] =
+/ total f (exists_fcforget _ _ _ _ f) /
+mlam F ⇒ case [_ ⊢ F] of
+  | [g ⊢ ccskp.fc_pref D] ⇒ [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_pref D) ccskp.lab_base ccskp.key_base)]
+  | [g ⊢ ccskp.fc_kpref F1 H I] ⇒
+    let [g ⊢ ex_fcfg (fc_fg F1 F1' L H')] = exists_fcforget [g ⊢ F1] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H] [g ⊢ H'] in
+    [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_kpref F1' I) L H')]
+  | [g ⊢ ccskp.fc_suml F1 D] ⇒
+    let [g ⊢ ex_fcfg (fc_fg F1 F1' L H)] = exists_fcforget [g ⊢ F1] in
+    [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_suml F1' D) (ccskp.lab_suml L) (ccskp.key_suml H))]
+  | [g ⊢ ccskp.fc_sumr F1 D] ⇒
+    let [g ⊢ ex_fcfg (fc_fg F1 F1' L H)] = exists_fcforget [g ⊢ F1] in
+    [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_sumr F1' D) (ccskp.lab_sumr L) (ccskp.key_sumr H))]
+  | [g ⊢ ccskp.fc_parl F1 H N] ⇒
+    let [g ⊢ ex_fcfg (fc_fg F1 F1' L H')] = exists_fcforget [g ⊢ F1] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H] [g ⊢ H'] in
+    [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_parl F1' N) (ccskp.lab_parl L) (ccskp.key_parl H'))]
+  | [g ⊢ ccskp.fc_parr F1 H N] ⇒
+    let [g ⊢ ex_fcfg (fc_fg F1 F1' L H')] = exists_fcforget [g ⊢ F1] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H] [g ⊢ H'] in
+    [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_parr F1' N) (ccskp.lab_parr L) (ccskp.key_parr H'))]
+  | [g ⊢ ccskp.fc_synl F1 L1 H1 F2 L2 H2] ⇒ 
+    let [g ⊢ ex_fcfg (fc_fg F1 F1' L1' H1')] = exists_fcforget [g ⊢ F1] in
+    let [g ⊢ refl] = uniqueness_of_lab [g ⊢ L1] [g ⊢ L1'] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ ex_fcfg (fc_fg F2 F2' L2' H2')] = exists_fcforget [g ⊢ F2] in
+    let [g ⊢ refl] = uniqueness_of_lab [g ⊢ L2] [g ⊢ L2'] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H2] [g ⊢ H2'] in
+    [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_synl F1' F2') (ccskp.lab_sync) (ccskp.key_sync H1'))]
+  | [g ⊢ ccskp.fc_synr F1 L1 H1 F2 L2 H2] ⇒ 
+    let [g ⊢ ex_fcfg (fc_fg F1 F1' L1' H1')] = exists_fcforget [g ⊢ F1] in
+    let [g ⊢ refl] = uniqueness_of_lab [g ⊢ L1] [g ⊢ L1'] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ ex_fcfg (fc_fg F2 F2' L2' H2')] = exists_fcforget [g ⊢ F2] in
+    let [g ⊢ refl] = uniqueness_of_lab [g ⊢ L2] [g ⊢ L2'] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H2] [g ⊢ H2'] in
+    [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_synr F1' F2') (ccskp.lab_sync) (ccskp.key_sync H1'))]
+  | [g ⊢ ccskp.fc_nu \a.F1] ⇒
+    let [g,a:names ⊢ ex_fcfg (fc_fg F1 F1'[..,a] L[..,a] H[..,a])] = exists_fcforget [g,a:names ⊢ F1] in
+    let ex_sll [g,a:names ⊢ L] [g ⊢ L'] e = str_labl [g,a:names ⊢ L] in
+    let [g,a:names ⊢ refl] = e in
+    let [g ⊢ H'] = str_key [g,a:names ⊢ H] in
+    [g ⊢ ex_fcfg (fc_fg F (ccsk.fs_nu \a.F1') L' H')]
+;
+
+% Given a CCSKP open forward transition F1, there exists a CCSK transition F2 such that fo_forget(F1)=F2
+rec exists_foforget: (g:ctx) {F:[g ⊢ ccskp.fstep_open X T X']} [g ⊢ ex_foforget F] =
+/ total f (exists_foforget _ _ _ _ f) /
+mlam F ⇒ case [_ ⊢ F] of
+  | [g ⊢ ccskp.fo_nu_closed (\a.O) (\a.L) (\a.F1)] ⇒
+    let [g,a:names ⊢ L'] = lab_of_fstep_open [g ⊢ F] in
+    let [g,a:names ⊢ refl] = uniqueness_of_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
+    let [g,a:names ⊢ ex_fcfg (fc_fg F1 F1' L'' H)] = exists_fcforget [g,a:names ⊢ F1] in
+    let [g,a:names ⊢ refl] = uniqueness_of_lab [g,a:names ⊢ L] [g,a:names ⊢ L''] in
+    [g ⊢ ex_fofg (fo_fg F (ccsk.fs_nu (\a.F1')) \a.H)]
+  | [g ⊢ ccskp.fo_kpref F1 (\a.H) I] ⇒
+    let [g ⊢ ex_fofg (fo_fg F1 F1' \a.H')] = exists_foforget [g ⊢ F1] in
+    let [g,a:names ⊢ refk] = uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    [g ⊢ ex_fofg (fo_fg F (ccsk.fs_kpref F1' I) \a.H')]
+  | [g ⊢ ccskp.fo_suml F1 D] ⇒
+    let [g ⊢ ex_fofg (fo_fg F1 F1' \a.H)] = exists_foforget [g ⊢ F1] in
+    [g ⊢ ex_fofg (fo_fg F (ccsk.fs_suml F1' D) (\a. ccskp.key_suml H))]
+  | [g ⊢ ccskp.fo_sumr F1 D] ⇒
+    let [g ⊢ ex_fofg (fo_fg F1 F1' \a.H)] = exists_foforget [g ⊢ F1] in
+    [g ⊢ ex_fofg (fo_fg F (ccsk.fs_sumr F1' D) (\a.ccskp.key_sumr H))]
+  | [g ⊢ ccskp.fo_parl F1 (\a.H) N] ⇒
+    let [g ⊢ ex_fofg (fo_fg F1 F1' \a.H')] = exists_foforget [g ⊢ F1] in
+    let [g,a:names ⊢ refk] = uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    [g ⊢ ex_fofg (fo_fg F (ccsk.fs_parl F1' N) (\a.ccskp.key_parl H'))]
+  | [g ⊢ ccskp.fo_parr F1 (\a.H) N] ⇒
+    let [g ⊢ ex_fofg (fo_fg F1 F1' \a.H')] = exists_foforget [g ⊢ F1] in
+    let [g,a:names ⊢ refk] = uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    [g ⊢ ex_fofg (fo_fg F (ccsk.fs_parr F1' N) (\a.ccskp.key_parr H'))]
+  | [g ⊢ ccskp.fo_nu_open \a.F1] ⇒
+    let [g,a:names ⊢ ex_fofg (fo_fg F1 F1'[..,a] \b.H[..,b,a])] = exists_foforget [g,a:names ⊢ F1] in
+    [g ⊢ ex_fofg (fo_fg F (ccsk.fs_nu \a.F1') \a.H[..,a])]
+;
+
+
+% Given a CCSKP closed backward transition B1, there exists a CCSK transition B2 such that bc_forget(B1)=B2
+rec exists_bcforget: (g:ctx) {B:[g ⊢ ccskp.bstep_closed X' T X]} [g ⊢ ex_bcforget B] =
+/ total b (exists_bcforget _ _ _ _ b) /
+mlam B ⇒ case [_ ⊢ B] of
+  | [g ⊢ ccskp.bc_pref D] ⇒ [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_pref D) ccskp.lab_base ccskp.key_base)]
+  | [g ⊢ ccskp.bc_kpref B1 H I] ⇒
+    let [g ⊢ ex_bcfg (bc_fg B1 B1' L H')] = exists_bcforget [g ⊢ B1] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H] [g ⊢ H'] in
+    [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_kpref B1' I) L H')]
+  | [g ⊢ ccskp.bc_suml B1 D] ⇒
+    let [g ⊢ ex_bcfg (bc_fg B1 B1' L H)] = exists_bcforget [g ⊢ B1] in
+    [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_suml B1' D) (ccskp.lab_suml L) (ccskp.key_suml H))]
+  | [g ⊢ ccskp.bc_sumr B1 D] ⇒
+    let [g ⊢ ex_bcfg (bc_fg B1 B1' L H)] = exists_bcforget [g ⊢ B1] in
+    [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_sumr B1' D) (ccskp.lab_sumr L) (ccskp.key_sumr H))]
+  | [g ⊢ ccskp.bc_parl B1 H N] ⇒
+    let [g ⊢ ex_bcfg (bc_fg B1 B1' L H')] = exists_bcforget [g ⊢ B1] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H] [g ⊢ H'] in
+    [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_parl B1' N) (ccskp.lab_parl L) (ccskp.key_parl H'))]
+  | [g ⊢ ccskp.bc_parr B1 H N] ⇒
+    let [g ⊢ ex_bcfg (bc_fg B1 B1' L H')] = exists_bcforget [g ⊢ B1] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H] [g ⊢ H'] in
+    [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_parr B1' N) (ccskp.lab_parr L) (ccskp.key_parr H'))]
+  | [g ⊢ ccskp.bc_synl B1 L1 H1 B2 L2 H2] ⇒ 
+    let [g ⊢ ex_bcfg (bc_fg B1 B1' L1' H1')] = exists_bcforget [g ⊢ B1] in
+    let [g ⊢ refl] = uniqueness_of_lab [g ⊢ L1] [g ⊢ L1'] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ ex_bcfg (bc_fg B2 B2' L2' H2')] = exists_bcforget [g ⊢ B2] in
+    let [g ⊢ refl] = uniqueness_of_lab [g ⊢ L2] [g ⊢ L2'] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H2] [g ⊢ H2'] in
+    [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_synl B1' B2') (ccskp.lab_sync) (ccskp.key_sync H1'))]
+  | [g ⊢ ccskp.bc_synr B1 L1 H1 B2 L2 H2] ⇒ 
+    let [g ⊢ ex_bcfg (bc_fg B1 B1' L1' H1')] = exists_bcforget [g ⊢ B1] in
+    let [g ⊢ refl] = uniqueness_of_lab [g ⊢ L1] [g ⊢ L1'] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ ex_bcfg (bc_fg B2 B2' L2' H2')] = exists_bcforget [g ⊢ B2] in
+    let [g ⊢ refl] = uniqueness_of_lab [g ⊢ L2] [g ⊢ L2'] in
+    let [g ⊢ refk] = uniqueness_of_key [g ⊢ H2] [g ⊢ H2'] in
+    [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_synr B1' B2') (ccskp.lab_sync) (ccskp.key_sync H1'))]
+  | [g ⊢ ccskp.bc_nu \a.B1] ⇒
+    let [g,a:names ⊢ ex_bcfg (bc_fg B1 B1'[..,a] L[..,a] H[..,a])] = exists_bcforget [g,a:names ⊢ B1] in
+    let ex_sll [g,a:names ⊢ L] [g ⊢ L'] e = str_labl [g,a:names ⊢ L] in
+    let [g,a:names ⊢ refl] = e in
+    let [g ⊢ H'] = str_key [g,a:names ⊢ H] in
+    [g ⊢ ex_bcfg (bc_fg B (ccsk.bs_nu \a.B1') L' H')]
+;
+
+% Given a CCSKP open backward transition B1, there exists a CCSK transition B2 such that bo_forget(B1)=B2
+rec exists_boforget: (g:ctx) {B:[g ⊢ ccskp.bstep_open X' T X]} [g ⊢ ex_boforget B] =
+/ total b (exists_boforget _ _ _ _ b) /
+mlam B ⇒ case [_ ⊢ B] of
+  | [g ⊢ ccskp.bo_nu_closed (\a.O) (\a.L) (\a.B1)] ⇒
+    let [g,a:names ⊢ L'] = ccskp.lab_of_bstep_open [g ⊢ B] in
+    let [g,a:names ⊢ refl] = ccskp.uniqueness_of_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
+    let [g,a:names ⊢ ex_bcfg (bc_fg B1 B1' L'' H)] = exists_bcforget [g,a:names ⊢ B1] in
+    let [g,a:names ⊢ refl] = ccskp.uniqueness_of_lab [g,a:names ⊢ L] [g,a:names ⊢ L''] in
+    [g ⊢ ex_bofg (bo_fg B (ccsk.bs_nu (\a.B1')) \a.H)]
+  | [g ⊢ ccskp.bo_kpref B1 (\a.H) I] ⇒
+    let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H')] = exists_boforget [g ⊢ B1] in
+    let [g,a:names ⊢ refk] = ccskp.uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    [g ⊢ ex_bofg (bo_fg B (ccsk.bs_kpref B1' I) \a.H')]
+  | [g ⊢ ccskp.bo_suml B1 D] ⇒
+    let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H)] = exists_boforget [g ⊢ B1] in
+    [g ⊢ ex_bofg (bo_fg B (ccsk.bs_suml B1' D) (\a. ccskp.key_suml H))]
+  | [g ⊢ ccskp.bo_sumr B1 D] ⇒
+    let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H)] = exists_boforget [g ⊢ B1] in
+    [g ⊢ ex_bofg (bo_fg B (ccsk.bs_sumr B1' D) (\a.ccskp.key_sumr H))]
+  | [g ⊢ ccskp.bo_parl B1 (\a.H) N] ⇒
+    let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H')] = exists_boforget [g ⊢ B1] in
+    let [g,a:names ⊢ refk] = ccskp.uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    [g ⊢ ex_bofg (bo_fg B (ccsk.bs_parl B1' N) (\a.ccskp.key_parl H'))]
+  | [g ⊢ ccskp.bo_parr B1 (\a.H) N] ⇒
+    let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H')] = exists_boforget [g ⊢ B1] in
+    let [g,a:names ⊢ refk] = ccskp.uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    [g ⊢ ex_bofg (bo_fg B (ccsk.bs_parr B1' N) (\a.ccskp.key_parr H'))]
+  | [g ⊢ ccskp.bo_nu_open \a.B1] ⇒
+    let [g,a:names ⊢ ex_bofg (bo_fg B1 B1'[..,a] \b.H[..,b,a])] = exists_boforget [g,a:names ⊢ B1] in
+    [g ⊢ ex_bofg (bo_fg B (ccsk.bs_nu \a.B1') \a.H[..,a])]
+;
+
+%{
+% Given a CCSKP combined transition S1, there exists a CCSK transition S2 such that forget(S1)=S2
+rec exists_forget: (g:ctx) {S:[g ⊢ ccskp.step X T X']} [g ⊢ ex_forget S] =
+/ total s (exists_forget s _ _ _ _) /
+mlam S ⇒ case [_ ⊢ S] of
+  | [g ⊢ ccskp.fw F] ⇒ let [g ⊢ ex_ffg D] = exists_fforget [g ⊢ F] in [g ⊢ ex_fg (f_fg D)]
+  | [g ⊢ ccskp.bw B] ⇒ let [g ⊢ ex_bfg D] = exists_bforget [g ⊢ B] in [g ⊢ ex_fg (b_fg D)]
+;
+}%
+
+
+
+
+% Given a CCSK forward transition F1, there exists a CCSKP transition F2 such that f_enrich(F1)=F2
+rec exists_fenrich: (g:ctx) {F:[g ⊢ ccsk.fstep X T X']} [g ⊢ ex_fenrich F] =
+/ total f (exists_fenrich f _ _ _ _) /
+mlam F ⇒ case [_ ⊢ F] of
+  | [g ⊢ ccsk.fs_pref D] ⇒ [g ⊢ ex_fcen (fc_en F (ccskp.fc_pref D) ccskp.lab_base ccskp.key_base)]
+  | [g ⊢ ccsk.fs_kpref F1 I] ⇒
+    (case exists_fenrich [g ⊢ F1] of
+       | [g ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒ [g ⊢ ex_fcen (fc_en F (ccskp.fc_kpref F1' H I) L H)]
+       | [g ⊢ ex_foen (fo_en F1 F1' \a.H)] ⇒ [g ⊢ ex_foen (fo_en F (ccskp.fo_kpref F1' (\a.H) I) \a.H)])
+  | [g ⊢ ccsk.fs_suml F1 D] ⇒
+    (case exists_fenrich [g ⊢ F1] of
+       | [g ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒ [g ⊢ ex_fcen (fc_en F (ccskp.fc_suml F1' D) (ccskp.lab_suml L) (ccskp.key_suml H))]
+       | [g ⊢ ex_foen (fo_en F1 F1' \a.H)] ⇒ [g ⊢ ex_foen (fo_en F (ccskp.fo_suml F1' D) \a.(ccskp.key_suml H))])
+  | [g ⊢ ccsk.fs_sumr F1 D] ⇒
+    (case exists_fenrich [g ⊢ F1] of
+       | [g ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒ [g ⊢ ex_fcen (fc_en F (ccskp.fc_sumr F1' D) (ccskp.lab_sumr L) (ccskp.key_sumr H))]
+       | [g ⊢ ex_foen (fo_en F1 F1' \a.H)] ⇒ [g ⊢ ex_foen (fo_en F (ccskp.fo_sumr F1' D) \a.(ccskp.key_sumr H))])
+  | [g ⊢ ccsk.fs_parl F1 N] ⇒
+    (case exists_fenrich [g ⊢ F1] of
+       | [g ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒ [g ⊢ ex_fcen (fc_en F (ccskp.fc_parl F1' H N) (ccskp.lab_parl L) (ccskp.key_parl H))]
+       | [g ⊢ ex_foen (fo_en F1 F1' \a.H)] ⇒ [g ⊢ ex_foen (fo_en F (ccskp.fo_parl F1' (\a.H) N) \a.(ccskp.key_parl H))])
+  | [g ⊢ ccsk.fs_parr F1 N] ⇒
+    (case exists_fenrich [g ⊢ F1] of
+       | [g ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒ [g ⊢ ex_fcen (fc_en F (ccskp.fc_parr F1' H N) (ccskp.lab_parr L) (ccskp.key_parr H))]
+       | [g ⊢ ex_foen (fo_en F1 F1' \a.H)] ⇒ [g ⊢ ex_foen (fo_en F (ccskp.fo_parr F1' (\a.H) N) \a.(ccskp.key_parr H))])
+  | [g ⊢ ccsk.fs_synl F1 F2] ⇒
+    let [g ⊢ ex_fcen (fc_en F1 F1' L1 H1)] = exists_fenrich [g ⊢ F1] in
+    let [g ⊢ ex_fcen (fc_en F2 F2' L2 H2)] = exists_fenrich [g ⊢ F2] in
+    [g ⊢ ex_fcen (fc_en F (ccskp.fc_synl F1' L1 H1 F2' L2 H2) (ccskp.lab_sync) (ccskp.key_sync H1))]
+  | [g ⊢ ccsk.fs_synr F1 F2] ⇒
+    let [g ⊢ ex_fcen (fc_en F1 F1' L1 H1)] = exists_fenrich [g ⊢ F1] in
+    let [g ⊢ ex_fcen (fc_en F2 F2' L2 H2)] = exists_fenrich [g ⊢ F2] in
+    [g ⊢ ex_fcen (fc_en F (ccskp.fc_synr F1' L1 H1 F2' L2 H2) (ccskp.lab_sync) (ccskp.key_sync H1))]
+  | [g ⊢ ccsk.fs_nu \a.F1] ⇒
+    (case exists_fenrich [g,a:names ⊢ F1] of
+       | [g,a:names ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒
+         let [g,a:names ⊢ V] = ccskp.valid_pr_lab_in_fstep_closed [g,a:names ⊢ F1'] in
+         (case ccskp.occur_in_valid_pr_lab [g,a:names ⊢ V] of
+            | ccskp.oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
+              let [g,a:names ⊢ L'] = ccskp.occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
+              let [g,a:names ⊢ ccskp.reflb] = ccskp.unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
+              [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_closed (\a.O) (\a.L) (\a.F1')) (\a.H))]
+            | ccskp.noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
+              let [g,a:names ⊢ ccskp.refpl] = [g,a:names ⊢ E] in
+              let ccskp.ex_slr [g,a:names ⊢ L] [g ⊢ L'] = ccskp.str_labr [g,a:names ⊢ L] in
+              let [g ⊢ H'] = ccskp.str_key [g,a:names ⊢ H] in
+              [g ⊢ ex_fcen (fc_en F (ccskp.fc_nu \a.F1') L' H')])
+       | [g,a:names ⊢ ex_foen (fo_en F1 F1' \b.H[..,b,a])] ⇒
+         let ccskp.ex_sfo [g,b:names ⊢ F1'] [g,b:names ⊢ F1''] e = ccskp.str_fstep_open [g,b:names ⊢ F1'] in
+         let [g,a:names,b:names ⊢ ccskp.refpl] = e in
+         [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_open \a.F1'') \a.H[..,a])])
+;
+
+
+% Given a CCSK backward transition B1, there exists a CCSKP transition B2 such that b_enrich(B1)=B2
+rec exists_benrich: (g:ctx) {B:[g ⊢ ccsk.bstep X' T X]} [g ⊢ ex_benrich B] =
+/ total b (exists_benrich b _ _ _ _) /
+mlam B ⇒ case [_ ⊢ B] of
+  | [g ⊢ ccsk.bs_pref D] ⇒ [g ⊢ ex_bcen (bc_en B (ccskp.bc_pref D) ccskp.lab_base ccskp.key_base)]
+  | [g ⊢ ccsk.bs_kpref B1 I] ⇒
+    (case exists_benrich [g ⊢ B1] of
+       | [g ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒ [g ⊢ ex_bcen (bc_en B (ccskp.bc_kpref B1' H I) L H)]
+       | [g ⊢ ex_boen (bo_en B1 B1' \a.H)] ⇒ [g ⊢ ex_boen (bo_en B (ccskp.bo_kpref B1' (\a.H) I) \a.H)])
+  | [g ⊢ ccsk.bs_suml B1 D] ⇒
+    (case exists_benrich [g ⊢ B1] of
+       | [g ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒ [g ⊢ ex_bcen (bc_en B (ccskp.bc_suml B1' D) (ccskp.lab_suml L) (ccskp.key_suml H))]
+       | [g ⊢ ex_boen (bo_en B1 B1' \a.H)] ⇒ [g ⊢ ex_boen (bo_en B (ccskp.bo_suml B1' D) \a.(ccskp.key_suml H))])
+  | [g ⊢ ccsk.bs_sumr B1 D] ⇒
+    (case exists_benrich [g ⊢ B1] of
+       | [g ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒ [g ⊢ ex_bcen (bc_en B (ccskp.bc_sumr B1' D) (ccskp.lab_sumr L) (ccskp.key_sumr H))]
+       | [g ⊢ ex_boen (bo_en B1 B1' \a.H)] ⇒ [g ⊢ ex_boen (bo_en B (ccskp.bo_sumr B1' D) \a.(ccskp.key_sumr H))])
+  | [g ⊢ ccsk.bs_parl B1 N] ⇒
+    (case exists_benrich [g ⊢ B1] of
+       | [g ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒ [g ⊢ ex_bcen (bc_en B (ccskp.bc_parl B1' H N) (ccskp.lab_parl L) (ccskp.key_parl H))]
+       | [g ⊢ ex_boen (bo_en B1 B1' \a.H)] ⇒ [g ⊢ ex_boen (bo_en B (ccskp.bo_parl B1' (\a.H) N) \a.(ccskp.key_parl H))])
+  | [g ⊢ ccsk.bs_parr B1 N] ⇒
+    (case exists_benrich [g ⊢ B1] of
+       | [g ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒ [g ⊢ ex_bcen (bc_en B (ccskp.bc_parr B1' H N) (ccskp.lab_parr L) (ccskp.key_parr H))]
+       | [g ⊢ ex_boen (bo_en B1 B1' \a.H)] ⇒ [g ⊢ ex_boen (bo_en B (ccskp.bo_parr B1' (\a.H) N) \a.(ccskp.key_parr H))])
+  | [g ⊢ ccsk.bs_synl B1 B2] ⇒
+    let [g ⊢ ex_bcen (bc_en B1 B1' L1 H1)] = exists_benrich [g ⊢ B1] in
+    let [g ⊢ ex_bcen (bc_en B2 B2' L2 H2)] = exists_benrich [g ⊢ B2] in
+    [g ⊢ ex_bcen (bc_en B (ccskp.bc_synl B1' L1 H1 B2' L2 H2) (ccskp.lab_sync) (ccskp.key_sync H1))]
+  | [g ⊢ ccsk.bs_synr B1 B2] ⇒
+    let [g ⊢ ex_bcen (bc_en B1 B1' L1 H1)] = exists_benrich [g ⊢ B1] in
+    let [g ⊢ ex_bcen (bc_en B2 B2' L2 H2)] = exists_benrich [g ⊢ B2] in
+    [g ⊢ ex_bcen (bc_en B (ccskp.bc_synr B1' L1 H1 B2' L2 H2) (ccskp.lab_sync) (ccskp.key_sync H1))]
+  | [g ⊢ ccsk.bs_nu \a.B1] ⇒
+    (case exists_benrich [g,a:names ⊢ B1] of
+       | [g,a:names ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒
+         let [g,a:names ⊢ V] = ccskp.valid_pr_lab_in_bstep_closed [g,a:names ⊢ B1'] in
+         (case ccskp.occur_in_valid_pr_lab [g,a:names ⊢ V] of
+            | ccskp.oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
+              let [g,a:names ⊢ L'] = ccskp.occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
+              let [g,a:names ⊢ ccskp.reflb] = ccskp.unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
+              [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_closed (\a.O) (\a.L) (\a.B1')) (\a.H))]
+            | ccskp.noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
+              let [g,a:names ⊢ ccskp.refpl] = [g,a:names ⊢ E] in
+              let ccskp.ex_slr [g,a:names ⊢ L] [g ⊢ L'] = ccskp.str_labr [g,a:names ⊢ L] in
+              let [g ⊢ H'] = ccskp.str_key [g,a:names ⊢ H] in
+              [g ⊢ ex_bcen (bc_en B (ccskp.bc_nu \a.B1') L' H')])
+       | [g,a:names ⊢ ex_boen (bo_en B1 B1' \b.H[..,b,a])] ⇒
+         let ccskp.ex_sbo [g,b:names ⊢ B1'] [g,b:names ⊢ B1''] e = ccskp.str_bstep_open [g,b:names ⊢ B1'] in
+         let [g,a:names,b:names ⊢ ccskp.refpl] = e in
+         [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_open \a.B1'') \a.H[..,a])])
+;

@@ -1,0 +1,63 @@
+% Definitions of the functions forget and enrich
+
+% Map from forward CCSKP transitions to forward CCSK transitions. %
+% Encoded as a relation. %
+LF fc_forget: ccskp.fstep_closed X T1 X' → ccsk.fstep X T2 X' → type =
+  | fc_fg: {F1:ccskp.fstep_closed X T1 X'}{F2:ccsk.fstep X (ccsk.kl_base A K) X'}
+           ccskp.lab T1 A → ccskp.key T1 K → fc_forget F1 F2
+;
+
+LF fo_forget: ccskp.fstep_open X T1 X' → ccsk.fstep X T2 X' → type =
+  | fo_fg: {F1:ccskp.fstep_open X (ccskp.open T1) X'}{F2:ccsk.fstep X (ccsk.kl_base tau K) X'}
+           ({a:names} ccskp.key (T1 a) K) → fo_forget F1 F2
+;
+
+% Map from backward CCSKP transitions to backward CCSK transitions. %
+% Encoded as a relation. %
+LF bc_forget: ccskp.bstep_closed X' T1 X → ccsk.bstep X' T2 X → type =
+  | bc_fg: {B1:ccskp.bstep_closed X' T1 X}{B2:ccsk.bstep X' (ccsk.kl_base A K) X}
+           ccskp.lab T1 A → ccskp.key T1 K → bc_forget B1 B2
+;
+
+LF bo_forget: ccskp.bstep_open X' T1 X → ccsk.bstep X' T2 X → type =
+  | bo_fg: {B1:ccskp.bstep_open X' (ccskp.open T1) X}{B2:ccsk.bstep X' (ccsk.kl_base tau K) X}
+           ({a:names} ccskp.key (T1 a) K) → bo_forget B1 B2
+;
+
+% Map from forward CCSK transitions to forward CCSKP transitions. %
+% Encoded as a relation. %
+LF fc_enrich: ccsk.fstep X T1 X' → ccskp.fstep_closed X T2 X' → type =
+  | fc_en: {F1:ccsk.fstep X (ccsk.kl_base A K) X'}{F2:ccskp.fstep_closed X T2 X'}
+           ccskp.lab T2 A → ccskp.key T2 K → fc_enrich F1 F2
+;
+
+LF fo_enrich: ccsk.fstep X T1 X' → ccskp.fstep_open X T2 X' → type =
+  | fo_en: {F1:ccsk.fstep X (ccsk.kl_base tau K) X'}{F2:ccskp.fstep_open X (ccskp.open T2) X'}
+           ({a:names} ccskp.key (T2 a) K) → fo_enrich F1 F2
+;
+
+% Map from backward CCSK transitions to backward CCSKP transitions. %
+% Encoded as a relation. %
+LF bc_enrich: ccsk.bstep X' T1 X → ccskp.bstep_closed X' T2 X → type =
+  | bc_en: {B1:ccsk.bstep X' (ccsk.kl_base A K) X}{B2:ccskp.bstep_closed X' T2 X}
+           ccskp.lab T2 A → ccskp.key T2 K → bc_enrich B1 B2
+;
+
+LF bo_enrich: ccsk.bstep X' T1 X → ccskp.bstep_open X' T2 X → type =
+  | bo_en: {B1:ccsk.bstep X' (ccsk.kl_base tau K) X}{B2:ccskp.bstep_open X' (ccskp.open T2) X}
+           ({a:names} ccskp.key (T2 a) K) → bo_enrich B1 B2
+;
+
+%{
+% Map from combined CCSKP transitions to combined CCSK transitions %
+LF forget: ccskp.step X T1 X' → ccsk.step X T2 X' → type =
+  | f_fg: f_forget F1 F2 → forget (ccskp.fw F1) (ccsk.fw F2)
+  | b_fg: b_forget B1 B2 → forget (ccskp.bw B1) (ccsk.bw B2)
+;
+
+% Map from combined CCSK transitions to combined CCSKP transitions %
+LF enrich: ccsk.step X T1 X' → ccskp.step X T2 X' → type =
+  | en: {S1: ccsk.step X (ccsk.kl_base A K) X'}{S2: ccskp.step X (ccskp.pr_base A K) X'}
+        enrich S1 S2
+;
+}%
