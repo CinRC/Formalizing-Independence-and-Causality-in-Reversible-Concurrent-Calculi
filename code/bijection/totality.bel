@@ -175,14 +175,14 @@ rec exists_boforget: (g:ctx) {B:[g ⊢ ccskp.bstep_open X' T X]} [g ⊢ ex_bofor
 / total b (exists_boforget _ _ _ _ b) /
 mlam B ⇒ case [_ ⊢ B] of
   | [g ⊢ ccskp.bo_nu_closed (\a.O) (\a.L) (\a.B1)] ⇒
-    let [g,a:names ⊢ L'] = ccskp.lab_of_bstep_open [g ⊢ B] in
-    let [g,a:names ⊢ refl] = ccskp.uniqueness_of_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
+    let [g,a:names ⊢ L'] = lab_of_bstep_open [g ⊢ B] in
+    let [g,a:names ⊢ refl] = uniqueness_of_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
     let [g,a:names ⊢ ex_bcfg (bc_fg B1 B1' L'' H)] = exists_bcforget [g,a:names ⊢ B1] in
-    let [g,a:names ⊢ refl] = ccskp.uniqueness_of_lab [g,a:names ⊢ L] [g,a:names ⊢ L''] in
+    let [g,a:names ⊢ refl] = uniqueness_of_lab [g,a:names ⊢ L] [g,a:names ⊢ L''] in
     [g ⊢ ex_bofg (bo_fg B (ccsk.bs_nu (\a.B1')) \a.H)]
   | [g ⊢ ccskp.bo_kpref B1 (\a.H) I] ⇒
     let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H')] = exists_boforget [g ⊢ B1] in
-    let [g,a:names ⊢ refk] = ccskp.uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    let [g,a:names ⊢ refk] = uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
     [g ⊢ ex_bofg (bo_fg B (ccsk.bs_kpref B1' I) \a.H')]
   | [g ⊢ ccskp.bo_suml B1 D] ⇒
     let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H)] = exists_boforget [g ⊢ B1] in
@@ -192,11 +192,11 @@ mlam B ⇒ case [_ ⊢ B] of
     [g ⊢ ex_bofg (bo_fg B (ccsk.bs_sumr B1' D) (\a.ccskp.key_sumr H))]
   | [g ⊢ ccskp.bo_parl B1 (\a.H) N] ⇒
     let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H')] = exists_boforget [g ⊢ B1] in
-    let [g,a:names ⊢ refk] = ccskp.uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    let [g,a:names ⊢ refk] = uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
     [g ⊢ ex_bofg (bo_fg B (ccsk.bs_parl B1' N) (\a.ccskp.key_parl H'))]
   | [g ⊢ ccskp.bo_parr B1 (\a.H) N] ⇒
     let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H')] = exists_boforget [g ⊢ B1] in
-    let [g,a:names ⊢ refk] = ccskp.uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
+    let [g,a:names ⊢ refk] = uniqueness_of_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
     [g ⊢ ex_bofg (bo_fg B (ccsk.bs_parr B1' N) (\a.ccskp.key_parr H'))]
   | [g ⊢ ccskp.bo_nu_open \a.B1] ⇒
     let [g,a:names ⊢ ex_bofg (bo_fg B1 B1'[..,a] \b.H[..,b,a])] = exists_boforget [g,a:names ⊢ B1] in
@@ -252,20 +252,20 @@ mlam F ⇒ case [_ ⊢ F] of
   | [g ⊢ ccsk.fs_nu \a.F1] ⇒
     (case exists_fenrich [g,a:names ⊢ F1] of
        | [g,a:names ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒
-         let [g,a:names ⊢ V] = ccskp.valid_pr_lab_in_fstep_closed [g,a:names ⊢ F1'] in
-         (case ccskp.occur_in_valid_pr_lab [g,a:names ⊢ V] of
-            | ccskp.oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
-              let [g,a:names ⊢ L'] = ccskp.occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
-              let [g,a:names ⊢ ccskp.reflb] = ccskp.unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
+         let [g,a:names ⊢ V] = valid_pr_lab_in_fstep_closed [g,a:names ⊢ F1'] in
+         (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
+            | oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
+              let [g,a:names ⊢ L'] = occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
+              let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
               [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_closed (\a.O) (\a.L) (\a.F1')) (\a.H))]
-            | ccskp.noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
-              let [g,a:names ⊢ ccskp.refpl] = [g,a:names ⊢ E] in
-              let ccskp.ex_slr [g,a:names ⊢ L] [g ⊢ L'] = ccskp.str_labr [g,a:names ⊢ L] in
-              let [g ⊢ H'] = ccskp.str_key [g,a:names ⊢ H] in
+            | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
+              let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
+              let ex_slr [g,a:names ⊢ L] [g ⊢ L'] = str_labr [g,a:names ⊢ L] in
+              let [g ⊢ H'] = str_key [g,a:names ⊢ H] in
               [g ⊢ ex_fcen (fc_en F (ccskp.fc_nu \a.F1') L' H')])
        | [g,a:names ⊢ ex_foen (fo_en F1 F1' \b.H[..,b,a])] ⇒
-         let ccskp.ex_sfo [g,b:names ⊢ F1'] [g,b:names ⊢ F1''] e = ccskp.str_fstep_open [g,b:names ⊢ F1'] in
-         let [g,a:names,b:names ⊢ ccskp.refpl] = e in
+         let ex_sfo [g,b:names ⊢ F1'] [g,b:names ⊢ F1''] e = str_fstep_open [g,b:names ⊢ F1'] in
+         let [g,a:names,b:names ⊢ refpl] = e in
          [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_open \a.F1'') \a.H[..,a])])
 ;
 
@@ -306,19 +306,19 @@ mlam B ⇒ case [_ ⊢ B] of
   | [g ⊢ ccsk.bs_nu \a.B1] ⇒
     (case exists_benrich [g,a:names ⊢ B1] of
        | [g,a:names ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒
-         let [g,a:names ⊢ V] = ccskp.valid_pr_lab_in_bstep_closed [g,a:names ⊢ B1'] in
-         (case ccskp.occur_in_valid_pr_lab [g,a:names ⊢ V] of
-            | ccskp.oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
-              let [g,a:names ⊢ L'] = ccskp.occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
-              let [g,a:names ⊢ ccskp.reflb] = ccskp.unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
+         let [g,a:names ⊢ V] = valid_pr_lab_in_bstep_closed [g,a:names ⊢ B1'] in
+         (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
+            | oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
+              let [g,a:names ⊢ L'] = occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
+              let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
               [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_closed (\a.O) (\a.L) (\a.B1')) (\a.H))]
-            | ccskp.noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
-              let [g,a:names ⊢ ccskp.refpl] = [g,a:names ⊢ E] in
-              let ccskp.ex_slr [g,a:names ⊢ L] [g ⊢ L'] = ccskp.str_labr [g,a:names ⊢ L] in
-              let [g ⊢ H'] = ccskp.str_key [g,a:names ⊢ H] in
+            | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
+              let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
+              let ex_slr [g,a:names ⊢ L] [g ⊢ L'] = str_labr [g,a:names ⊢ L] in
+              let [g ⊢ H'] = str_key [g,a:names ⊢ H] in
               [g ⊢ ex_bcen (bc_en B (ccskp.bc_nu \a.B1') L' H')])
        | [g,a:names ⊢ ex_boen (bo_en B1 B1' \b.H[..,b,a])] ⇒
-         let ccskp.ex_sbo [g,b:names ⊢ B1'] [g,b:names ⊢ B1''] e = ccskp.str_bstep_open [g,b:names ⊢ B1'] in
-         let [g,a:names,b:names ⊢ ccskp.refpl] = e in
+         let ex_sbo [g,b:names ⊢ B1'] [g,b:names ⊢ B1''] e = str_bstep_open [g,b:names ⊢ B1'] in
+         let [g,a:names,b:names ⊢ refpl] = e in
          [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_open \a.B1'') \a.H[..,a])])
 ;

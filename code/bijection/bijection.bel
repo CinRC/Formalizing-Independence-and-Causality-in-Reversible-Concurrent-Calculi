@@ -1,11 +1,11 @@
 % Proof that forget and enrich are mutual inverses
 
 rec inverse_fc_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_closed X T1 X']) (F2:[g ⊢ ccsk.fstep X T2 X'])
-  (F3:[g ⊢ ccskp.fstep_closed X T3 X']) [g ⊢ fc_forget F1 F2] → [g ⊢ fc_enrich F2 F3] → [g ⊢ ccskp.eqfc F1 F3] =
+  (F3:[g ⊢ ccskp.fstep_closed X T3 X']) [g ⊢ fc_forget F1 F2] → [g ⊢ fc_enrich F2 F3] → [g ⊢ eqfc F1 F3] =
 / total f1 (inverse_fc_one _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fc_fg F1 F2 _ _] = d1 in
 let [g ⊢ fc_en F2 F3 _ _] = d2 in
-ccskp.unique_fstep_closed [g ⊢ F1] [g ⊢ F3]
+unique_fstep_closed [g ⊢ F1] [g ⊢ F3]
 ;
 
 rec no_fc_fo_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_closed X T1 X']) (F2:[g ⊢ ccsk.fstep X T2 X'])
@@ -13,15 +13,15 @@ rec no_fc_fo_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_closed X T1 X']) (F2:[g ⊢ ccs
 / total f1 (no_fc_fo_one _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fc_fg F1 F2 _ _] = d1 in
 let [g ⊢ fo_en F2 F3 \_._] = d2 in
-ccskp.no_fstep_closed_and_open [g ⊢ F1] [g ⊢ F3]
+no_fstep_closed_and_open [g ⊢ F1] [g ⊢ F3]
 ;
 
 rec inverse_fo_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_open X T1 X']) (F2:[g ⊢ ccsk.fstep X T2 X'])
-  (F3:[g ⊢ ccskp.fstep_open X T3 X']) [g ⊢ fo_forget F1 F2] → [g ⊢ fo_enrich F2 F3] → [g ⊢ ccskp.eqfo F1 F3] =
+  (F3:[g ⊢ ccskp.fstep_open X T3 X']) [g ⊢ fo_forget F1 F2] → [g ⊢ fo_enrich F2 F3] → [g ⊢ eqfo F1 F3] =
 / total f1 (inverse_fo_one _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fo_fg F1 F2 \_._] = d1 in
 let [g ⊢ fo_en F2 F3 \_._] = d2 in
-ccskp.unique_fstep_open [g ⊢ F1] [g ⊢ F3]
+unique_fstep_open [g ⊢ F1] [g ⊢ F3]
 ;
 
 rec no_fo_fc_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_open X T1 X']) (F2:[g ⊢ ccsk.fstep X T2 X'])
@@ -29,15 +29,15 @@ rec no_fo_fc_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_open X T1 X']) (F2:[g ⊢ ccsk.
 / total f1 (no_fo_fc_one _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fo_fg F1 F2 \_._] = d1 in
 let [g ⊢ fc_en F2 F3 _ _] = d2 in
-ccskp.no_fstep_closed_and_open [g ⊢ F3] [g ⊢ F1]
+no_fstep_closed_and_open [g ⊢ F3] [g ⊢ F1]
 ;
 
 rec inverse_bc_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_closed X T1 X']) (B2:[g ⊢ ccsk.bstep X T2 X'])
-  (B3:[g ⊢ ccskp.bstep_closed X T3 X']) [g ⊢ bc_forget B1 B2] → [g ⊢ bc_enrich B2 B3] → [g ⊢ ccskp.eqbc B1 B3] =
+  (B3:[g ⊢ ccskp.bstep_closed X T3 X']) [g ⊢ bc_forget B1 B2] → [g ⊢ bc_enrich B2 B3] → [g ⊢ eqbc B1 B3] =
 / total b1 (inverse_bc_one _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bc_fg B1 B2 _ _] = d1 in
 let [g ⊢ bc_en B2 B3 _ _] = d2 in
-ccskp.unique_bstep_closed [g ⊢ B1] [g ⊢ B3]
+unique_bstep_closed [g ⊢ B1] [g ⊢ B3]
 ;
 
 rec no_bc_bo_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_closed X T1 X']) (B2:[g ⊢ ccsk.bstep X T2 X'])
@@ -45,15 +45,15 @@ rec no_bc_bo_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_closed X T1 X']) (B2:[g ⊢ ccs
 / total b1 (no_bc_bo_one _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bc_fg B1 B2 _ _] = d1 in
 let [g ⊢ bo_en B2 B3 \_._] = d2 in
-ccskp.no_bstep_closed_and_open [g ⊢ B1] [g ⊢ B3]
+no_bstep_closed_and_open [g ⊢ B1] [g ⊢ B3]
 ;
 
 rec inverse_bo_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_open X T1 X']) (B2:[g ⊢ ccsk.bstep X T2 X'])
-  (B3:[g ⊢ ccskp.bstep_open X T3 X']) [g ⊢ bo_forget B1 B2] → [g ⊢ bo_enrich B2 B3] → [g ⊢ ccskp.eqbo B1 B3] =
+  (B3:[g ⊢ ccskp.bstep_open X T3 X']) [g ⊢ bo_forget B1 B2] → [g ⊢ bo_enrich B2 B3] → [g ⊢ eqbo B1 B3] =
 / total b1 (inverse_bo_one _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bo_fg B1 B2 \_._] = d1 in
 let [g ⊢ bo_en B2 B3 \_._] = d2 in
-ccskp.unique_bstep_open [g ⊢ B1] [g ⊢ B3]
+unique_bstep_open [g ⊢ B1] [g ⊢ B3]
 ;
 
 rec no_bo_bc_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_open X T1 X']) (B2:[g ⊢ ccsk.bstep X T2 X'])
@@ -61,38 +61,38 @@ rec no_bo_bc_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_open X T1 X']) (B2:[g ⊢ ccsk.
 / total b1 (no_bo_bc_one _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bo_fg B1 B2 \_._] = d1 in
 let [g ⊢ bc_en B2 B3 _ _] = d2 in
-ccskp.no_bstep_closed_and_open [g ⊢ B3] [g ⊢ B1]
+no_bstep_closed_and_open [g ⊢ B3] [g ⊢ B1]
 ;
 
 
 rec inverse_fc_two: (g:ctx) (F1:[g ⊢ ccsk.fstep X T1 X']) (F2:[g ⊢ ccskp.fstep_closed X T2 X'])
-  (F3:[g ⊢ ccsk.fstep X T3 X']) [g ⊢ fc_enrich F1 F2] → [g ⊢ fc_forget F2 F3] → [g ⊢ ccsk.eqfs F1 F3] =
+  (F3:[g ⊢ ccsk.fstep X T3 X']) [g ⊢ fc_enrich F1 F2] → [g ⊢ fc_forget F2 F3] → [g ⊢ eqfs F1 F3] =
 / total f1 (inverse_fc_two _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fc_en F1 F2 _ _] = d1 in
 let [g ⊢ fc_fg F2 F3 _ _] = d2 in
-ccsk.unique_fstep [g ⊢ F1] [g ⊢ F3]
+unique_fstep [g ⊢ F1] [g ⊢ F3]
 ;
 
 rec inverse_fo_two: (g:ctx) (F1:[g ⊢ ccsk.fstep X T1 X']) (F2:[g ⊢ ccskp.fstep_open X T2 X'])
-  (F3:[g ⊢ ccsk.fstep X T3 X']) [g ⊢ fo_enrich F1 F2] → [g ⊢ fo_forget F2 F3] → [g ⊢ ccsk.eqfs F1 F3] =
+  (F3:[g ⊢ ccsk.fstep X T3 X']) [g ⊢ fo_enrich F1 F2] → [g ⊢ fo_forget F2 F3] → [g ⊢ eqfs F1 F3] =
 / total f1 (inverse_fo_two _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fo_en F1 F2 \_._] = d1 in
 let [g ⊢ fo_fg F2 F3 \_._] = d2 in
-ccsk.unique_fstep [g ⊢ F1] [g ⊢ F3]
+unique_fstep [g ⊢ F1] [g ⊢ F3]
 ;
 
 rec inverse_bc_two: (g:ctx) (B1:[g ⊢ ccsk.bstep X T1 X']) (B2:[g ⊢ ccskp.bstep_closed X T2 X'])
-  (B3:[g ⊢ ccsk.bstep X T3 X']) [g ⊢ bc_enrich B1 B2] → [g ⊢ bc_forget B2 B3] → [g ⊢ ccsk.eqbs B1 B3] =
+  (B3:[g ⊢ ccsk.bstep X T3 X']) [g ⊢ bc_enrich B1 B2] → [g ⊢ bc_forget B2 B3] → [g ⊢ eqbs B1 B3] =
 / total b1 (inverse_bc_two _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bc_en B1 B2 _ _] = d1 in
 let [g ⊢ bc_fg B2 B3 _ _] = d2 in
-ccsk.unique_bstep [g ⊢ B1] [g ⊢ B3]
+unique_bstep [g ⊢ B1] [g ⊢ B3]
 ;
 
 rec inverse_bo_two: (g:ctx) (B1:[g ⊢ ccsk.bstep X T1 X']) (B2:[g ⊢ ccskp.bstep_open X T2 X'])
-  (B3:[g ⊢ ccsk.bstep X T3 X']) [g ⊢ bo_enrich B1 B2] → [g ⊢ bo_forget B2 B3] → [g ⊢ ccsk.eqbs B1 B3] =
+  (B3:[g ⊢ ccsk.bstep X T3 X']) [g ⊢ bo_enrich B1 B2] → [g ⊢ bo_forget B2 B3] → [g ⊢ eqbs B1 B3] =
 / total b1 (inverse_bo_two _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bo_en B1 B2 \_._] = d1 in
 let [g ⊢ bo_fg B2 B3 \_._] = d2 in
-ccsk.unique_bstep [g ⊢ B1] [g ⊢ B3]
+unique_bstep [g ⊢ B1] [g ⊢ B3]
 ;
