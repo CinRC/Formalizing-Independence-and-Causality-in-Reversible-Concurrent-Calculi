@@ -1,5 +1,10 @@
 % Proof that forget and enrich are mutual inverses
 
+% First implication: enrich ∘ forget = id for CCSKP transitions
+
+
+% Auxiliary theorems, proving the result for closed/open forward/backward transitions
+
 rec inverse_fc_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_closed X T1 X']) (F2:[g ⊢ ccsk.fstep X T2 X'])
   (F3:[g ⊢ ccskp.fstep_closed X T3 X']) [g ⊢ fc_forget F1 F2] → [g ⊢ fc_enrich F2 F3] → [g ⊢ eqfc F1 F3] =
 / total f1 (inverse_fc_one _ _ _ _ _ _ f1 _ _ _ _) /
@@ -65,25 +70,32 @@ no_bstep_closed_and_open [g ⊢ B3] [g ⊢ B1]
 ;
 
 
+% First implication for combined transitions
 
 rec inverse_one: (g:ctx) (S1:[g ⊢ ccskp.step X T1 X']) (S2:[g ⊢ ccsk.step X T2 X'])
   (S3:[g ⊢ ccskp.step X T3 X']) [g ⊢ forget S1 S2] → [g ⊢ enrich S2 S3] → [g ⊢ eqst S1 S3] =
-/ total s1 (inverse_one _ _ _ _ _ _ s1 _ _ _ _) /
+/ total d1 (inverse_one _ _ _ _ _ _ _ _ _ d1 _) /
 fn d1,d2 ⇒ case d1 of
   | [g ⊢ fcfg D1] ⇒ (case d2 of
        | [g ⊢ fcen D2] ⇒ let [g ⊢ reffc] = inverse_fc_one [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
        | [g ⊢ foen D2] ⇒ impossible no_fc_fo_one [g ⊢ D1] [g ⊢ D2])
-  | [g ⊢ fofg D1] ⇒ ?
-  | [g ⊢ bcfg D1] ⇒ ?
-  | [g ⊢ bofg D1] ⇒ ?
-%let [g ⊢ fc_en F2 F3 _ _] = d2 in
-%unique_fstep_closed [g ⊢ F1] [g ⊢ F3]
+  | [g ⊢ fofg D1] ⇒ (case d2 of
+       | [g ⊢ fcen D2] ⇒ impossible no_fo_fc_one [g ⊢ D1] [g ⊢ D2]
+       | [g ⊢ foen D2] ⇒ let [g ⊢ reffo] = inverse_fo_one [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst])
+  | [g ⊢ bcfg D1] ⇒ (case d2 of
+       | [g ⊢ bcen D2] ⇒ let [g ⊢ refbc] = inverse_bc_one [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
+       | [g ⊢ boen D2] ⇒ impossible no_bc_bo_one [g ⊢ D1] [g ⊢ D2])
+  | [g ⊢ bofg D1] ⇒ (case d2 of
+       | [g ⊢ bcen D2] ⇒ impossible no_bo_bc_one [g ⊢ D1] [g ⊢ D2]
+       | [g ⊢ boen D2] ⇒ let [g ⊢ refbo] = inverse_bo_one [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst])
 ;
 
 
 
+% Second implication: forget ∘ enrich = id for CCSK transitions
 
 
+% Auxiliary theorems, proving the result for closed/open forward/backward transitions
 
 rec inverse_fc_two: (g:ctx) (F1:[g ⊢ ccsk.fstep X T1 X']) (F2:[g ⊢ ccskp.fstep_closed X T2 X'])
   (F3:[g ⊢ ccsk.fstep X T3 X']) [g ⊢ fc_enrich F1 F2] → [g ⊢ fc_forget F2 F3] → [g ⊢ eqfs F1 F3] =
@@ -115,4 +127,21 @@ rec inverse_bo_two: (g:ctx) (B1:[g ⊢ ccsk.bstep X T1 X']) (B2:[g ⊢ ccskp.bst
 fn d1,d2 ⇒ let [g ⊢ bo_en B1 B2 \_._] = d1 in
 let [g ⊢ bo_fg B2 B3 \_._] = d2 in
 unique_bstep [g ⊢ B1] [g ⊢ B3]
+;
+
+
+% Second implication for combined transitions
+
+rec inverse_two: (g:ctx) (S1:[g ⊢ ccsk.step X T1 X']) (S2:[g ⊢ ccskp.step X T2 X'])
+  (S3:[g ⊢ ccsk.step X T3 X']) [g ⊢ enrich S1 S2] → [g ⊢ forget S2 S3] → [g ⊢ eqs S1 S3] =
+/ total d1 (inverse_two _ _ _ _ _ _ _ _ _ d1 _) /
+fn d1,d2 ⇒ case d1 of
+  | [g ⊢ fcen D1] ⇒ let [g ⊢ fcfg D2] = d2 in  
+                     let [g ⊢ reffs] = inverse_fc_two [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+  | [g ⊢ foen D1] ⇒ let [g ⊢ fofg D2] = d2 in  
+                     let [g ⊢ reffs] = inverse_fo_two [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+  | [g ⊢ bcen D1] ⇒ let [g ⊢ bcfg D2] = d2 in  
+                     let [g ⊢ refbs] = inverse_bc_two [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+  | [g ⊢ boen D1] ⇒ let [g ⊢ bofg D2] = d2 in  
+                     let [g ⊢ refbs] = inverse_bo_two [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
 ;
