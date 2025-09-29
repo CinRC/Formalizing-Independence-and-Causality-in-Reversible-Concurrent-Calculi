@@ -40,6 +40,14 @@ to perform the type reconstruction of the formalization. Expected result, after 
 ## Type Reconstruction done:  run/../code/ccskp/unique-step.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/lemmas.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/lemmas.bel ##
+## Type Reconstruction begin: run/../code/bijection/definitions.bel ##
+## Type Reconstruction done:  run/../code/bijection/definitions.bel ##
+## Type Reconstruction begin: run/../code/bijection/functionality.bel ##
+## Type Reconstruction done:  run/../code/bijection/functionality.bel ##
+## Type Reconstruction begin: run/../code/bijection/totality.bel ##
+## Type Reconstruction done:  run/../code/bijection/totality.bel ##
+## Type Reconstruction begin: run/../code/bijection/bijection.bel ##
+## Type Reconstruction done:  run/../code/bijection/bijection.bel ##
 ```
 
 Tests can be run using e.g.
@@ -158,17 +166,22 @@ $ opam install --deps-only ./beluga.opam
 - `code\`: Contains the Beluga formalization of …
   + `shared\`: … shared …
     * `definitions.bel`: … definitions
-    * `unique.cfg`: … proofs of uniqueness
-    * `basic-properties.cfg`: … properties of keys
+    * `unique.bel`: … proofs of uniqueness
+    * `basic-properties.bel`: … properties of keys
   + `ccsk\`: … CCSK …
     * `definitions.bel`: … definitions
-    * `unique-step.cfg`: … uniqueness of transitions
+    * `unique-step.bel`: … uniqueness of transitions
   + `ccskp\`: … CCSKP …
     * `definitions.bel`: … definitions
-    * `unique.cfg`: … uniqueness of predicates
-    * `basic-properties.cfg`: … basic properties (e.g. loop lemma, symmetry of transitions and paths)
-    * `unique-step.cfg`: … uniqueness of transitions
-    * `lemmas.cfg`: … auxiliary lemmas
+    * `unique.bel`: … uniqueness of predicates
+    * `basic-properties.bel`: … basic properties (e.g. loop lemma, symmetry of transitions and paths)
+    * `unique-step.bel`: … uniqueness of transitions
+    * `lemmas.bel`: … auxiliary lemmas for the CCSK-CCSKP bijection
+  + `bijection\`: the proof of the bijection between CCSK and CCSKP, in particular...
+    * `definitions.bel`: … definitions of the forget and enrich functions (as relations)
+    * `functionality.bel`: … functionality of forget and enrich
+    * `totality.bel`: … totality of forget and enrich
+    * `bijection.bel`: … forget and enrich are mutual inverses
 
 - `examples\`: Contains examples serving as tests for…
   + `processes\`: … processes that …
