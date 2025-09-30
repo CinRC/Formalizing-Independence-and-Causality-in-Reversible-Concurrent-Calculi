@@ -1,0 +1,315 @@
+%%% Auxiliary lemmas for Theorem 2.1(i)
+
+--open ccskp.
+
+% The following lemmas state that, given a path whose source is a
+% known process, we can infer information about the target process.
+
+% A path starting from 0 ends in 0
+rec step*_from_null: (g:ctx) [g ⊢ step* null X] → [g ⊢ eqp null X] =
+/ total s (step*_from_null _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ refp]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ sc (fwc F)] ⇒ impossible [g ⊢ F]
+       | [g ⊢ so (fwo F)] ⇒ impossible [g ⊢ F]
+       | [g ⊢ sc (bwc B)] ⇒ impossible [g ⊢ B]
+       | [g ⊢ so (bwo B)] ⇒ impossible [g ⊢ B])
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ refp] = step*_from_null [g ⊢ S1*] in
+       let [g ⊢ refp] = step*_from_null [g ⊢ S2*] in [g ⊢ refp]
+;
+
+% Type family encoding prefixes and keyed prefixes
+LF is_pref_or_kpref: labels → proc → type =
+  | or_pref: is_pref_or_kpref A (pref A X)
+  | or_kpref: is_pref_or_kpref A (kpref A K X)
+;
+
+% A path starting from a prefix ends in a prefix or keyed prefix
+rec step*_from_pref: (g:ctx) [g ⊢ step* (pref A X) Y] → [g ⊢ is_pref_or_kpref A Y] =
+/ total s (step*_from_pref _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ or_pref]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ sc (fwc F)] ⇒ let [g ⊢ fc_pref _] = [g ⊢ F] in [g ⊢ or_kpref]
+       | [g ⊢ so (fwo F)] ⇒ impossible [g ⊢ F]
+       | [g ⊢ sc (bwc B)] ⇒ impossible [g ⊢ B]
+       | [g ⊢ so (bwo B)] ⇒ impossible [g ⊢ B])
+  | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_pref [g ⊢ S1*] of
+       | [g ⊢ or_pref] ⇒ step*_from_pref [g ⊢ S2*]
+       | [g ⊢ or_kpref] ⇒ step*_from_kpref [g ⊢ S2*])
+
+% A path starting from a keyed prefix ends in a prefix or keyed prefix
+and rec step*_from_kpref: (g:ctx) [g ⊢ step* (kpref A K[] X) Y] → [g ⊢ is_pref_or_kpref A Y] =
+/ total s (step*_from_kpref _ _ _ _ _ s) /
+fn s ⇒ case s of 
+  | [g ⊢ id_s*] ⇒ [g ⊢ or_kpref]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ sc (fwc F)] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F] in [g ⊢ or_kpref]
+       | [g ⊢ so (fwo F)] ⇒ let [g ⊢ fo_kpref _ (\_._) _] = [g ⊢ F] in [g ⊢ or_kpref]
+       | [g ⊢ sc (bwc B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bc_pref _] ⇒ [g ⊢ or_pref]
+            | [g ⊢ bc_kpref _ _ _] ⇒ [g ⊢ or_kpref])
+       | [g ⊢ so (bwo B)] ⇒ let [g ⊢ bo_kpref _ (\_._) _] = [g ⊢ B] in [g ⊢ or_kpref])
+  | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_kpref [g ⊢ S1*] of
+       | [g ⊢ or_pref] ⇒ step*_from_pref [g ⊢ S2*]
+       | [g ⊢ or_kpref] ⇒ step*_from_kpref [g ⊢ S2*])
+;
+
+% Type family encoding sum processes
+LF is_sum: proc → type =
+  | sm: is_sum (sum X Y)
+;
+
+% A path starting from a sum process ends in a sum process
+rec step*_from_sum: (g:ctx) [g ⊢ step* (sum X Y) Z] → [g ⊢ is_sum Z] =
+/ total s (step*_from_sum _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ sm]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ sc (fwc F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fc_suml _ _] ⇒ [g ⊢ sm]
+            | [g ⊢ fc_sumr _ _] ⇒ [g ⊢ sm])
+       | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fo_suml _ _] ⇒ [g ⊢ sm]
+            | [g ⊢ fo_sumr _ _] ⇒ [g ⊢ sm])
+       | [g ⊢ sc (bwc B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bc_suml _ _] ⇒ [g ⊢ sm]
+            | [g ⊢ bc_sumr _ _] ⇒ [g ⊢ sm])
+       | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bo_suml _ _] ⇒ [g ⊢ sm]
+            | [g ⊢ bo_sumr _ _] ⇒ [g ⊢ sm]))
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ sm] = step*_from_sum [g ⊢ S1*] in step*_from_sum [g ⊢ S2*]
+;
+
+% Type family encoding parallel compositions
+LF is_par: proc → type =
+  | pr: is_par (par X Y)
+;
+
+% A path starting from a parallel composition ends in a parallel composition
+rec step*_from_par: (g:ctx) [g ⊢ step* (par X Y) Z] → [g ⊢ is_par Z] =
+/ total s (step*_from_par _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ pr]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ sc (fwc F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fc_parl _ _ _] ⇒ [g ⊢ pr]
+            | [g ⊢ fc_parr _ _ _] ⇒ [g ⊢ pr]
+            | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ [g ⊢ pr]
+            | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ [g ⊢ pr])
+       | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fo_parl _ (\_._) _] ⇒ [g ⊢ pr]
+            | [g ⊢ fo_parr _ (\_._) _] ⇒ [g ⊢ pr])
+       | [g ⊢ sc (bwc B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bc_parl _ _ _] ⇒ [g ⊢ pr]
+            | [g ⊢ bc_parr _ _ _] ⇒ [g ⊢ pr]
+            | [g ⊢ bc_synl _ _ _ _ _ _] ⇒ [g ⊢ pr]
+            | [g ⊢ bc_synr _ _ _ _ _ _] ⇒ [g ⊢ pr])
+       | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bo_parl _ (\_._) _] ⇒ [g ⊢ pr]
+            | [g ⊢ bo_parr _ (\_._) _] ⇒ [g ⊢ pr]))
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ pr] = step*_from_par [g ⊢ S1*] in step*_from_par [g ⊢ S2*]
+;
+
+% Type family encoding restrictions
+LF is_res: proc → type =
+  | rs: is_res (nu X)
+;
+
+% A path starting from a restriction ends in a restriction
+rec step*_from_nu: (g:ctx) [g ⊢ step* (nu \a.X) Y] → [g ⊢ is_res Y] =
+/ total s (step*_from_nu _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ rs]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ sc (fwc (fc_nu \_._))] ⇒ [g ⊢ rs]
+       | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fo_nu_closed (\_._) (\_._) (\_._)] ⇒ [g ⊢ rs]
+            | [g ⊢ fo_nu_open \_._] ⇒ [g ⊢ rs])
+       | [g ⊢ sc (bwc (bc_nu \_._))] ⇒ [g ⊢ rs]
+       | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bo_nu_closed (\_._) (\_._) (\_._)] ⇒ [g ⊢ rs]
+            | [g ⊢ bo_nu_open \_._] ⇒ [g ⊢ rs]))
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ rs] = step*_from_nu [g ⊢ S1*] in step*_from_nu [g ⊢ S2*]
+;
+
+%{
+% The following lemmas show that, given a path between two processes,
+% it is possible to build a path between their subprocesses.
+
+% Given a path between prefixes, there is a path between their subprocesses
+rec step*_betw_prefs: (g:ctx) [g ⊢ step* (pref A X) (pref A Y)] → [g ⊢ step* X Y] =
+/ total s (step*_betw_prefs _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw F] ⇒ impossible [g ⊢ F]
+       | [g ⊢ bw B] ⇒ impossible [g ⊢ B])
+  | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_pref [g ⊢ S1*] of
+       | [g ⊢ or_pref] ⇒ let [g ⊢ S1*'] = step*_betw_prefs [g ⊢ S1*] in  
+            let [g ⊢ S2*'] = step*_betw_prefs [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
+       | [g ⊢ or_kpref] ⇒ let [g ⊢ S1*'] = step*_betw_pref_and_kpref [g ⊢ S1*] in
+            let [g ⊢ S2*'] = step*_betw_kpref_and_pref [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*'])
+
+% Given a path between a prefix and a keyed prefix, there is a path between their subprocesses
+and rec step*_betw_pref_and_kpref: (g:ctx) [g ⊢ step* (pref A X) (kpref A K[] Y)] → [g ⊢ step* X Y] =
+/ total s (step*_betw_pref_and_kpref _ _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw (fs_pref _)] ⇒ [g ⊢ id_s*]
+       | [g ⊢ bw B] ⇒ impossible [g ⊢ B])
+  | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_pref [g ⊢ S1*] of
+       | [g ⊢ or_pref] ⇒ let [g ⊢ S1*'] = step*_betw_prefs [g ⊢ S1*] in  
+            let [g ⊢ S2*'] = step*_betw_pref_and_kpref [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
+       | [g ⊢ or_kpref] ⇒ let [g ⊢ S1*'] = step*_betw_pref_and_kpref [g ⊢ S1*] in
+            let [g ⊢ S2*'] = step*_betw_kprefs [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*'])
+
+% Given a path between a keyed prefix and a prefix, there is a path between their subprocesses
+and rec step*_betw_kpref_and_pref: (g:ctx) [g ⊢ step* (kpref A K[] X) (pref A Y)] → [g ⊢ step* X Y] =
+/ total s (step*_betw_kpref_and_pref _ _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw F] ⇒ impossible [g ⊢ F]
+       | [g ⊢ bw (bs_pref _)] ⇒ [g ⊢ id_s*])
+  | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_kpref [g ⊢ S1*] of
+       | [g ⊢ or_pref] ⇒ let [g ⊢ S1*'] = step*_betw_kpref_and_pref [g ⊢ S1*] in  
+            let [g ⊢ S2*'] = step*_betw_prefs [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
+       | [g ⊢ or_kpref] ⇒ let [g ⊢ S1*'] = step*_betw_kprefs [g ⊢ S1*] in
+            let [g ⊢ S2*'] = step*_betw_kpref_and_pref [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*'])
+
+% Given a path between keyed prefixes, there is a path between their subprocesses
+and rec step*_betw_kprefs: (g:ctx) [g ⊢ step* (kpref A K[] X) (kpref A M[] Y)] → [g ⊢ step* X Y] =
+/ total s (step*_betw_kprefs _ _ _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw (fs_kpref F _ _)] ⇒ [g ⊢ st_s* (fw F)]
+       | [g ⊢ bw (bs_kpref B _ _)] ⇒ [g ⊢ st_s* (bw B)])
+  | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_kpref [g ⊢ S1*] of
+       | [g ⊢ or_pref] ⇒ let [g ⊢ S1*'] = step*_betw_kpref_and_pref [g ⊢ S1*] in 
+            let [g ⊢ S2*'] = step*_betw_pref_and_kpref [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
+       | [g ⊢ or_kpref] ⇒ let [g ⊢ S1*'] = step*_betw_kprefs [g ⊢ S1*] in
+            let [g ⊢ S2*'] = step*_betw_kprefs [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*'])
+;
+
+% Given a path between sum processes, there is a path between their left addends
+rec step*_betw_sums_left: (g:ctx) [g ⊢ step* (sum X1 X2) (sum Y1 Y2)] → [g ⊢ step* X1 Y1] =
+/ total s (step*_betw_sums_left _ _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fs_suml F' _] ⇒ [g ⊢ st_s* (fw F')]
+            | [g ⊢ fs_sumr _ _] ⇒ [g ⊢ id_s*])
+       | [g ⊢ bw B] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bs_suml B' _] ⇒ [g ⊢ st_s* (bw B')]
+            | [g ⊢ bs_sumr _ _] ⇒ [g ⊢ id_s*]))
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ sm] = step*_from_sum [g ⊢ S1*] in
+       let [g ⊢ S1*'] = step*_betw_sums_left [g ⊢ S1*] in
+       let [g ⊢ S2*'] = step*_betw_sums_left [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
+;
+
+% Given a path between sum processes, there is a path between their right addends
+rec step*_betw_sums_right: (g:ctx) [g ⊢ step* (sum X1 X2) (sum Y1 Y2)] → [g ⊢ step* X2 Y2] =
+/ total s (step*_betw_sums_right _ _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fs_suml _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ fs_sumr F' _] ⇒ [g ⊢ st_s* (fw F')])
+       | [g ⊢ bw B] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bs_suml _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ bs_sumr B' _] ⇒ [g ⊢ st_s* (bw B')]))
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ sm] = step*_from_sum [g ⊢ S1*] in
+       let [g ⊢ S1*'] = step*_betw_sums_right [g ⊢ S1*] in
+       let [g ⊢ S2*'] = step*_betw_sums_right [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
+;
+
+% Given a path between parallel compositions, there is a path between their left threads
+rec step*_betw_pars_left: (g:ctx) [g ⊢ step* (par X1 X2) (par Y1 Y2)] → [g ⊢ step* X1 Y1] =
+/ total s (step*_betw_pars_left _ _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fs_parl F' _ _] ⇒ [g ⊢ st_s* (fw F')]
+            | [g ⊢ fs_parr _ _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ fs_synl F' _ _ _ _ _] ⇒ [g ⊢ st_s* (fw F')]
+            | [g ⊢ fs_synr F' _ _ _ _ _] ⇒ [g ⊢ st_s* (fw F')])
+       | [g ⊢ bw B] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bs_parl B' _ _] ⇒ [g ⊢ st_s* (bw B')]
+            | [g ⊢ bs_parr _ _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ bs_synl B' _ _ _ _ _] ⇒ [g ⊢ st_s* (bw B')]
+            | [g ⊢ bs_synr B' _ _ _ _ _] ⇒ [g ⊢ st_s* (bw B')]))
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ pr] = step*_from_par [g ⊢ S1*] in
+       let [g ⊢ S1*'] = step*_betw_pars_left [g ⊢ S1*] in
+       let [g ⊢ S2*'] = step*_betw_pars_left [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
+;
+
+% Given a path between parallel compositions, there is a path between their right threads
+rec step*_betw_pars_right: (g:ctx) [g ⊢ step* (par X1 X2) (par Y1 Y2)] → [g ⊢ step* X2 Y2] =
+/ total s (step*_betw_pars_right _ _ _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fs_parl _ _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ fs_parr F' _ _] ⇒ [g ⊢ st_s* (fw F')]
+            | [g ⊢ fs_synl _ _ _ F' _ _] ⇒ [g ⊢ st_s* (fw F')]
+            | [g ⊢ fs_synr _ _ _ F' _ _] ⇒ [g ⊢ st_s* (fw F')])
+       | [g ⊢ bw B] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bs_parl _ _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ bs_parr B' _ _] ⇒ [g ⊢ st_s* (bw B')]
+            | [g ⊢ bs_synl _ _ _ B' _ _] ⇒ [g ⊢ st_s* (bw B')]
+            | [g ⊢ bs_synr _ _ _ B' _ _] ⇒ [g ⊢ st_s* (bw B')]))
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ pr] = step*_from_par [g ⊢ S1*] in
+       let [g ⊢ S1*'] = step*_betw_pars_right [g ⊢ S1*] in
+       let [g ⊢ S2*'] = step*_betw_pars_right [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
+;
+
+% Given a path between restrictions, there is a path between their subprocesses
+rec step*_betw_nus: (g:ctx) [g ⊢ step* (nu \a.X) (nu \a.Y)] → [g,a:names ⊢ step* X Y] =
+/ total s (step*_betw_nus _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ id_s*] ⇒ [g,a:names ⊢ id_s*]
+  | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
+       | [g ⊢ fw (fs_nu \a.F)] ⇒ [g,a:names ⊢ st_s* (fw F)]
+       | [g ⊢ bw (bs_nu \a.B)] ⇒ [g,a:names ⊢ st_s* (bw B)])
+  | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ rs] = step*_from_nu [g ⊢ S1*] in
+       let [g,a:names ⊢ S1*'] = step*_betw_nus [g ⊢ S1*] in
+       let [g,a:names ⊢ S2*'] = step*_betw_nus [g ⊢ S2*] in [g,a:names ⊢ tr_s* S1*' S2*']
+;
+
+
+% In a subcase of Thm. 2.1(i) there are derivations of connectivity "conn T1 T2" in a context
+% [g,a:names], without T1 and T2 depending on a: in such cases we need a technical lemma
+% (strengthening lemma) to get rid of the spurious dependence from the name a.
+
+% Auxiliary inductive type family for the strengthening lemma
+inductive ex_str_conn: (g:ctx) [g,a:names ⊢ conn T1[..] T2[..]] → ctype =
+  | ex_conn: {C:[g,a:names ⊢ conn T1[..] T2[..]]} [g ⊢ conn T1 T2] → ex_str_conn [g,a:names ⊢ C]
+;
+
+% Strengthening lemma for connected labels
+rec strengthen_conn: (g:ctx) {C:[g,a:names ⊢ conn T1[..] T2[..]]} ex_str_conn [g,a:names ⊢ C] =
+/ total c (strengthen_conn _ _ _ c) /
+mlam D ⇒ case [_ ⊢ D] of
+  | [g,a:names ⊢ c_a1] ⇒ ex_conn [g,a:names ⊢ c_a1] [g ⊢ c_a1]
+  | [g,a:names ⊢ c_a2] ⇒ ex_conn [g,a:names ⊢ c_a2] [g ⊢ c_a2]
+  | [g,a:names ⊢ c_c1l C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_c1l C] [g ⊢ c_c1l C']
+  | [g,a:names ⊢ c_c1r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_c1r C] [g ⊢ c_c1r C']
+  | [g,a:names ⊢ c_c2l] ⇒ ex_conn [g,a:names ⊢ c_c2l] [g ⊢ c_c2l]
+  | [g,a:names ⊢ c_c2r] ⇒ ex_conn [g,a:names ⊢ c_c2r] [g ⊢ c_c2r]
+  | [g,a:names ⊢ c_p1l C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_p1l C] [g ⊢ c_p1l C']
+  | [g,a:names ⊢ c_p1r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_p1r C] [g ⊢ c_p1r C']
+  | [g,a:names ⊢ c_p2l] ⇒ ex_conn [g,a:names ⊢ c_p2l] [g ⊢ c_p2l]
+  | [g,a:names ⊢ c_p2r] ⇒ ex_conn [g,a:names ⊢ c_p2r] [g ⊢ c_p2r]
+  | [g,a:names ⊢ c_s1l C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s1l C] [g ⊢ c_s1l C']
+  | [g,a:names ⊢ c_s1r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s1r C] [g ⊢ c_s1r C']
+  | [g,a:names ⊢ c_s2l C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s2l C] [g ⊢ c_s2l C']
+  | [g,a:names ⊢ c_s2r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s2r C] [g ⊢ c_s2r C']
+  | [g,a:names ⊢ c_s3 C1 C2] ⇒ let ex_conn [g,a:names ⊢ C1] [g ⊢ C1'] = strengthen_conn [g,a:names ⊢ C1] in
+       let ex_conn [g,a:names ⊢ C2] [g ⊢ C2'] = strengthen_conn [g,a:names ⊢ C2] in ex_conn [g,a:names ⊢ c_s3 C1 C2] [g ⊢ c_s3 C1' C2']
+;    }%

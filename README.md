@@ -36,10 +36,12 @@ to perform the type reconstruction of the formalization. Expected result, after 
 ## Type Reconstruction done:  run/../code/ccskp/unique.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/basic-properties.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/basic-properties.bel ##
+## Type Reconstruction begin: run/../code/ccskp/lemmas-connectivity-one.bel ##
+## Type Reconstruction done:  run/../code/ccskp/lemmas-connectivity-one.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/unique-step.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/unique-step.bel ##
-## Type Reconstruction begin: run/../code/ccskp/lemmas.bel ##
-## Type Reconstruction done:  run/../code/ccskp/lemmas.bel ##
+## Type Reconstruction begin: run/../code/ccskp/lemmas-bijection.bel ##
+## Type Reconstruction done:  run/../code/ccskp/lemmas-bijection.bel ##
 ## Type Reconstruction begin: run/../code/bijection/definitions.bel ##
 ## Type Reconstruction done:  run/../code/bijection/definitions.bel ##
 ## Type Reconstruction begin: run/../code/bijection/functionality.bel ##
@@ -175,8 +177,9 @@ $ opam install --deps-only ./beluga.opam
     * `definitions.bel`: … definitions
     * `unique.bel`: … uniqueness of predicates
     * `basic-properties.bel`: … basic properties (e.g. loop lemma, symmetry of transitions and paths)
+    * `lemmas-connectivity-one.bel`: … auxiliary lemmas for the first implication of the connectivity relationship theorem
     * `unique-step.bel`: … uniqueness of transitions
-    * `lemmas.bel`: … auxiliary lemmas for the CCSK-CCSKP bijection
+    * `lemmas-bijection.bel`: … auxiliary lemmas for the CCSK-CCSKP bijection
   + `bijection\`: the proof of the bijection between CCSK and CCSKP, in particular...
     * `definitions.bel`: … definitions of the forget and enrich functions (as relations)
     * `functionality.bel`: … functionality of forget and enrich
