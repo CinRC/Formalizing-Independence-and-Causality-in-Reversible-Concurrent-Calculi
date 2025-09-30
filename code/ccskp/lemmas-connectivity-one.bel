@@ -134,7 +134,7 @@ fn s ⇒ case s of
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ rs] = step*_from_nu [g ⊢ S1*] in step*_from_nu [g ⊢ S2*]
 ;
 
-%{
+
 % The following lemmas show that, given a path between two processes,
 % it is possible to build a path between their subprocesses.
 
@@ -144,8 +144,10 @@ rec step*_betw_prefs: (g:ctx) [g ⊢ step* (pref A X) (pref A Y)] → [g ⊢ ste
 fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw F] ⇒ impossible [g ⊢ F]
-       | [g ⊢ bw B] ⇒ impossible [g ⊢ B])
+       | [g ⊢ sc (fwc F)] ⇒ impossible [g ⊢ F]
+       | [g ⊢ so (fwo F)] ⇒ impossible [g ⊢ F]
+       | [g ⊢ sc (bwc B)] ⇒ impossible [g ⊢ B]
+       | [g ⊢ so (bwo B)] ⇒ impossible [g ⊢ B])
   | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_pref [g ⊢ S1*] of
        | [g ⊢ or_pref] ⇒ let [g ⊢ S1*'] = step*_betw_prefs [g ⊢ S1*] in  
             let [g ⊢ S2*'] = step*_betw_prefs [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
@@ -157,8 +159,10 @@ and rec step*_betw_pref_and_kpref: (g:ctx) [g ⊢ step* (pref A X) (kpref A K[] 
 / total s (step*_betw_pref_and_kpref _ _ _ _ _ s) /
 fn s ⇒ case s of
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw (fs_pref _)] ⇒ [g ⊢ id_s*]
-       | [g ⊢ bw B] ⇒ impossible [g ⊢ B])
+       | [g ⊢ sc (fwc (fc_pref _))] ⇒ [g ⊢ id_s*]
+       | [g ⊢ so (fwo F)] ⇒ impossible [g ⊢ F]
+       | [g ⊢ sc (bwc B)] ⇒ impossible [g ⊢ B]
+       | [g ⊢ so (bwo B)] ⇒ impossible [g ⊢ B])
   | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_pref [g ⊢ S1*] of
        | [g ⊢ or_pref] ⇒ let [g ⊢ S1*'] = step*_betw_prefs [g ⊢ S1*] in  
             let [g ⊢ S2*'] = step*_betw_pref_and_kpref [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
@@ -170,8 +174,10 @@ and rec step*_betw_kpref_and_pref: (g:ctx) [g ⊢ step* (kpref A K[] X) (pref A 
 / total s (step*_betw_kpref_and_pref _ _ _ _ _ s) /
 fn s ⇒ case s of
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw F] ⇒ impossible [g ⊢ F]
-       | [g ⊢ bw (bs_pref _)] ⇒ [g ⊢ id_s*])
+       | [g ⊢ sc (fwc F)] ⇒ impossible [g ⊢ F]
+       | [g ⊢ so (fwo F)] ⇒ impossible [g ⊢ F]
+       | [g ⊢ sc (bwc (bc_pref _))] ⇒ [g ⊢ id_s*]
+       | [g ⊢ so (bwo B)] ⇒ impossible [g ⊢ B])
   | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_kpref [g ⊢ S1*] of
        | [g ⊢ or_pref] ⇒ let [g ⊢ S1*'] = step*_betw_kpref_and_pref [g ⊢ S1*] in  
             let [g ⊢ S2*'] = step*_betw_prefs [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
@@ -184,8 +190,10 @@ and rec step*_betw_kprefs: (g:ctx) [g ⊢ step* (kpref A K[] X) (kpref A M[] Y)]
 fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw (fs_kpref F _ _)] ⇒ [g ⊢ st_s* (fw F)]
-       | [g ⊢ bw (bs_kpref B _ _)] ⇒ [g ⊢ st_s* (bw B)])
+       | [g ⊢ sc (fwc (fc_kpref F _ _))] ⇒ [g ⊢ st_s* (sc (fwc F))]
+       | [g ⊢ so (fwo (fo_kpref F (\_._) _))] ⇒ [g ⊢ st_s* (so (fwo F))]
+       | [g ⊢ sc (bwc (bc_kpref B _ _))] ⇒ [g ⊢ st_s* (sc (bwc B))]
+       | [g ⊢ so (bwo (bo_kpref B (\_._) _))] ⇒ [g ⊢ st_s* (so (bwo B))])
   | [g ⊢ tr_s* S1* S2*] ⇒ (case step*_from_kpref [g ⊢ S1*] of
        | [g ⊢ or_pref] ⇒ let [g ⊢ S1*'] = step*_betw_kpref_and_pref [g ⊢ S1*] in 
             let [g ⊢ S2*'] = step*_betw_pref_and_kpref [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
@@ -199,12 +207,18 @@ rec step*_betw_sums_left: (g:ctx) [g ⊢ step* (sum X1 X2) (sum Y1 Y2)] → [g �
 fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
-            | [g ⊢ fs_suml F' _] ⇒ [g ⊢ st_s* (fw F')]
-            | [g ⊢ fs_sumr _ _] ⇒ [g ⊢ id_s*])
-       | [g ⊢ bw B] ⇒ (case [g ⊢ B] of
-            | [g ⊢ bs_suml B' _] ⇒ [g ⊢ st_s* (bw B')]
-            | [g ⊢ bs_sumr _ _] ⇒ [g ⊢ id_s*]))
+       | [g ⊢ sc (fwc F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fc_suml F' _] ⇒ [g ⊢ st_s* (sc (fwc F'))]
+            | [g ⊢ fc_sumr _ _] ⇒ [g ⊢ id_s*])
+       | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fo_suml F' _] ⇒ [g ⊢ st_s* (so (fwo F'))]
+            | [g ⊢ fo_sumr _ _] ⇒ [g ⊢ id_s*])
+       | [g ⊢ sc (bwc B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bc_suml B' _] ⇒ [g ⊢ st_s* (sc (bwc B'))]
+            | [g ⊢ bc_sumr _ _] ⇒ [g ⊢ id_s*])
+       | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bo_suml B' _] ⇒ [g ⊢ st_s* (so (bwo B'))]
+            | [g ⊢ bo_sumr _ _] ⇒ [g ⊢ id_s*]))
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ sm] = step*_from_sum [g ⊢ S1*] in
        let [g ⊢ S1*'] = step*_betw_sums_left [g ⊢ S1*] in
        let [g ⊢ S2*'] = step*_betw_sums_left [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
@@ -216,12 +230,18 @@ rec step*_betw_sums_right: (g:ctx) [g ⊢ step* (sum X1 X2) (sum Y1 Y2)] → [g 
 fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
-            | [g ⊢ fs_suml _ _] ⇒ [g ⊢ id_s*]
-            | [g ⊢ fs_sumr F' _] ⇒ [g ⊢ st_s* (fw F')])
-       | [g ⊢ bw B] ⇒ (case [g ⊢ B] of
-            | [g ⊢ bs_suml _ _] ⇒ [g ⊢ id_s*]
-            | [g ⊢ bs_sumr B' _] ⇒ [g ⊢ st_s* (bw B')]))
+       | [g ⊢ sc (fwc F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fc_suml _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ fc_sumr F' _] ⇒ [g ⊢ st_s* (sc (fwc F'))])
+       | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fo_suml _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ fo_sumr F' _] ⇒ [g ⊢ st_s* (so (fwo F'))])
+       | [g ⊢ sc (bwc B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bc_suml _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ bc_sumr B' _] ⇒ [g ⊢ st_s* (sc (bwc B'))])
+       | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bo_suml _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ bo_sumr B' _] ⇒ [g ⊢ st_s* (so (bwo B'))]))
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ sm] = step*_from_sum [g ⊢ S1*] in
        let [g ⊢ S1*'] = step*_betw_sums_right [g ⊢ S1*] in
        let [g ⊢ S2*'] = step*_betw_sums_right [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
@@ -233,16 +253,22 @@ rec step*_betw_pars_left: (g:ctx) [g ⊢ step* (par X1 X2) (par Y1 Y2)] → [g �
 fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
-            | [g ⊢ fs_parl F' _ _] ⇒ [g ⊢ st_s* (fw F')]
-            | [g ⊢ fs_parr _ _ _] ⇒ [g ⊢ id_s*]
-            | [g ⊢ fs_synl F' _ _ _ _ _] ⇒ [g ⊢ st_s* (fw F')]
-            | [g ⊢ fs_synr F' _ _ _ _ _] ⇒ [g ⊢ st_s* (fw F')])
-       | [g ⊢ bw B] ⇒ (case [g ⊢ B] of
-            | [g ⊢ bs_parl B' _ _] ⇒ [g ⊢ st_s* (bw B')]
-            | [g ⊢ bs_parr _ _ _] ⇒ [g ⊢ id_s*]
-            | [g ⊢ bs_synl B' _ _ _ _ _] ⇒ [g ⊢ st_s* (bw B')]
-            | [g ⊢ bs_synr B' _ _ _ _ _] ⇒ [g ⊢ st_s* (bw B')]))
+       | [g ⊢ sc (fwc F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fc_parl F' _ _] ⇒ [g ⊢ st_s* (sc (fwc F'))]
+            | [g ⊢ fc_parr _ _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ fc_synl F' _ _ _ _ _] ⇒ [g ⊢ st_s* (sc (fwc F'))]
+            | [g ⊢ fc_synr F' _ _ _ _ _] ⇒ [g ⊢ st_s* (sc (fwc F'))])
+       | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fo_parl F' (\_._) _] ⇒ [g ⊢ st_s* (so (fwo F'))]
+            | [g ⊢ fo_parr _ (\_._) _] ⇒ [g ⊢ id_s*])
+       | [g ⊢ sc (bwc B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bc_parl B' _ _] ⇒ [g ⊢ st_s* (sc (bwc B'))]
+            | [g ⊢ bc_parr _ _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ bc_synl B' _ _ _ _ _] ⇒ [g ⊢ st_s* (sc (bwc B'))]
+            | [g ⊢ bc_synr B' _ _ _ _ _] ⇒ [g ⊢ st_s* (sc (bwc B'))])
+       | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bo_parl B' (\_._) _] ⇒ [g ⊢ st_s* (so (bwo B'))]
+            | [g ⊢ bo_parr _ (\_._) _] ⇒ [g ⊢ id_s*]))
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ pr] = step*_from_par [g ⊢ S1*] in
        let [g ⊢ S1*'] = step*_betw_pars_left [g ⊢ S1*] in
        let [g ⊢ S2*'] = step*_betw_pars_left [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
@@ -254,16 +280,22 @@ rec step*_betw_pars_right: (g:ctx) [g ⊢ step* (par X1 X2) (par Y1 Y2)] → [g 
 fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
-            | [g ⊢ fs_parl _ _ _] ⇒ [g ⊢ id_s*]
-            | [g ⊢ fs_parr F' _ _] ⇒ [g ⊢ st_s* (fw F')]
-            | [g ⊢ fs_synl _ _ _ F' _ _] ⇒ [g ⊢ st_s* (fw F')]
-            | [g ⊢ fs_synr _ _ _ F' _ _] ⇒ [g ⊢ st_s* (fw F')])
-       | [g ⊢ bw B] ⇒ (case [g ⊢ B] of
-            | [g ⊢ bs_parl _ _ _] ⇒ [g ⊢ id_s*]
-            | [g ⊢ bs_parr B' _ _] ⇒ [g ⊢ st_s* (bw B')]
-            | [g ⊢ bs_synl _ _ _ B' _ _] ⇒ [g ⊢ st_s* (bw B')]
-            | [g ⊢ bs_synr _ _ _ B' _ _] ⇒ [g ⊢ st_s* (bw B')]))
+       | [g ⊢ sc (fwc F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fc_parl _ _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ fc_parr F' _ _] ⇒ [g ⊢ st_s* (sc (fwc F'))]
+            | [g ⊢ fc_synl _ _ _ F' _ _] ⇒ [g ⊢ st_s* (sc (fwc F'))]
+            | [g ⊢ fc_synr _ _ _ F' _ _] ⇒ [g ⊢ st_s* (sc (fwc F'))])
+       | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fo_parl _ (\_._) _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ fo_parr F' (\_._) _] ⇒ [g ⊢ st_s* (so (fwo F'))])
+       | [g ⊢ sc (bwc B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bc_parl _ _ _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ bc_parr B' _ _] ⇒ [g ⊢ st_s* (sc (bwc B'))]
+            | [g ⊢ bc_synl _ _ _ B' _ _] ⇒ [g ⊢ st_s* (sc (bwc B'))]
+            | [g ⊢ bc_synr _ _ _ B' _ _] ⇒ [g ⊢ st_s* (sc (bwc B'))])
+       | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bo_parl _ (\_._) _] ⇒ [g ⊢ id_s*]
+            | [g ⊢ bo_parr B' (\_._) _] ⇒ [g ⊢ st_s* (so (bwo B'))]))
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ pr] = step*_from_par [g ⊢ S1*] in
        let [g ⊢ S1*'] = step*_betw_pars_right [g ⊢ S1*] in
        let [g ⊢ S2*'] = step*_betw_pars_right [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
@@ -275,8 +307,14 @@ rec step*_betw_nus: (g:ctx) [g ⊢ step* (nu \a.X) (nu \a.Y)] → [g,a:names ⊢
 fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g,a:names ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ fw (fs_nu \a.F)] ⇒ [g,a:names ⊢ st_s* (fw F)]
-       | [g ⊢ bw (bs_nu \a.B)] ⇒ [g,a:names ⊢ st_s* (bw B)])
+       | [g ⊢ sc (fwc (fc_nu \a.F))] ⇒ [g,a:names ⊢ st_s* (sc (fwc F))]
+       | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
+            | [g ⊢ fo_nu_closed (\_._) (\_._) (\a.F')] ⇒ [g,a:names ⊢ st_s* (sc (fwc F'))]
+            | [g ⊢ fo_nu_open \a.F'] ⇒ [g,a:names ⊢ st_s* (so (fwo F'))])
+       | [g ⊢ sc (bwc (bc_nu \a.B))] ⇒ [g,a:names ⊢ st_s* (sc (bwc B))]
+       | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
+            | [g ⊢ bo_nu_closed (\_._) (\_._) (\a.B')] ⇒ [g,a:names ⊢ st_s* (sc (bwc B'))]
+            | [g ⊢ bo_nu_open \a.B'] ⇒ [g,a:names ⊢ st_s* (so (bwo B'))]))
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ rs] = step*_from_nu [g ⊢ S1*] in
        let [g,a:names ⊢ S1*'] = step*_betw_nus [g ⊢ S1*] in
        let [g,a:names ⊢ S2*'] = step*_betw_nus [g ⊢ S2*] in [g,a:names ⊢ tr_s* S1*' S2*']
@@ -312,4 +350,4 @@ mlam D ⇒ case [_ ⊢ D] of
   | [g,a:names ⊢ c_s2r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s2r C] [g ⊢ c_s2r C']
   | [g,a:names ⊢ c_s3 C1 C2] ⇒ let ex_conn [g,a:names ⊢ C1] [g ⊢ C1'] = strengthen_conn [g,a:names ⊢ C1] in
        let ex_conn [g,a:names ⊢ C2] [g ⊢ C2'] = strengthen_conn [g,a:names ⊢ C2] in ex_conn [g,a:names ⊢ c_s3 C1 C2] [g ⊢ c_s3 C1' C2']
-;    }%
+;
