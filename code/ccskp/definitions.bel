@@ -248,4 +248,12 @@ LF indep: pr_lab → pr_lab → type =
   | i_s3: indep T1 T1' → indep T2 T2' → indep (pr_sync T1 T2) (pr_sync T1' T2')
 ;
 
+% Connectivity of "generalized" proof labels
+LF gen_conn: gen_pr_lab → gen_pr_lab → type =
+  | pp: conn T1 T2 → gen_conn (gp T1) (gp T2)
+  | op: ({a:names} conn (T1 a) T2) → gen_conn (go (open T1)) (gp T2)
+  | po: ({a:names} conn T1 (T2 a)) → gen_conn (gp T1) (go (open T2))
+  | oo: ({a:names} conn (T1 a) (T2 a)) → gen_conn (go (open T1)) (go (open T2))
+;
+
 end;
