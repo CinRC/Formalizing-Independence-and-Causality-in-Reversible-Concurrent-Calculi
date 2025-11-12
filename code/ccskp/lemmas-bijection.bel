@@ -1,7 +1,5 @@
 %%% Auxiliary lemmas for CCSKP %%%
 
---open ccskp.
-
 % Given a derivation of lab T A in a context [g,a:names],
 % with 'a' not occurring in T, then we can obtain a derivation
 % of lab T A in the stronger context [g].

@@ -40,6 +40,10 @@ to perform the type reconstruction of the formalization. Expected result, after 
 ## Type Reconstruction done:  run/../code/ccskp/lemmas-connectivity-one.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/connectivity-relationship-one.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/connectivity-relationship-one.bel ##
+## Type Reconstruction begin: run/../code/ccskp/lemmas-connectivity-two.bel ##
+## Type Reconstruction done:  run/../code/ccskp/lemmas-connectivity-two.bel ##
+## Type Reconstruction begin: run/../code/ccskp/connectivity-relationship-two.bel ##
+## Type Reconstruction done:  run/../code/ccskp/connectivity-relationship-two.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/unique-step.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/unique-step.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/lemmas-bijection.bel ##
@@ -181,6 +185,8 @@ $ opam install --deps-only ./beluga.opam
     * `basic-properties.bel`: … basic properties (e.g. loop lemma, symmetry of transitions and paths)
     * `lemmas-connectivity-one.bel`: … auxiliary lemmas for Proposition 4.4 (1)
     * `connectivity-relationship-one.bel`: … Proposition 4.4 (1)
+    * `lemmas-connectivity-two.bel`: … auxiliary lemmas for Proposition 4.4 (2)
+    * `connectivity-relationship-two.bel`: … Proposition 4.4 (2)
     * `unique-step.bel`: … uniqueness of transitions
     * `lemmas-bijection.bel`: … auxiliary lemmas for the CCSK-CCSKP bijection
   + `bijection\`: the proof of the bijection between CCSK and CCSKP, in particular...

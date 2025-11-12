@@ -1,7 +1,5 @@
 %%% Non occurrence of keys in standard processes %%%
 
---open ccskp.
-
 % For all keys K, K does not occur in a standard process
 rec no_key_in_std: (g:ctx) {K:[⊢ keys]} [g ⊢ std X] → [g ⊢ notin K[] X] =
 / total d (no_key_in_std _ _ _ d) /

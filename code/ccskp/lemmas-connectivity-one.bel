@@ -1,7 +1,5 @@
 %%% Auxiliary lemmas for Proposition 4.4 (1) %%%
 
---open ccskp.
-
 % The following lemmas state that, given a path whose source is a
 % known process, we can infer information about the target process.
 

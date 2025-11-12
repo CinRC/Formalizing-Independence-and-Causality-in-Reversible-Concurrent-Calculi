@@ -67,6 +67,19 @@ LF valid: pr_lab → type =
           → lab T2 (inp A) → key T2 K → valid (pr_sync T1 T2)
 ;
 
+% Valid open proof labels
+LF open_valid: open_pr_lab → type =
+  | ov_base: ({a:names} occurs a (T a)) → ({a:names} lab (T a) A)
+           → ({a:names} valid (T a)) → open_valid (open T)
+;
+
+% Valid generalized proof labels
+LF gen_valid: gen_pr_lab → type =
+  | gpv: valid T → gen_valid (gp T)
+  | gov: open_valid T → gen_valid (go T)
+;
+
+
 % Closed forward transitions
 LF fstep_closed: proc → pr_lab → proc → type =
   | fc_pref: std X → fstep_closed (pref A X) (pr_base A K) (kpref A K X)

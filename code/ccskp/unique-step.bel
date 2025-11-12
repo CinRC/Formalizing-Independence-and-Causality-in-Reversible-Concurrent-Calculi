@@ -1,7 +1,5 @@
 %%% Uniqueness results for CCSKP %%%
 
---open ccskp.
-
 %%% Auxiliary lemmas %%%
 
 % The target of a closed forward transition is not standard
