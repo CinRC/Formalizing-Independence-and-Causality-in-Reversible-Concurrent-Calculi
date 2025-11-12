@@ -113,15 +113,15 @@ The following must be installed before proceeding with the installation of Belug
 All the necessary prerequisites can be installed with the following commands:
 
 ```Shell
-apt-get install opam
-opam init --bare
+$ apt-get install opam
+$ opam init --bare
 ```
 
 And then, from the Beluga directory:
 
 ```Shell
-make setup-install
-make install
+$ make setup-install
+$ make install
 ```
 
 ### macOS
@@ -129,15 +129,15 @@ make install
 The easiest way to install the prerequisites is via opam, and the easiest way to install opam is via Homebrew (https://brew.sh/):
 
 ```Shell
-brew install opam
-opam init --bare
+$ brew install opam
+$ opam init --bare
 ```
 
 And then, from the Beluga directory:
 
 ```Shell
-make setup-install
-make install
+$ make setup-install
+$ make install
 ```
 
 ### Windows
@@ -147,18 +147,20 @@ One option is to install the Ubuntu WSL distribution (https://docs.microsoft.com
 Another option is to build and execute Beluga on Windows through Cygwin. The necessary prerequisites can be installed using opam for Windows. Here are the steps to follow for the installation through Cygwin:
 
 1. Download opam for Windows' graphical installer OCaml32/64.exe https://fdopen.github.io/opam-repository-mingw/installation/
+
 2. Run OCaml32/64.exe and step through the installation wizard. Note: if you don't already have Cygwin installed, it will be installed for you.
+
 3. Run the following commands from Beluga directory within cygwin terminal.
 
 ```Shell
-opam switch create ocaml-variants.4.09.0+mingw64c
-eval $(opam env)
+$ opam switch create ocaml-variants.4.09.0+mingw64c
+$ eval $(opam env)
 ```
 
 And then, from the Beluga directory:
 
 ```Shell
-opam install --deps-only ./beluga.opam
+$ opam install --deps-only ./beluga.opam
 ```
 
 ## Repository structure
@@ -192,6 +194,7 @@ opam install --deps-only ./beluga.opam
     * `functionality.bel`: … functionality of forget and enrich
     * `totality.bel`: … totality of forget and enrich
     * `bijection.bel`: … forget and enrich are mutual inverses
+
 - `examples\`: Contains examples serving as tests for…
   + `processes\`: … processes that …
     * `standard.bel`: … are standard
