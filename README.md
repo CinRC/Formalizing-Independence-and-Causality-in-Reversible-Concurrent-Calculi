@@ -13,13 +13,13 @@ It extends and refines the [formalization of CCSKP in Beluga](https://github.com
 
 Once Beluga is installed and the correct opam switch is enabled (cf. [the installation instructions](#installation-instructions)), it suffices to run
 
-```
+```Shell
 beluga run/code.cfg 
 ```
 
 to perform the type reconstruction of the formalization. Expected result, after ±2 seconds, is
 
-```
+```Shell
 ## Type Reconstruction begin: run/../code/shared/definitions.bel ##
 ## Type Reconstruction done:  run/../code/shared/definitions.bel ##
 ## Type Reconstruction begin: run/../code/shared/unique.bel ##
@@ -60,13 +60,13 @@ to perform the type reconstruction of the formalization. Expected result, after 
 
 Tests can be run using e.g.
 
-```
+```Shell
 beluga run/ex-processes.cfg 
 ```
 
 For this particular set of example, expected result is, after ±1 second, is
 
-```
+```Shell
 ## Type Reconstruction begin: run/../code/shared/definitions.bel ##
 ## Type Reconstruction done:  run/../code/shared/definitions.bel ##
 ## Type Reconstruction begin: run/../examples/processes/standard.bel ##
@@ -81,13 +81,13 @@ For this particular set of example, expected result is, after ±1 second, is
 
 If Makefile is installed, then the previous commands can be replaced by
 
-```
+```Makefile
 make code
 ```
 
 and 
 
-```
+```Makefile
 make test
 ```
 
@@ -112,32 +112,32 @@ The following must be installed before proceeding with the installation of Belug
 
 All the necessary prerequisites can be installed with the following commands:
 
-```
-$ apt-get install opam
-$ opam init --bare
+```Shell
+apt-get install opam
+opam init --bare
 ```
 
 And then, from the Beluga directory:
 
-```
-$ make setup-install
-$ make install
+```Shell
+make setup-install
+make install
 ```
 
 ### macOS
 
 The easiest way to install the prerequisites is via opam, and the easiest way to install opam is via Homebrew (https://brew.sh/):
 
-```
-$ brew install opam
-$ opam init --bare
+```Shell
+brew install opam
+opam init --bare
 ```
 
 And then, from the Beluga directory:
 
-```
-$ make setup-install
-$ make install
+```Shell
+make setup-install
+make install
 ```
 
 ### Windows
@@ -147,20 +147,18 @@ One option is to install the Ubuntu WSL distribution (https://docs.microsoft.com
 Another option is to build and execute Beluga on Windows through Cygwin. The necessary prerequisites can be installed using opam for Windows. Here are the steps to follow for the installation through Cygwin:
 
 1. Download opam for Windows' graphical installer OCaml32/64.exe https://fdopen.github.io/opam-repository-mingw/installation/
-
 2. Run OCaml32/64.exe and step through the installation wizard. Note: if you don't already have Cygwin installed, it will be installed for you.
-
 3. Run the following commands from Beluga directory within cygwin terminal.
 
-```
-$ opam switch create ocaml-variants.4.09.0+mingw64c
-$ eval $(opam env)
+```Shell
+opam switch create ocaml-variants.4.09.0+mingw64c
+eval $(opam env)
 ```
 
 And then, from the Beluga directory:
 
-```
-$ opam install --deps-only ./beluga.opam
+```Shell
+opam install --deps-only ./beluga.opam
 ```
 
 ## Repository structure
@@ -194,7 +192,6 @@ $ opam install --deps-only ./beluga.opam
     * `functionality.bel`: … functionality of forget and enrich
     * `totality.bel`: … totality of forget and enrich
     * `bijection.bel`: … forget and enrich are mutual inverses
-
 - `examples\`: Contains examples serving as tests for…
   + `processes\`: … processes that …
     * `standard.bel`: … are standard
