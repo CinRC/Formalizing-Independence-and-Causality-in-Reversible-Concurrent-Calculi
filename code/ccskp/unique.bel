@@ -65,7 +65,7 @@ LF eqlb: lab T1 A1 → lab T2 A2 → type =
   | reflb: eqlb L L
 ;
 
-% Uniqueness of the derivation of std X
+% Uniqueness of the derivation of lab T A
 rec unique_lab: (g:ctx) {L1:[g ⊢ lab T A1]} {L2:[g ⊢ lab T A2]} [g ⊢ eqlb L1 L2] =
 / total l1 (unique_lab _ _ _ _ l1 _) /
 mlam L1 L2 ⇒ case [_ ⊢ L1] of
