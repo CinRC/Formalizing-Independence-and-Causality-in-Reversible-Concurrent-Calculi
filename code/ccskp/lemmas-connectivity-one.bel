@@ -319,17 +319,17 @@ fn s ⇒ case s of
 ;
 
 
-% In a subcase of Thm. 2.1(i) there are derivations of connectivity "conn T1 T2" in a context
-% [g,a:names], without T1 and T2 depending on a: in such cases we need a technical lemma
-% (strengthening lemma) to get rid of the spurious dependence from the name a.
+% In a subcase of Thm. 2.1(i) there are derivations of conn_clectivity "conn T1 T2" in a context
+% [g,a:names], without T1 and T2 dep_clending on a: in such cases we need a technical lemma
+% (strengthening lemma) to get rid of the spurious dep_clendence from the name a.
 
 % Auxiliary inductive type family for the strengthening lemma
-inductive ex_str_conn: (g:ctx) [g,a:names ⊢ conn T1[..] T2[..]] → ctype =
-  | ex_conn: {C:[g,a:names ⊢ conn T1[..] T2[..]]} [g ⊢ conn T1 T2] → ex_str_conn [g,a:names ⊢ C]
+inductive ex_str_conn: (g:ctx) [g,a:names ⊢ conn_cl T1[..] T2[..]] → ctype =
+  | ex_conn: {C:[g,a:names ⊢ conn_cl T1[..] T2[..]]} [g ⊢ conn_cl T1 T2] → ex_str_conn [g,a:names ⊢ C]
 ;
 
-% Strengthening lemma for connected labels
-rec strengthen_conn: (g:ctx) {C:[g,a:names ⊢ conn T1[..] T2[..]]} ex_str_conn [g,a:names ⊢ C] =
+% Strengthening lemma for conn_clected labels
+rec strengthen_conn: (g:ctx) {C:[g,a:names ⊢ conn_cl T1[..] T2[..]]} ex_str_conn [g,a:names ⊢ C] =
 / total c (strengthen_conn _ _ _ c) /
 mlam D ⇒ case [_ ⊢ D] of
   | [g,a:names ⊢ c_a1] ⇒ ex_conn [g,a:names ⊢ c_a1] [g ⊢ c_a1]

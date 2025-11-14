@@ -3,7 +3,7 @@
 # files to track when the last successful
 # compilation took place. The .cfg files
 # are "touched" when one of their
-# dependency is updated, so that the
+# dep_clendency is updated, so that the
 # makefile knows that they need to be
 # re-compiled.
 # # # # # # # # # # # # # # # # # # # #

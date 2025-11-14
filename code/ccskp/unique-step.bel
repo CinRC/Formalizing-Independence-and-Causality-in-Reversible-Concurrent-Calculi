@@ -3,7 +3,7 @@
 %%% Auxiliary lemmas %%%
 
 % The target of a closed forward transition is not standard
-rec target_is_not_std_fc: (g:ctx) [g ⊢ fstep_closed X T X'] → [g ⊢ std X'] → [g ⊢ false] =
+rec target_is_not_std_fc: (g:ctx) [g ⊢ fstep_cl X T X'] → [g ⊢ std X'] → [g ⊢ false] =
 / total f (target_is_not_std_fc _ _ _ _ f _) /
 fn f,d ⇒ case f of
   | [g ⊢ fc_pref _] ⇒ impossible d
@@ -25,7 +25,7 @@ fn f,d ⇒ case f of
 ;
 
 % The target of an open forward transition is not standard
-rec target_is_not_std_fo: (g:ctx) [g ⊢ fstep_open X T X'] → [g ⊢ std X'] → [g ⊢ false] =
+rec target_is_not_std_fo: (g:ctx) [g ⊢ fstep_op X T X'] → [g ⊢ std X'] → [g ⊢ false] =
 / total f (target_is_not_std_fo _ _ _ _ f _) /
 fn f,d ⇒ case f of
   | [g ⊢ fo_nu_closed (\_._) (\_._) (\a.F)] ⇒ let [g ⊢ std_nu \a.D] = d in
@@ -44,7 +44,7 @@ fn f,d ⇒ case f of
 ;
 
 % The source of a closed backward transition is not standard
-rec source_is_not_std_bc: (g:ctx) [g ⊢ bstep_closed X' T X] → [g ⊢ std X'] → [g ⊢ false] =
+rec source_is_not_std_bc: (g:ctx) [g ⊢ bstep_cl X' T X] → [g ⊢ std X'] → [g ⊢ false] =
 / total b (source_is_not_std_bc _ _ _ _ b _) /
 fn b,d ⇒ case b of
   | [g ⊢ bc_pref _] ⇒ impossible d
@@ -66,7 +66,7 @@ fn b,d ⇒ case b of
 ;
 
 % The source of an open backward transition is not standard
-rec source_is_not_std_bo: (g:ctx) [g ⊢ bstep_open X' T X] → [g ⊢ std X'] → [g ⊢ false] =
+rec source_is_not_std_bo: (g:ctx) [g ⊢ bstep_op X' T X] → [g ⊢ std X'] → [g ⊢ false] =
 / total b (source_is_not_std_bo _ _ _ _ b _) /
 fn b,d ⇒ case b of
   | [g ⊢ bo_nu_closed (\_._) (\_._) (\a.B)] ⇒ let [g ⊢ std_nu \a.D] = d in
@@ -85,7 +85,7 @@ fn b,d ⇒ case b of
 ;
 
 % Source and target of a closed forward transition are not equal
-rec target_is_not_source_fc: (g:ctx) [g ⊢ fstep_closed X T X] → [g ⊢ false] =
+rec target_is_not_source_fc: (g:ctx) [g ⊢ fstep_cl X T X] → [g ⊢ false] =
 / total f (target_is_not_source_fc _ _ _ f) /
 fn f ⇒ case f of
   | [g ⊢ fc_kpref F' _ _] ⇒ impossible target_is_not_source_fc [g ⊢ F']
@@ -99,7 +99,7 @@ fn f ⇒ case f of
 ;
 
 % Source and target of an open forward transition are not equal
-rec target_is_not_source_fo: (g:ctx) [g ⊢ fstep_open X T X] → [g ⊢ false] =
+rec target_is_not_source_fo: (g:ctx) [g ⊢ fstep_op X T X] → [g ⊢ false] =
 / total f (target_is_not_source_fo _ _ _ f) /
 fn f ⇒ case f of
   | [g ⊢ fo_nu_closed (\_._) (\_._) (\a.F')] ⇒
@@ -113,7 +113,7 @@ fn f ⇒ case f of
 ;
 
 % Source and target of a closed backward transition are not equal
-rec target_is_not_source_bc: (g:ctx) [g ⊢ bstep_closed X T X] → [g ⊢ false] =
+rec target_is_not_source_bc: (g:ctx) [g ⊢ bstep_cl X T X] → [g ⊢ false] =
 / total b (target_is_not_source_bc _ _ _ b) /
 fn b ⇒ case b of
   | [g ⊢ bc_kpref B' _ _] ⇒ impossible target_is_not_source_bc [g ⊢ B']
@@ -127,7 +127,7 @@ fn b ⇒ case b of
 ;
 
 % Source and target of an open backward transition are not equal
-rec target_is_not_source_bo: (g:ctx) [g ⊢ bstep_open X T X] → [g ⊢ false] =
+rec target_is_not_source_bo: (g:ctx) [g ⊢ bstep_op X T X] → [g ⊢ false] =
 / total b (target_is_not_source_bo _ _ _ b) /
 fn b ⇒ case b of
   | [g ⊢ bo_nu_closed (\_._) (\_._) (\a.B')] ⇒
@@ -143,13 +143,13 @@ fn b ⇒ case b of
 
 %%% Uniqueness of the derivation of closed transitions %%%
 
-% Equality of derivations of fstep_closed X T X'
-LF eqfc: fstep_closed X1 T1 X1' → fstep_closed X2 T2 X2' → type =
+% Equality of derivations of fstep_cl X T X'
+LF eqfc: fstep_cl X1 T1 X1' → fstep_cl X2 T2 X2' → type =
   | reffc: eqfc F F
 ;
 
-% Uniqueness of the derivation of fstep_closed X T X'
-rec unique_fstep_closed: (g:ctx) {F1:[g ⊢ fstep_closed X T1 X']} {F2:[g ⊢ fstep_closed X T2 X']} [g ⊢ eqfc F1 F2] =
+% Uniqueness of the derivation of fstep_cl X T X'
+rec unique_fstep_closed: (g:ctx) {F1:[g ⊢ fstep_cl X T1 X']} {F2:[g ⊢ fstep_cl X T2 X']} [g ⊢ eqfc F1 F2] =
 / total f1 (unique_fstep_closed _ _ _ _ _ f1 _) /
 mlam F1 F2 ⇒ case [_ ⊢ F1] of
   | [g ⊢ fc_pref D1] ⇒ let [g ⊢ fc_pref D2] = [g ⊢ F2] in
@@ -206,13 +206,13 @@ mlam F1 F2 ⇒ case [_ ⊢ F1] of
     let [g,a:names ⊢ reffc] = unique_fstep_closed [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffc]
 ;
 
-% Equality of derivations of bstep_closed X' T X
-LF eqbc: bstep_closed X1' T1 X1 → bstep_closed X2' T2 X2 → type =
+% Equality of derivations of bstep_cl X' T X
+LF eqbc: bstep_cl X1' T1 X1 → bstep_cl X2' T2 X2 → type =
   | refbc: eqbc B B
 ;
 
-% Uniqueness of the derivation of bstep_closed X' T X
-rec unique_bstep_closed: (g:ctx) {B1:[g ⊢ bstep_closed X' T1 X]} {B2:[g ⊢ bstep_closed X' T2 X]} [g ⊢ eqbc B1 B2] =
+% Uniqueness of the derivation of bstep_cl X' T X
+rec unique_bstep_closed: (g:ctx) {B1:[g ⊢ bstep_cl X' T1 X]} {B2:[g ⊢ bstep_cl X' T2 X]} [g ⊢ eqbc B1 B2] =
 / total b1 (unique_bstep_closed _ _ _ _ _ b1 _) /
 mlam B1 B2 ⇒ case [_ ⊢ B1] of
   | [g ⊢ bc_pref D1] ⇒ let [g ⊢ bc_pref D2] = [g ⊢ B2] in
@@ -284,7 +284,7 @@ fn o ⇒ case o of
 ;
 
 % Given two processes X and X', there cannot be both a closed and an open forward transition between them
-rec no_fstep_closed_and_open: (g:ctx) [g ⊢ fstep_closed X T1 X'] → [g ⊢ fstep_open X T2 X'] → [g ⊢ false] =
+rec no_fstep_closed_and_open: (g:ctx) [g ⊢ fstep_cl X T1 X'] → [g ⊢ fstep_op X T2 X'] → [g ⊢ false] =
 / total f1 (no_fstep_closed_and_open _ _ _ _ _ f1 _) /
 fn f1,f2 ⇒ case f1 of
   | [g ⊢ fc_pref D1] ⇒ impossible f2
@@ -315,7 +315,7 @@ fn f1,f2 ⇒ case f1 of
 ;
 
 % Given two processes X and X', there cannot be both a closed and an open backward transition between them
-rec no_bstep_closed_and_open: (g:ctx) [g ⊢ bstep_closed X' T1 X] → [g ⊢ bstep_open X' T2 X] → [g ⊢ false] =
+rec no_bstep_closed_and_open: (g:ctx) [g ⊢ bstep_cl X' T1 X] → [g ⊢ bstep_op X' T2 X] → [g ⊢ false] =
 / total b1 (no_bstep_closed_and_open _ _ _ _ _ b1 _) /
 fn b1,b2 ⇒ case b1 of
   | [g ⊢ bc_pref D1] ⇒ impossible b2
@@ -348,13 +348,13 @@ fn b1,b2 ⇒ case b1 of
 
 %%% Uniqueness of the derivation of open transitions %%%
 
-% Equality of derivations of fstep_open X T X'
-LF eqfo: fstep_open X1 T1 X1' → fstep_open X2 T2 X2' → type =
+% Equality of derivations of fstep_op X T X'
+LF eqfo: fstep_op X1 T1 X1' → fstep_op X2 T2 X2' → type =
   | reffo: eqfo F F
 ;
 
-% Uniqueness of the derivation of fstep_open X T X'
-rec unique_fstep_open: (g:ctx) {F1:[g ⊢ fstep_open X T1 X']} {F2:[g ⊢ fstep_open X T2 X']} [g ⊢ eqfo F1 F2] =
+% Uniqueness of the derivation of fstep_op X T X'
+rec unique_fstep_open: (g:ctx) {F1:[g ⊢ fstep_op X T1 X']} {F2:[g ⊢ fstep_op X T2 X']} [g ⊢ eqfo F1 F2] =
 / total f1 (unique_fstep_open _ _ _ _ _ f1 _) /
 mlam F1 F2 ⇒ case [_ ⊢ F1] of
   | [g ⊢ fo_nu_closed (\a.O1) (\a.L1) (\a.F1')] ⇒ (case [g ⊢ F2] of
@@ -390,13 +390,13 @@ mlam F1 F2 ⇒ case [_ ⊢ F1] of
        | [g ⊢ fo_nu_open \a.F2'] ⇒ let [g,a:names ⊢ reffo] = unique_fstep_open [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffo])
 ;
 
-% Equality of derivations of bstep_open X' T X
-LF eqbo: bstep_open X1' T1 X1 → bstep_open X2' T2 X2 → type =
+% Equality of derivations of bstep_op X' T X
+LF eqbo: bstep_op X1' T1 X1 → bstep_op X2' T2 X2 → type =
   | refbo: eqbo B B
 ;
 
-% Uniqueness of the derivation of bstep_open X' T X
-rec unique_bstep_open: (g:ctx) {B1:[g ⊢ bstep_open X' T1 X]} {B2:[g ⊢ bstep_open X' T2 X]} [g ⊢ eqbo B1 B2] =
+% Uniqueness of the derivation of bstep_op X' T X
+rec unique_bstep_open: (g:ctx) {B1:[g ⊢ bstep_op X' T1 X]} {B2:[g ⊢ bstep_op X' T2 X]} [g ⊢ eqbo B1 B2] =
 / total b1 (unique_bstep_open _ _ _ _ _ b1 _) /
 mlam B1 B2 ⇒ case [_ ⊢ B1] of
   | [g ⊢ bo_nu_closed (\a.O1) (\a.L1) (\a.B1')] ⇒ (case [g ⊢ B2] of

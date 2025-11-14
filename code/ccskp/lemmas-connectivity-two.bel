@@ -6,33 +6,33 @@
 
 % A closed proof label T is realised if there is a closed forward transition
 % whose source is a standard process and whose proof label is T.
-LF cl_realised: pr_lab → type =
-  | crl: std X → fstep_closed X T X' → cl_realised T
+LF realised_cl: pr_lab_cl → type =
+  | crl: std X → fstep_cl X T X' → realised_cl T
 ;
 % An open proof label T is realised if there is an open forward transition
 % whose source is a standard process and whose proof label is T.
-LF op_realised: open_pr_lab → type =
-  | orl: std X → fstep_open X T X' → op_realised T
+LF realised_op: pr_lab_op → type =
+  | orl: std X → fstep_op X T X' → realised_op T
 ;
 % A generalized proof label T is realised if there is a forward transition
 % whose source is a standard process and whose proof label is T.
-LF realised: gen_pr_lab → type =
+LF realised: pr_lab → type =
   | rl: std X → fstep X T X' → realised T
 ;
 
-% Lemma 2.5: every valid proof label is realised
+% Lemma 2.5: every valid_cl proof label is realised
 
 % Lemma 2.5 for closed proof labels
-rec cl_pr_lab_is_realised: (g:ctx) [g ⊢ valid T] → [g ⊢ cl_realised T] =
+rec cl_pr_lab_is_realised: (g:ctx) [g ⊢ valid_cl T] → [g ⊢ realised_cl T] =
 / total v (cl_pr_lab_is_realised _ _ v) /
 fn v ⇒ case v of
   | [g ⊢ v_base] ⇒ [g ⊢ crl (std_pref std_null) (fc_pref std_null)]
   | [g ⊢ v_suml V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ crl (std_sum D std_null) (fc_suml F std_null)]
   | [g ⊢ v_sumr V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ crl (std_sum std_null D) (fc_sumr F std_null)]
-  | [g ⊢ v_parl V] ⇒ let [g ⊢ crl D F]:[g ⊢ cl_realised T] = cl_pr_lab_is_realised [g ⊢ V] in
+  | [g ⊢ v_parl V] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T] = cl_pr_lab_is_realised [g ⊢ V] in
     let [g ⊢ ex_k H] = existence_of_key [g ⊢ T] in
     [g ⊢ crl (std_par D std_null) (fc_parl F H not_null)]
-  | [g ⊢ v_parr V] ⇒ let [g ⊢ crl D F]:[g ⊢ cl_realised T] = cl_pr_lab_is_realised [g ⊢ V] in
+  | [g ⊢ v_parr V] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T] = cl_pr_lab_is_realised [g ⊢ V] in
     let [g ⊢ ex_k H] = existence_of_key [g ⊢ T] in
     [g ⊢ crl (std_par std_null D) (fc_parr F H not_null)]
   | [g ⊢ v_synl V1 V2 L1 H1 L2 H2] ⇒ let [g ⊢ crl D1 F1] = cl_pr_lab_is_realised [g ⊢ V1] in
@@ -43,15 +43,15 @@ fn v ⇒ case v of
     [g ⊢ crl (std_par D1 D2) (fc_synr F1 L1 H1 F2 L2 H2)]
 ;
 % Lemma 2.5 for open proof labels
-rec op_pr_lab_is_realised: (g:ctx) [g ⊢ open_valid T] → [g ⊢ op_realised T] =
+rec op_pr_lab_is_realised: (g:ctx) [g ⊢ valid_op T] → [g ⊢ realised_op T] =
 / total v (op_pr_lab_is_realised _ _ v) /
 fn v ⇒ case v of
   | [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] ⇒ let [g,a:names ⊢ crl D F] = cl_pr_lab_is_realised [g,a:names ⊢ V] in
     [g ⊢ orl (std_nu \a.D) (fo_nu_closed (\a.O) (\a.L) (\a.F))]
 ;
 % Lemma 2.5 for generalized proof labels
-rec pr_lab_is_realised: (g:ctx) [g ⊢ gen_valid T] → [g ⊢ realised T] =
-/ total v (pr_lab_is_realised _ _ v) /
+rec pr_lab_cl_is_realised: (g:ctx) [g ⊢ valid T] → [g ⊢ realised T] =
+/ total v (pr_lab_cl_is_realised _ _ v) /
 fn v ⇒ case v of
   | [g ⊢ gpv V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fc F)]
   | [g ⊢ gov V] ⇒ let [g ⊢ orl D F] = op_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fo F)]
@@ -135,7 +135,7 @@ fn s,d ⇒ case s of
 
 % If a standard process makes a closed forward transition F indexed by the key K,
 % then any key different than K does not occur in the target of F
-rec lemma_fstep_closed_std: (g:ctx) [g ⊢ std X] → [g ⊢ fstep_closed X T Y] →
+rec lemma_fstep_closed_std: (g:ctx) [g ⊢ std X] → [g ⊢ fstep_cl X T Y] →
   [g ⊢ key T M[]] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] Y] =
 / total d (lemma_fstep_closed_std _ _ _ _ _ _ d _ _ _) /
 fn d,f,h,i ⇒ let [g ⊢ I]:[g ⊢ neq _ K[]] = i in

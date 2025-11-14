@@ -15,12 +15,12 @@ mlam K ⇒ fn d ⇒ case d of
 
 % Given a proof keyed label T and a standard process X, the key of T does not occur in X.
 % We need an auxiliary type family to encode the conclusion of this lemma.
-LF ex_key_notin: pr_lab → std _ → type =
+LF ex_key_notin: pr_lab_cl → std _ → type =
   | ex_kn: {D:std X} key T K → notin K X → ex_key_notin T D
 ;
 
 % The key of a proof keyed label does not occur in a standard process:
-rec no_key_of_prlab_in_std: (g:ctx) {T:[g ⊢ pr_lab]} {D:[g ⊢ std X]} [g ⊢ ex_key_notin T D] =
+rec no_key_of_prlab_in_std: (g:ctx) {T:[g ⊢ pr_lab_cl]} {D:[g ⊢ std X]} [g ⊢ ex_key_notin T D] =
 / total t (no_key_of_prlab_in_std _ t _ _) /
 mlam T,D ⇒ let [g ⊢ ex_k H] = existence_of_key [_ ⊢ T] in
        let [g ⊢ H]:[g ⊢ key _ K[]] = [g ⊢ H] in
@@ -31,7 +31,7 @@ mlam T,D ⇒ let [g ⊢ ex_k H] = existence_of_key [_ ⊢ T] in
 %%% Properties of transitions %%%
 
 % Loop lemma - first implication for closed transitions
-rec closed_loop_lemma_one: (g:ctx) [g ⊢ fstep_closed X T X'] → [g ⊢ bstep_closed X' T X] =
+rec closed_loop_lemma_one: (g:ctx) [g ⊢ fstep_cl X T X'] → [g ⊢ bstep_cl X' T X] =
 / total f (closed_loop_lemma_one _ _ _ _ f) /
 fn f ⇒ case f of
   | [g ⊢ fc_pref D] ⇒ [g ⊢ bc_pref D]
@@ -48,7 +48,7 @@ fn f ⇒ case f of
 ;
 
 % Loop lemma - first implication for open transitions
-rec open_loop_lemma_one: (g:ctx) [g ⊢ fstep_open X T X'] → [g ⊢ bstep_open X' T X] =
+rec open_loop_lemma_one: (g:ctx) [g ⊢ fstep_op X T X'] → [g ⊢ bstep_op X' T X] =
 / total f (open_loop_lemma_one _ _ _ _ f) /
 fn f ⇒ case f of
   | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)] ⇒
@@ -70,7 +70,7 @@ fn f ⇒ case f of
 ;
 
 % Loop lemma - second implication for closed transitions
-rec closed_loop_lemma_two: (g:ctx) [g ⊢ bstep_closed X' T X] → [g ⊢ fstep_closed X T X'] =
+rec closed_loop_lemma_two: (g:ctx) [g ⊢ bstep_cl X' T X] → [g ⊢ fstep_cl X T X'] =
 / total b (closed_loop_lemma_two _ _ _ _ b) /
 fn b ⇒ case b of
   | [g ⊢ bc_pref D] ⇒ [g ⊢ fc_pref D]
@@ -87,7 +87,7 @@ fn b ⇒ case b of
 ;
 
 % Loop lemma - second implication for open transitions
-rec open_loop_lemma_two: (g:ctx) [g ⊢ bstep_open X' T X] → [g ⊢ fstep_open X T X'] =
+rec open_loop_lemma_two: (g:ctx) [g ⊢ bstep_op X' T X] → [g ⊢ fstep_op X T X'] =
 / total b (open_loop_lemma_two _ _ _ _ b) /
 fn b ⇒ case b of
   | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B)] ⇒
@@ -109,7 +109,7 @@ fn b ⇒ case b of
 ;
 
 % Proof that step is symmetric for closed transitions
-rec symmetric_step_closed: (g:ctx) [g ⊢ step_closed X T Y] → [g ⊢ step_closed Y T X] =
+rec symmetric_step_closed: (g:ctx) [g ⊢ step_cl X T Y] → [g ⊢ step_cl Y T X] =
 / total s (symmetric_step_closed _ _ _ s) /
 fn s ⇒ case s of
     | [g ⊢ fwc F] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bwc B]
@@ -117,7 +117,7 @@ fn s ⇒ case s of
 ;
 
 % Proof that step is symmetric for open transitions
-rec symmetric_step_open: (g:ctx) [g ⊢ step_open X T Y] → [g ⊢ step_open Y T X] =
+rec symmetric_step_open: (g:ctx) [g ⊢ step_op X T Y] → [g ⊢ step_op Y T X] =
 / total s (symmetric_step_open _ _ _ s) /
 fn s ⇒ case s of
     | [g ⊢ fwo F] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bwo B]

@@ -20,7 +20,7 @@ fn i ⇒ case i of
 % For the following processes, we will omit the proof for the trivial types of transitions.
 
 % a[k] | b[k] does not make any forward closed transition.
-rec stuck_p1_fclosed: (g:ctx) [g ⊢ fstep_closed (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
+rec stuck_p1_fclosed: (g:ctx) [g ⊢ fstep_cl (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
 / total 1 /
 fn f ⇒ case f of
   | [g ⊢ fc_parl F _ _] ⇒ let [g ⊢ fc_kpref F1 _ _] = [g ⊢ F] in impossible [g ⊢ F1]
@@ -30,7 +30,7 @@ fn f ⇒ case f of
 ;
 
 % a[k] | b[k] does not make any forward open transition.
-rec stuck_p1_fopen: (g:ctx) [g ⊢ fstep_open (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
+rec stuck_p1_fopen: (g:ctx) [g ⊢ fstep_op (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
 / total 1 /
 fn f ⇒ case f of
   | [g ⊢ fo_parl F (\_._) _] ⇒ let [g ⊢ fo_kpref F1 (\_._) _] = [g ⊢ F] in impossible [g ⊢ F1]
@@ -38,7 +38,7 @@ fn f ⇒ case f of
 ;
 
 % a[k] | b[k] does not make any backward closed transition.
-rec stuck_p1_bclosed: (g:ctx) [g ⊢ bstep_closed (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
+rec stuck_p1_bclosed: (g:ctx) [g ⊢ bstep_cl (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
 / total 1 /
 fn b ⇒ case b of
   | [g ⊢ bc_parl B H N] ⇒ let [g ⊢ bc_pref D] = [g ⊢ B] in
@@ -52,7 +52,7 @@ fn b ⇒ case b of
 ;
 
 % a[k] | b[k] does not make any backward open transition.
-rec stuck_p1_bopen: (g:ctx) [g ⊢ bstep_open (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
+rec stuck_p1_bopen: (g:ctx) [g ⊢ bstep_op (par (kpref (inp a) k null) (kpref (inp b) k null)) T X'] → [⊢ false] =
 / total 1 /
 fn b ⇒ case b of
   | [g ⊢ bo_parl B (\a.H) N] ⇒ let [g ⊢ bo_kpref B1 (\_._) _] = [g ⊢ B] in impossible [g ⊢ B1]
@@ -61,7 +61,7 @@ fn b ⇒ case b of
 
 
 % a[k] + b[m] does not make any backward closed transition.
-rec stuck_p2: (g:ctx) [g ⊢ bstep_closed (sum (kpref (inp a) k null) (kpref (inp b) m null)) T X'] → [⊢ false] =
+rec stuck_p2: (g:ctx) [g ⊢ bstep_cl (sum (kpref (inp a) k null) (kpref (inp b) m null)) T X'] → [⊢ false] =
 / total 1 /
 fn b ⇒ case b of
   | [g ⊢ bc_suml _ D] ⇒ impossible [g ⊢ D]
@@ -70,20 +70,20 @@ fn b ⇒ case b of
 
 
 % a.b[k] does not make any forward closed transition.
-rec stuck_p3_forward: (g:ctx) [g ⊢ fstep_closed (pref (inp a) (kpref (inp b) k null)) T X'] → [⊢ false] =
+rec stuck_p3_forward: (g:ctx) [g ⊢ fstep_cl (pref (inp a) (kpref (inp b) k null)) T X'] → [⊢ false] =
 / total 1 /
 fn f ⇒ let [g ⊢ fc_pref D] = f in impossible [g ⊢ D]
 ;
 
 % a.b[k] does not make any backward closed transition.
-rec stuck_p3_backward: (g:ctx) [g ⊢ bstep_closed (pref (inp a) (kpref (inp b) k null)) T X'] → [⊢ false] =
+rec stuck_p3_backward: (g:ctx) [g ⊢ bstep_cl (pref (inp a) (kpref (inp b) k null)) T X'] → [⊢ false] =
 / total 1 /
 fn b ⇒ impossible b
 ;
 
 
 % a[k].b[m] | b'[m].a'[k] does not make any backward closed transition.
-rec stuck_p4: (g:ctx) [g ⊢ neq k m] → [g ⊢ bstep_closed (par (kpref (inp a) k (kpref (inp b) m null)) (kpref (out b) m (kpref (out a) k null))) T X'] → [⊢ false] =
+rec stuck_p4: (g:ctx) [g ⊢ neq k m] → [g ⊢ bstep_cl (par (kpref (inp a) k (kpref (inp b) m null)) (kpref (out b) m (kpref (out a) k null))) T X'] → [⊢ false] =
 / total 1 /
 fn i,b ⇒ case b of
   | [g ⊢ bc_parl B H N] ⇒
@@ -108,7 +108,7 @@ fn i,b ⇒ case b of
 
 
 % (a[k])\a does not make any backward closed transition.
-rec stuck_p5: (g:ctx) [g ⊢ bstep_closed (nu \a.(kpref (inp a) k null)) T X'] → [⊢ false] =
+rec stuck_p5: (g:ctx) [g ⊢ bstep_cl (nu \a.(kpref (inp a) k null)) T X'] → [⊢ false] =
 / total 1 /
 fn b ⇒ let [g ⊢ bc_nu \a.B] = b in
 let [g,a:names ⊢ bc_kpref B1 _ _] = [g,a:names ⊢ B] in

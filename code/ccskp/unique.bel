@@ -3,18 +3,18 @@
 --open ccskp.
 
 % Existential type denoting existence of a label in a proof keyed label
-LF ex_lab: pr_lab → type =
+LF ex_lab: pr_lab_cl → type =
   | ex_l: lab T A → ex_lab T
 ;
 
 % Proof of existence of a label in a proof keyed label
-rec existence_of_lab: (g:ctx) {T:[g ⊢ pr_lab]} [g ⊢ ex_lab T] =
+rec existence_of_lab: (g:ctx) {T:[g ⊢ pr_lab_cl]} [g ⊢ ex_lab T] =
 / total t (existence_of_lab _ t) /
 mlam T ⇒ case [_ ⊢ T] of
   | [g ⊢ pr_base _ _] ⇒ [g ⊢ ex_l lab_base]
   | [g ⊢ pr_suml T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_suml L)]
   | [g ⊢ pr_sumr T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_sumr L)]
-  | [g ⊢ pr_parl T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parl L)]
+  | [g ⊢ pr_parl_cl T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parl L)]
   | [g ⊢ pr_parr T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parr L)]
   | [g ⊢ pr_sync _ _] ⇒ [g ⊢ ex_l lab_sync]
 ;
@@ -32,18 +32,18 @@ fn l1,l2 ⇒ case l1 of
 ;
 
 % Existential type denoting existence of a key in a proof keyed label
-LF ex_key: pr_lab → type =
+LF ex_key: pr_lab_cl → type =
   | ex_k: key T K → ex_key T
 ;
 
 % Proof of existence of a key in a proof keyed label
-rec existence_of_key: (g:ctx) {T:[g ⊢ pr_lab]} [g ⊢ ex_key T] =
+rec existence_of_key: (g:ctx) {T:[g ⊢ pr_lab_cl]} [g ⊢ ex_key T] =
 / total t (existence_of_key _ t) /
 mlam T ⇒ case [_ ⊢ T] of
   | [g ⊢ pr_base _ _] ⇒ [g ⊢ ex_k key_base]
   | [g ⊢ pr_suml T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_suml H)]
   | [g ⊢ pr_sumr T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_sumr H)]
-  | [g ⊢ pr_parl T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_parl H)]
+  | [g ⊢ pr_parl_cl T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_parl H)]
   | [g ⊢ pr_parr T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_parr H)]
   | [g ⊢ pr_sync T' _] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_sync H)]
 ;

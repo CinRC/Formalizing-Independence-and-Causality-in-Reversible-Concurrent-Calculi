@@ -2,50 +2,50 @@
 % They are defined as relations, and proved to be functions in the files `functionality.bel` and `totality.bel`.
 
 % Function from forward closed CCSKP transitions to forward CCSK transitions.
-LF fc_forget: ccskp.fstep_closed X T1 X' → ccsk.fstep X T2 X' → type =
-  | fc_fg: {F1:ccskp.fstep_closed X T1 X'}{F2:ccsk.fstep X (ccsk.kl_base A K) X'}
+LF fc_forget: ccskp.fstep_cl X T1 X' → ccsk.fstep X T2 X' → type =
+  | fc_fg: {F1:ccskp.fstep_cl X T1 X'}{F2:ccsk.fstep X (ccsk.kl_base A K) X'}
            ccskp.lab T1 A → ccskp.key T1 K → fc_forget F1 F2
 ;
 
 % Function from forward open CCSKP transitions to forward CCSK transitions.
-LF fo_forget: ccskp.fstep_open X T1 X' → ccsk.fstep X T2 X' → type =
-  | fo_fg: {F1:ccskp.fstep_open X (ccskp.open T1) X'}{F2:ccsk.fstep X (ccsk.kl_base tau K) X'}
+LF fo_forget: ccskp.fstep_op X T1 X' → ccsk.fstep X T2 X' → type =
+  | fo_fg: {F1:ccskp.fstep_op X (ccskp.open T1) X'}{F2:ccsk.fstep X (ccsk.kl_base tau K) X'}
            ({a:names} ccskp.key (T1 a) K) → fo_forget F1 F2
 ;
 
 % Function from backward closed CCSKP transitions to backward CCSK transitions.
-LF bc_forget: ccskp.bstep_closed X' T1 X → ccsk.bstep X' T2 X → type =
-  | bc_fg: {B1:ccskp.bstep_closed X' T1 X}{B2:ccsk.bstep X' (ccsk.kl_base A K) X}
+LF bc_forget: ccskp.bstep_cl X' T1 X → ccsk.bstep X' T2 X → type =
+  | bc_fg: {B1:ccskp.bstep_cl X' T1 X}{B2:ccsk.bstep X' (ccsk.kl_base A K) X}
            ccskp.lab T1 A → ccskp.key T1 K → bc_forget B1 B2
 ;
 
 % Function from backward open CCSKP transitions to backward CCSK transitions.
-LF bo_forget: ccskp.bstep_open X' T1 X → ccsk.bstep X' T2 X → type =
-  | bo_fg: {B1:ccskp.bstep_open X' (ccskp.open T1) X}{B2:ccsk.bstep X' (ccsk.kl_base tau K) X}
+LF bo_forget: ccskp.bstep_op X' T1 X → ccsk.bstep X' T2 X → type =
+  | bo_fg: {B1:ccskp.bstep_op X' (ccskp.open T1) X}{B2:ccsk.bstep X' (ccsk.kl_base tau K) X}
            ({a:names} ccskp.key (T1 a) K) → bo_forget B1 B2
 ;
 
 % Function from forward CCSK transitions to forward closed CCSKP transitions.
-LF fc_enrich: ccsk.fstep X T1 X' → ccskp.fstep_closed X T2 X' → type =
-  | fc_en: {F1:ccsk.fstep X (ccsk.kl_base A K) X'}{F2:ccskp.fstep_closed X T2 X'}
+LF fc_enrich: ccsk.fstep X T1 X' → ccskp.fstep_cl X T2 X' → type =
+  | fc_en: {F1:ccsk.fstep X (ccsk.kl_base A K) X'}{F2:ccskp.fstep_cl X T2 X'}
            ccskp.lab T2 A → ccskp.key T2 K → fc_enrich F1 F2
 ;
 
 % Function from forward CCSK transitions to forward open CCSKP transitions.
-LF fo_enrich: ccsk.fstep X T1 X' → ccskp.fstep_open X T2 X' → type =
-  | fo_en: {F1:ccsk.fstep X (ccsk.kl_base tau K) X'}{F2:ccskp.fstep_open X (ccskp.open T2) X'}
+LF fo_enrich: ccsk.fstep X T1 X' → ccskp.fstep_op X T2 X' → type =
+  | fo_en: {F1:ccsk.fstep X (ccsk.kl_base tau K) X'}{F2:ccskp.fstep_op X (ccskp.open T2) X'}
            ({a:names} ccskp.key (T2 a) K) → fo_enrich F1 F2
 ;
 
 % Function from backward CCSK transitions to backward closed CCSKP transitions.
-LF bc_enrich: ccsk.bstep X' T1 X → ccskp.bstep_closed X' T2 X → type =
-  | bc_en: {B1:ccsk.bstep X' (ccsk.kl_base A K) X}{B2:ccskp.bstep_closed X' T2 X}
+LF bc_enrich: ccsk.bstep X' T1 X → ccskp.bstep_cl X' T2 X → type =
+  | bc_en: {B1:ccsk.bstep X' (ccsk.kl_base A K) X}{B2:ccskp.bstep_cl X' T2 X}
            ccskp.lab T2 A → ccskp.key T2 K → bc_enrich B1 B2
 ;
 
 % Function from backward CCSK transitions to backward open CCSKP transitions.
-LF bo_enrich: ccsk.bstep X' T1 X → ccskp.bstep_open X' T2 X → type =
-  | bo_en: {B1:ccsk.bstep X' (ccsk.kl_base tau K) X}{B2:ccskp.bstep_open X' (ccskp.open T2) X}
+LF bo_enrich: ccsk.bstep X' T1 X → ccskp.bstep_op X' T2 X → type =
+  | bo_en: {B1:ccsk.bstep X' (ccsk.kl_base tau K) X}{B2:ccskp.bstep_op X' (ccskp.open T2) X}
            ({a:names} ccskp.key (T2 a) K) → bo_enrich B1 B2
 ;
 

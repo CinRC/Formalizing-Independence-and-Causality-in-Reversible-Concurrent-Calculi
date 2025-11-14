@@ -1,7 +1,7 @@
 %%% Auxiliary lemmas for CCSKP %%%
 
 % Equality of proof keyed labels
-LF eqpl: pr_lab → pr_lab → type =
+LF eqpl: pr_lab_cl → pr_lab_cl → type =
   | refpl: eqpl T T
 ;
 
@@ -73,10 +73,10 @@ fn o ⇒ case o of
   | [g,a:names ⊢ occ_sync O] ⇒ let [g ⊢ O'] = str_occr [g,a:names ⊢ O] in [g ⊢ occ_sync O']
 ;
 
-% Given a derivation of valid T in a context [g,a:names],
+% Given a derivation of valid_cl T in a context [g,a:names],
 % with 'a' not occurring in T, then we can obtain a derivation
-% of valid T in the stronger context [g].
-rec str_val: (g:ctx) [g,a:names ⊢ valid T[..]] → [g ⊢ valid T] =
+% of valid_cl T in the stronger context [g].
+rec str_val: (g:ctx) [g,a:names ⊢ valid_cl T[..]] → [g ⊢ valid_cl T] =
 / total v (str_val _ _ v) /
 fn v ⇒ case v of
   | [g,a:names ⊢ v_base] ⇒ [g ⊢ v_base]
@@ -104,10 +104,10 @@ fn v ⇒ case v of
 	  let [g ⊢ H2'] = str_key [g,a:names ⊢ H2] in [g ⊢ v_synr V1' V2' L1' H1' L2' H2']
 ;
 
-% Given a derivation of open_valid T in a context [g,a:names],
+% Given a derivation of valid_op T in a context [g,a:names],
 % with 'a' not occurring in T, then we can obtain a derivation
-% of open_valid T in the stronger context [g].
-rec str_open_val: (g:ctx) [g,a:names ⊢ open_valid T[..]] → [g ⊢ open_valid T] =
+% of valid_op T in the stronger context [g].
+rec str_open_val: (g:ctx) [g,a:names ⊢ valid_op T[..]] → [g ⊢ valid_op T] =
 / total v (str_open_val _ _ v) /
 fn v ⇒ case v of
   | [g,a:names ⊢ ov_base (\b.O[..,b,a]) (\b.L[..,b,a]) (\b.V[..,b,a])] ⇒ 
@@ -118,68 +118,68 @@ fn v ⇒ case v of
     [g ⊢ ov_base (\b.O') (\b.L') (\b.V')]
 ;
 
-% The proof label of a closed forward transition is valid
-rec valid_pr_lab_in_fstep_closed: (g:ctx) [g ⊢ fstep_closed X T X'] → [g ⊢ valid T] =
-/ total f (valid_pr_lab_in_fstep_closed _ _ _ _ f) /
+% The proof label of a closed forward transition is valid_cl
+rec valid_cl_pr_lab_in_fstep_closed: (g:ctx) [g ⊢ fstep_cl X T X'] → [g ⊢ valid_cl T] =
+/ total f (valid_cl_pr_lab_in_fstep_closed _ _ _ _ f) /
 fn f ⇒ case f of
   | [g ⊢ fc_pref _] ⇒ [g ⊢ v_base]
-  | [g ⊢ fc_kpref F _ _] ⇒ valid_pr_lab_in_fstep_closed [g ⊢ F]
-  | [g ⊢ fc_suml F _] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_suml V]
-  | [g ⊢ fc_sumr F _] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_sumr V]
-  | [g ⊢ fc_parl F _ _] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_parl V]
-  | [g ⊢ fc_parr F _ _] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_parr V]
-  | [g ⊢ fc_synl FL LL HL FR LR HR] ⇒ let [g ⊢ VL] = valid_pr_lab_in_fstep_closed [g ⊢ FL] in
-    let [g ⊢ VR] = valid_pr_lab_in_fstep_closed [g ⊢ FR] in [g ⊢ v_synl VL VR LL HL LR HR]
-  | [g ⊢ fc_synr FL LL HL FR LR HR] ⇒ let [g ⊢ VL] = valid_pr_lab_in_fstep_closed [g ⊢ FL] in
-    let [g ⊢ VR] = valid_pr_lab_in_fstep_closed [g ⊢ FR] in [g ⊢ v_synr VL VR LL HL LR HR]
-  | [g ⊢ fc_nu \a.F] ⇒ let [g,a:names ⊢ V] = valid_pr_lab_in_fstep_closed [g,a:names ⊢ F] in str_val [g,a:names ⊢ V]
+  | [g ⊢ fc_kpref F _ _] ⇒ valid_cl_pr_lab_in_fstep_closed [g ⊢ F]
+  | [g ⊢ fc_suml F _] ⇒ let [g ⊢ V] = valid_cl_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_suml V]
+  | [g ⊢ fc_sumr F _] ⇒ let [g ⊢ V] = valid_cl_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_sumr V]
+  | [g ⊢ fc_parl F _ _] ⇒ let [g ⊢ V] = valid_cl_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_parl V]
+  | [g ⊢ fc_parr F _ _] ⇒ let [g ⊢ V] = valid_cl_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_parr V]
+  | [g ⊢ fc_synl FL LL HL FR LR HR] ⇒ let [g ⊢ VL] = valid_cl_pr_lab_in_fstep_closed [g ⊢ FL] in
+    let [g ⊢ VR] = valid_cl_pr_lab_in_fstep_closed [g ⊢ FR] in [g ⊢ v_synl VL VR LL HL LR HR]
+  | [g ⊢ fc_synr FL LL HL FR LR HR] ⇒ let [g ⊢ VL] = valid_cl_pr_lab_in_fstep_closed [g ⊢ FL] in
+    let [g ⊢ VR] = valid_cl_pr_lab_in_fstep_closed [g ⊢ FR] in [g ⊢ v_synr VL VR LL HL LR HR]
+  | [g ⊢ fc_nu \a.F] ⇒ let [g,a:names ⊢ V] = valid_cl_pr_lab_in_fstep_closed [g,a:names ⊢ F] in str_val [g,a:names ⊢ V]
 ;
 
-% The proof label of a closed backward transition is valid
-rec valid_pr_lab_in_bstep_closed: (g:ctx) [g ⊢ bstep_closed X' T X] → [g ⊢ valid T] =
-/ total b (valid_pr_lab_in_bstep_closed _ _ _ _ b) /
-fn b ⇒ let f = closed_loop_lemma_two b in valid_pr_lab_in_fstep_closed f
+% The proof label of a closed backward transition is valid_cl
+rec valid_cl_pr_lab_in_bstep_closed: (g:ctx) [g ⊢ bstep_cl X' T X] → [g ⊢ valid_cl T] =
+/ total b (valid_cl_pr_lab_in_bstep_closed _ _ _ _ b) /
+fn b ⇒ let f = closed_loop_lemma_two b in valid_cl_pr_lab_in_fstep_closed f
 ;
 
-% The proof label of an open forward transition is valid
-rec valid_pr_lab_in_fstep_open: (g:ctx) [g ⊢ fstep_open X T X'] → [g ⊢ open_valid T] =
-/ total f (valid_pr_lab_in_fstep_open _ _ _ _ f) /
+% The proof label of an open forward transition is valid_cl
+rec valid_cl_pr_lab_in_fstep_open: (g:ctx) [g ⊢ fstep_op X T X'] → [g ⊢ valid_op T] =
+/ total f (valid_cl_pr_lab_in_fstep_open _ _ _ _ f) /
 fn f ⇒ case f of
   | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)] ⇒ 
-    let [g,a:names ⊢ V]:[g,a:names ⊢ valid T] = valid_pr_lab_in_fstep_closed [g,a:names ⊢ F] in
+    let [g,a:names ⊢ V]:[g,a:names ⊢ valid_cl T] = valid_cl_pr_lab_in_fstep_closed [g,a:names ⊢ F] in
     [g ⊢ ov_base (\a.O) (\a.L) (\a.V)]
-  | [g ⊢ fo_kpref F (\_._) _] ⇒ valid_pr_lab_in_fstep_open [g ⊢ F]
+  | [g ⊢ fo_kpref F (\_._) _] ⇒ valid_cl_pr_lab_in_fstep_open [g ⊢ F]
   | [g ⊢ fo_suml F _] ⇒
-    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
+    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_cl_pr_lab_in_fstep_open [g ⊢ F] in
     [g ⊢ ov_base (\a.(occ_suml O)) (\a.(lab_suml L)) (\a.(v_suml V))]
   | [g ⊢ fo_sumr F _] ⇒
-    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
+    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_cl_pr_lab_in_fstep_open [g ⊢ F] in
     [g ⊢ ov_base (\a.(occ_sumr O)) (\a.(lab_sumr L)) (\a.(v_sumr V))]
   | [g ⊢ fo_parl F (\_._) _] ⇒
-    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
+    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_cl_pr_lab_in_fstep_open [g ⊢ F] in
     [g ⊢ ov_base (\a.(occ_parl O)) (\a.(lab_parl L)) (\a.(v_parl V))]
   | [g ⊢ fo_parr F (\_._) _] ⇒
-    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
+    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_cl_pr_lab_in_fstep_open [g ⊢ F] in
     [g ⊢ ov_base (\a.(occ_parr O)) (\a.(lab_parr L)) (\a.(v_parr V))]
   | [g ⊢ fo_nu_open \a.F] ⇒
-    let [g,a:names ⊢ V] = valid_pr_lab_in_fstep_open [g,a:names ⊢ F] in
+    let [g,a:names ⊢ V] = valid_cl_pr_lab_in_fstep_open [g,a:names ⊢ F] in
     str_open_val [g,a:names ⊢ V]
 ;
 
-% The proof label of an open backward transition is valid
-rec valid_pr_lab_in_bstep_open: (g:ctx) [g ⊢ bstep_open X' T X] → [g ⊢ open_valid T] =
-/ total b (valid_pr_lab_in_bstep_open _ _ _ _ b) /
-fn b ⇒ let f = open_loop_lemma_two b in valid_pr_lab_in_fstep_open f
+% The proof label of an open backward transition is valid_cl
+rec valid_cl_pr_lab_in_bstep_open: (g:ctx) [g ⊢ bstep_op X' T X] → [g ⊢ valid_op T] =
+/ total b (valid_cl_pr_lab_in_bstep_open _ _ _ _ b) /
+fn b ⇒ let f = open_loop_lemma_two b in valid_cl_pr_lab_in_fstep_open f
 ;
 
-% The proof label of a combined transition is valid
-rec valid_pr_lab_in_step: (g:ctx) [g ⊢ step X T X'] → [g ⊢ gen_valid T] =
-/ total s (valid_pr_lab_in_step _ _ _ _ s) /
+% The proof label of a combined transition is valid_cl
+rec valid_cl_pr_lab_in_step: (g:ctx) [g ⊢ step X T X'] → [g ⊢ valid T] =
+/ total s (valid_cl_pr_lab_in_step _ _ _ _ s) /
 fn s ⇒ case s of
-  | [g ⊢ sc (fwc F)] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ gpv V]
-  | [g ⊢ so (fwo F)] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_open [g ⊢ F] in [g ⊢ gov V]
-  | [g ⊢ sc (bwc B)] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_closed [g ⊢ B] in [g ⊢ gpv V]
-  | [g ⊢ so (bwo B)] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_open [g ⊢ B] in [g ⊢ gov V]
+  | [g ⊢ sc (fwc F)] ⇒ let [g ⊢ V] = valid_cl_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ gpv V]
+  | [g ⊢ so (fwo F)] ⇒ let [g ⊢ V] = valid_cl_pr_lab_in_fstep_open [g ⊢ F] in [g ⊢ gov V]
+  | [g ⊢ sc (bwc B)] ⇒ let [g ⊢ V] = valid_cl_pr_lab_in_bstep_closed [g ⊢ B] in [g ⊢ gpv V]
+  | [g ⊢ so (bwo B)] ⇒ let [g ⊢ V] = valid_cl_pr_lab_in_bstep_open [g ⊢ B] in [g ⊢ gov V]
 ;
 
 % If "a" occurs in T, but not in the label of T, then such label is tau
@@ -200,7 +200,7 @@ fn o,l ⇒ case o of
 ;
 
 % Given an open forward transition labelled by T, the label of T is tau
-rec lab_of_fstep_open: (g:ctx) {F:[g ⊢ fstep_open X (open \a.T) X']} [g,a:names ⊢ lab T[..,a] tau] =
+rec lab_of_fstep_open: (g:ctx) {F:[g ⊢ fstep_op X (open \a.T) X']} [g,a:names ⊢ lab T[..,a] tau] =
 / total f (lab_of_fstep_open _ _ _ _ f) /
 mlam F ⇒ case [_ ⊢ F] of
   | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\_._)] ⇒ occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L]
@@ -213,7 +213,7 @@ mlam F ⇒ case [_ ⊢ F] of
 ;
 
 % Given an open backward transition labelled by T, the label of T is tau
-rec lab_of_bstep_open: (g:ctx) {B:[g ⊢ bstep_open X' (open \a.T) X]} [g,a:names ⊢ lab T[..,a] tau] =
+rec lab_of_bstep_open: (g:ctx) {B:[g ⊢ bstep_op X' (open \a.T) X]} [g,a:names ⊢ lab T[..,a] tau] =
 / total b (lab_of_bstep_open _ _ _ _ b) /
 mlam B ⇒ case [_ ⊢ B] of
   | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\_._)] ⇒ occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L]
@@ -280,16 +280,16 @@ fn l ⇒ case l of
 ;
 
 % Occurrence or not occurrence of a name in a proof label
-inductive occurs_or_not: (g:ctx) [g,a:names ⊢ pr_lab] → ctype =
-  | oc: {T:[g,a:names ⊢ pr_lab]} [g,a:names ⊢ occurs a T] → occurs_or_not [g,a:names ⊢ T]
-  | noc: {T:[g,a:names ⊢ pr_lab]} [g,a:names ⊢ eqpl T T'[..]] → occurs_or_not [g,a:names ⊢ T]
+inductive occurs_or_not: (g:ctx) [g,a:names ⊢ pr_lab_cl] → ctype =
+  | oc: {T:[g,a:names ⊢ pr_lab_cl]} [g,a:names ⊢ occurs a T] → occurs_or_not [g,a:names ⊢ T]
+  | noc: {T:[g,a:names ⊢ pr_lab_cl]} [g,a:names ⊢ eqpl T T'[..]] → occurs_or_not [g,a:names ⊢ T]
 ;
 
-% Given a valid proof label T in the context [g,a:names], then "a" either occurs in T or not
-rec occur_in_valid_pr_lab: (g:ctx) [g,a:names ⊢ valid T] → occurs_or_not [g,a:names ⊢ T] =
+% Given a valid_cl proof label T in the context [g,a:names], then "a" either occurs in T or not
+rec occur_in_valid_pr_lab: (g:ctx) [g,a:names ⊢ valid_cl T] → occurs_or_not [g,a:names ⊢ T] =
 / total v (occur_in_valid_pr_lab _ _ v) /
 fn v ⇒ case v of
-  | [g,a:names ⊢ v_base]:[g,a:names ⊢ valid (pr_base A K[])] ⇒ (case [g,a:names ⊢ A] of
+  | [g,a:names ⊢ v_base]:[g,a:names ⊢ valid_cl (pr_base A K[])] ⇒ (case [g,a:names ⊢ A] of
        | [g,a:names ⊢ inp B] ⇒ (case [g,a:names ⊢ B] of
             | [g,a:names ⊢ #p[..]] ⇒ noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]
             | [g,a:names ⊢ a] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_basel])
@@ -402,7 +402,7 @@ inductive ex_str_occl: (g:ctx) [g,b:names,a:names ⊢ occurs a T] → ctype =
           → [g,a:names,b:names ⊢ eqpl T T'[..]] → ex_str_occl [g,b:names,a:names ⊢ O]
 ;
 
-rec str_occl: (g:ctx) {O:[g,b:names,a:names ⊢ occurs a T]} [g,b:names,a:names ⊢ valid T] → ex_str_occl [g,b:names,a:names ⊢ O] =
+rec str_occl: (g:ctx) {O:[g,b:names,a:names ⊢ occurs a T]} [g,b:names,a:names ⊢ valid_cl T] → ex_str_occl [g,b:names,a:names ⊢ O] =
 / total o (str_occl _ _ o _) /
 mlam O ⇒ fn v ⇒ case [_,b:names,a:names ⊢ O] of
   | [g,b:names,a:names ⊢ occ_basel] ⇒ ex_sol [_ ⊢ _] [_ ⊢ occ_basel] [_ ⊢ refpl]
@@ -447,16 +447,16 @@ mlam O ⇒ fn v ⇒ case [_,b:names,a:names ⊢ O] of
 ;
 
 % Given an open forward transition in a context [g,b:names], b does not occur in T.
-inductive ex_str_fstep_open: (g:ctx) [g,b:names ⊢ fstep_open X T X'] → ctype =
-  | ex_sfo: {F:[g,b:names ⊢ fstep_open X (open \a.T) X']} [g,b:names ⊢ fstep_open X (open \a.T'[..,a]) X']
+inductive ex_str_fstep_open: (g:ctx) [g,b:names ⊢ fstep_op X T X'] → ctype =
+  | ex_sfo: {F:[g,b:names ⊢ fstep_op X (open \a.T) X']} [g,b:names ⊢ fstep_op X (open \a.T'[..,a]) X']
           → [g,a:names,b:names ⊢ eqpl T T'[..]] → ex_str_fstep_open [g,b:names ⊢ F]
 ;
 
-rec str_fstep_open: (g:ctx) {F:[g,b:names ⊢ fstep_open X (open \a.T) X']} ex_str_fstep_open [g,b:names ⊢ F] =
+rec str_fstep_open: (g:ctx) {F:[g,b:names ⊢ fstep_op X (open \a.T) X']} ex_str_fstep_open [g,b:names ⊢ F] =
 / total f (str_fstep_open _ _ _ _ f) /
 mlam F ⇒ case [_ ⊢ F] of
   | [g,b:names ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F')] ⇒
-    let [g,b:names,a:names ⊢ V]:[g,b:names,a:names ⊢ valid T] = valid_pr_lab_in_fstep_closed [_ ⊢ F'] in
+    let [g,b:names,a:names ⊢ V]:[g,b:names,a:names ⊢ valid_cl T] = valid_cl_pr_lab_in_fstep_closed [_ ⊢ F'] in
     let ex_sol [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O'] e1 = str_occl [_ ⊢ O] [_ ⊢ V] in
     let [g,b:names,a:names ⊢ refpl] = e1 in
     let ex_sll [g,a:names,b:names ⊢ _] [g,a:names ⊢ L'] e2 = str_labl [g,a:names,b:names ⊢ L[..,b,a]] in
@@ -484,12 +484,12 @@ mlam F ⇒ case [_ ⊢ F] of
 ;
 
 % Given an open backward transition in a context [g,b:names], b does not occur in T.
-inductive ex_str_bstep_open: (g:ctx) [g,b:names ⊢ bstep_open X' T X] → ctype =
-  | ex_sbo: {B:[g,b:names ⊢ bstep_open X' (open \a.T) X]} [g,b:names ⊢ bstep_open X' (open \a.T'[..,a]) X]
+inductive ex_str_bstep_open: (g:ctx) [g,b:names ⊢ bstep_op X' T X] → ctype =
+  | ex_sbo: {B:[g,b:names ⊢ bstep_op X' (open \a.T) X]} [g,b:names ⊢ bstep_op X' (open \a.T'[..,a]) X]
           → [g,a:names,b:names ⊢ eqpl T T'[..]] → ex_str_bstep_open [g,b:names ⊢ B]
 ;
 
-rec str_bstep_open: (g:ctx) {B:[g,b:names ⊢ bstep_open X' (open \a.T) X]} ex_str_bstep_open [g,b:names ⊢ B] =
+rec str_bstep_open: (g:ctx) {B:[g,b:names ⊢ bstep_op X' (open \a.T) X]} ex_str_bstep_open [g,b:names ⊢ B] =
 / total b (str_bstep_open _ _ _ _ b) /
 mlam B ⇒ let [g,b:names ⊢ F] = open_loop_lemma_two [_ ⊢ B] in
 let ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ F'] e = str_fstep_open [_ ⊢ F] in
