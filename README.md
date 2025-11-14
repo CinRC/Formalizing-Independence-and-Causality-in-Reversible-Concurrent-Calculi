@@ -113,15 +113,15 @@ The following must be installed before proceeding with the installation of Belug
 All the necessary prerequisites can be installed with the following commands:
 
 ```Shell
-$ apt-get install opam
-$ opam init --bare
+apt-get install opam
+opam init --bare
 ```
 
 And then, from the Beluga directory:
 
 ```Shell
-$ make setup-install
-$ make install
+make setup-install
+make install
 ```
 
 ### macOS
@@ -129,15 +129,15 @@ $ make install
 The easiest way to install the prerequisites is via opam, and the easiest way to install opam is via Homebrew (https://brew.sh/):
 
 ```Shell
-$ brew install opam
-$ opam init --bare
+brew install opam
+opam init --bare
 ```
 
 And then, from the Beluga directory:
 
 ```Shell
-$ make setup-install
-$ make install
+make setup-install
+make install
 ```
 
 ### Windows
@@ -153,14 +153,14 @@ Another option is to build and execute Beluga on Windows through Cygwin. The nec
 3. Run the following commands from Beluga directory within cygwin terminal.
 
 ```Shell
-$ opam switch create ocaml-variants.4.09.0+mingw64c
-$ eval $(opam env)
+opam switch create ocaml-variants.4.09.0+mingw64c
+eval $(opam env)
 ```
 
 And then, from the Beluga directory:
 
 ```Shell
-$ opam install --deps-only ./beluga.opam
+opam install --deps-only ./beluga.opam
 ```
 
 ## Repository structure
