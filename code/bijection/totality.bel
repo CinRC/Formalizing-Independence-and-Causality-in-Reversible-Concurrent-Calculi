@@ -261,7 +261,7 @@ mlam F ⇒ case [_ ⊢ F] of
          let [g,a:names ⊢ V] = valid_pr_lab_in_fstep_closed [g,a:names ⊢ F1'] in
          (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
             | oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
-              let [g,a:names ⊢ L'] = occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
+              let [g,a:names ⊢ L'] = occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
               let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
               [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_closed (\a.O) (\a.L) (\a.F1')) (\a.H))]
             | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
@@ -316,7 +316,7 @@ mlam B ⇒ case [_ ⊢ B] of
          let [g,a:names ⊢ V] = valid_pr_lab_in_bstep_closed [g,a:names ⊢ B1'] in
          (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
             | oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
-              let [g,a:names ⊢ L'] = occur_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
+              let [g,a:names ⊢ L'] = occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
               let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
               [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_closed (\a.O) (\a.L) (\a.B1')) (\a.H))]
             | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒

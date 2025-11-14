@@ -2,122 +2,142 @@
 
 % Functionality of fc_forget:
 % Given a CCSKP closed forward transition F1, there is at most one forward CCSK transition F2 such that fc_forget(F1)=F2.
-rec functional_fc_forget: (g:ctx) {F:[g ⊢ ccskp.fstep_closed X T X']} {F1:[g ⊢ ccsk.fstep X T1 X']}
-  {F2:[g ⊢ ccsk.fstep X T2 X']} [g ⊢ fc_forget F F1] → [g ⊢ fc_forget F F2] → [g ⊢ eqfs F1 F2] =
+rec functional_fc_forget: (g:ctx) (F:[g ⊢ ccskp.fstep_closed X T X']) (F1:[g ⊢ ccsk.fstep X T1 X'])
+  (F2:[g ⊢ ccsk.fstep X T2 X']) [g ⊢ fc_forget F F1] → [g ⊢ fc_forget F F2] → [g ⊢ eqfs F1 F2] =
 / total f (functional_fc_forget _ _ _ _ _ _ f _ _ _ _) /
-mlam F F1 F2 ⇒ fn d1 d2 ⇒ unique_fstep [_ ⊢ F1] [_ ⊢ F2]
+fn d1,d2 ⇒ let [g ⊢ fc_fg _ F1 _ _] = d1 in
+let [g ⊢ fc_fg _ F2 _ _] = d2 in
+unique_fstep [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % Functionality of fo_forget:
 % Given a CCSKP open forward transition F1, there is at most one forward CCSK transition F2 such that fo_forget(F1)=F2.
-rec functional_fo_forget: (g:ctx) {F:[g ⊢ ccskp.fstep_open X T X']} {F1:[g ⊢ ccsk.fstep X T1 X']}
-  {F2:[g ⊢ ccsk.fstep X T2 X']} [g ⊢ fo_forget F F1] → [g ⊢ fo_forget F F2] → [g ⊢ eqfs F1 F2] =
+rec functional_fo_forget: (g:ctx) (F:[g ⊢ ccskp.fstep_open X T X']) (F1:[g ⊢ ccsk.fstep X T1 X'])
+  (F2:[g ⊢ ccsk.fstep X T2 X']) [g ⊢ fo_forget F F1] → [g ⊢ fo_forget F F2] → [g ⊢ eqfs F1 F2] =
 / total f (functional_fo_forget _ _ _ _ _ _ f _ _ _ _) /
-mlam F F1 F2 ⇒ fn d1 d2 ⇒ unique_fstep [_ ⊢ F1] [_ ⊢ F2]
+fn d1,d2 ⇒ let [g ⊢ fo_fg _ F1 \_._] = d1 in
+let [g ⊢ fo_fg _ F2 \_._] = d2 in
+unique_fstep [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % Functionality of bc_forget:
 % Given a CCSKP closed backward transition B1, there is at most one backward CCSK transition B2 such that bc_forget(B1)=B2.
-rec functional_bc_forget: (g:ctx) {B:[g ⊢ ccskp.bstep_closed X' T X]} {B1:[g ⊢ ccsk.bstep X' T1 X]}
-  {B2:[g ⊢ ccsk.bstep X' T2 X]} [g ⊢ bc_forget B B1] → [g ⊢ bc_forget B B2] → [g ⊢ eqbs B1 B2] =
+rec functional_bc_forget: (g:ctx) (B:[g ⊢ ccskp.bstep_closed X' T X]) (B1:[g ⊢ ccsk.bstep X' T1 X])
+  (B2:[g ⊢ ccsk.bstep X' T2 X]) [g ⊢ bc_forget B B1] → [g ⊢ bc_forget B B2] → [g ⊢ eqbs B1 B2] =
 / total b (functional_bc_forget _ _ _ _ _ _ b _ _ _ _) /
-mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep [_ ⊢ B1] [_ ⊢ B2]
+fn d1,d2 ⇒ let [g ⊢ bc_fg _ B1 _ _] = d1 in
+let [g ⊢ bc_fg _ B2 _ _] = d2 in
+unique_bstep [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 % Functionality of bo_forget:
 % Given a CCSKP open backward transition B1, there is at most one backward CCSK transition B2 such that bo_forget(B1)=B2.
-rec functional_bo_forget: (g:ctx) {B:[g ⊢ ccskp.bstep_open X' T X]} {B1:[g ⊢ ccsk.bstep X' T1 X]}
-  {B2:[g ⊢ ccsk.bstep X' T2 X]} [g ⊢ bo_forget B B1] → [g ⊢ bo_forget B B2] → [g ⊢ eqbs B1 B2] =
+rec functional_bo_forget: (g:ctx) (B:[g ⊢ ccskp.bstep_open X' T X]) (B1:[g ⊢ ccsk.bstep X' T1 X])
+  (B2:[g ⊢ ccsk.bstep X' T2 X]) [g ⊢ bo_forget B B1] → [g ⊢ bo_forget B B2] → [g ⊢ eqbs B1 B2] =
 / total b (functional_bo_forget _ _ _ _ _ _ b _ _ _ _) /
-mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep [_ ⊢ B1] [_ ⊢ B2]
+fn d1,d2 ⇒ let [g ⊢ bo_fg _ B1 \_._] = d1 in
+let [g ⊢ bo_fg _ B2 \_._] = d2 in
+unique_bstep [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 
 % Functionality of forget:
 % Given a CCSKP combined transition S1, there is at most one combined CCSK transition S2 such that forget(S1)=S2.
-rec functional_forget: (g:ctx) {S:[g ⊢ ccskp.step X T X']} {S1:[g ⊢ ccsk.step X T1 X']} {S2:[g ⊢ ccsk.step X T2 X']}
+rec functional_forget: (g:ctx) (S:[g ⊢ ccskp.step X T X']) (S1:[g ⊢ ccsk.step X T1 X']) (S2:[g ⊢ ccsk.step X T2 X'])
   [g ⊢ forget S S1] → [g ⊢ forget S S2] → [g ⊢ eqs S1 S2] =
 / total d1 (functional_forget _ _ _ _ _ _ _ _ _ d1 _) /
-mlam S S1 S2 ⇒ fn d1 d2 ⇒ case d1 of
+fn d1,d2 ⇒ case d1 of
   | [g ⊢ fcfg D1] ⇒ let [g ⊢ fcfg D2] = d2 in
-		    let [g ⊢ reffs] = functional_fc_forget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+    let [g ⊢ reffs] = functional_fc_forget [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
   | [g ⊢ fofg D1] ⇒ let [g ⊢ fofg D2] = d2 in
-		    let [g ⊢ reffs] = functional_fo_forget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+    let [g ⊢ reffs] = functional_fo_forget [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
   | [g ⊢ bcfg D1] ⇒ let [g ⊢ bcfg D2] = d2 in
-		    let [g ⊢ refbs] = functional_bc_forget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+    let [g ⊢ refbs] = functional_bc_forget [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
   | [g ⊢ bofg D1] ⇒ let [g ⊢ bofg D2] = d2 in
-		    let [g ⊢ refbs] = functional_bo_forget _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
+    let [g ⊢ refbs] = functional_bo_forget [g ⊢ D1] [g ⊢ D2] in [g ⊢ refs]
 ;
 
 
 
 % Functionality of fc_enrich:
 % Given a CCSK forward transition F1, there is at most one CCSKP closed forward transition F2 such that fc_enrich(F1)=F2.
-rec functional_fc_enrich: (g:ctx) {F:[g ⊢ ccsk.fstep X T X']} {F1:[g ⊢ ccskp.fstep_closed X T1 X']}
-  {F2:[g ⊢ ccskp.fstep_closed X T2 X']} [g ⊢ fc_enrich F F1] → [g ⊢ fc_enrich F F2] → [g ⊢ eqfc F1 F2] =
+rec functional_fc_enrich: (g:ctx) (F:[g ⊢ ccsk.fstep X T X']) (F1:[g ⊢ ccskp.fstep_closed X T1 X'])
+  (F2:[g ⊢ ccskp.fstep_closed X T2 X']) [g ⊢ fc_enrich F F1] → [g ⊢ fc_enrich F F2] → [g ⊢ eqfc F1 F2] =
 / total f (functional_fc_enrich _ _ _ _ _ _ f _ _ _ _) /
-mlam F F1 F2 ⇒ fn d1 d2 ⇒ unique_fstep_closed [_ ⊢ F1] [_ ⊢ F2]
+fn d1,d2 ⇒ let [g ⊢ fc_en _ F1 _ _] = d1 in
+let [g ⊢ fc_en _ F2 _ _] = d2 in
+unique_fstep_closed [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % Functionality of fo_enrich:
 % Given a CCSK forward transition F1, there is at most one CCSKP open forward transition F2 such that fo_enrich(F1)=F2.
-rec functional_fo_enrich: (g:ctx) {F:[g ⊢ ccsk.fstep X T X']} {F1:[g ⊢ ccskp.fstep_open X T1 X']}
-  {F2:[g ⊢ ccskp.fstep_open X T2 X']} [g ⊢ fo_enrich F F1] → [g ⊢ fo_enrich F F2] → [g ⊢ eqfo F1 F2] =
+rec functional_fo_enrich: (g:ctx) (F:[g ⊢ ccsk.fstep X T X']) (F1:[g ⊢ ccskp.fstep_open X T1 X'])
+  (F2:[g ⊢ ccskp.fstep_open X T2 X']) [g ⊢ fo_enrich F F1] → [g ⊢ fo_enrich F F2] → [g ⊢ eqfo F1 F2] =
 / total f (functional_fo_enrich _ _ _ _ _ _ f _ _ _ _) /
-mlam F F1 F2 ⇒ fn d1 d2 ⇒ unique_fstep_open [_ ⊢ F1] [_ ⊢ F2]
+fn d1,d2 ⇒ let [g ⊢ fo_en _ F1 \_._] = d1 in
+let [g ⊢ fo_en _ F2 \_._] = d2 in
+unique_fstep_open [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % The domains of fc_enrich and fo_enrich are disjoint:
 % Given a CCSK forward transition F1, there aren't a CCSKP closed forward transition F2
 % and a CCSKP open forward transition F2' such that both fc_enrich(F1)=F2 and fo_enrich(F1)=F2'.
-rec no_fcfo_enrich: (g:ctx) {F:[g ⊢ ccsk.fstep X T X']} {F1:[g ⊢ ccskp.fstep_closed X T1 X']}
-  {F2:[g ⊢ ccskp.fstep_open X T2 X']} [g ⊢ fc_enrich F F1] → [g ⊢ fo_enrich F F2] → [g ⊢ false] =
+rec no_fcfo_enrich: (g:ctx) (F:[g ⊢ ccsk.fstep X T X']) (F1:[g ⊢ ccskp.fstep_closed X T1 X'])
+  (F2:[g ⊢ ccskp.fstep_open X T2 X']) [g ⊢ fc_enrich F F1] → [g ⊢ fo_enrich F F2] → [g ⊢ false] =
 / total f (no_fcfo_enrich _ _ _ _ _ _ f _ _ _ _) /
-mlam F F1 F2 ⇒ fn d1 d2 ⇒ no_fstep_closed_and_open [_ ⊢ F1] [_ ⊢ F2]
+fn d1,d2 ⇒ let [g ⊢ fc_en _ F1 _ _] = d1 in
+let [g ⊢ fo_en _ F2 \_._] = d2 in
+no_fstep_closed_and_open [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % Functionality of bc_enrich:
 % Given a CCSK backward transition B1, there is at most one CCSKP closed backward transition B2 such that bc_enrich(B1)=B2.
-rec functional_bc_enrich: (g:ctx) {B:[g ⊢ ccsk.bstep X T X']} {B1:[g ⊢ ccskp.bstep_closed X T1 X']}
-  {B2:[g ⊢ ccskp.bstep_closed X T2 X']} [g ⊢ bc_enrich B B1] → [g ⊢ bc_enrich B B2] → [g ⊢ eqbc B1 B2] =
+rec functional_bc_enrich: (g:ctx) (B:[g ⊢ ccsk.bstep X T X']) (B1:[g ⊢ ccskp.bstep_closed X T1 X'])
+  (B2:[g ⊢ ccskp.bstep_closed X T2 X']) [g ⊢ bc_enrich B B1] → [g ⊢ bc_enrich B B2] → [g ⊢ eqbc B1 B2] =
 / total b (functional_bc_enrich _ _ _ _ _ _ b _ _ _ _) /
-mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep_closed [_ ⊢ B1] [_ ⊢ B2]
+fn d1,d2 ⇒ let [g ⊢ bc_en _ B1 _ _] = d1 in
+let [g ⊢ bc_en _ B2 _ _] = d2 in
+unique_bstep_closed [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 % Functionality of bo_enrich:
 % Given a CCSK backward transition B1, there is at most one CCSKP open backward transition B2 such that bo_enrich(B1)=B2.
-rec functional_bo_enrich: (g:ctx) {B:[g ⊢ ccsk.bstep X T X']} {B1:[g ⊢ ccskp.bstep_open X T1 X']}
-  {B2:[g ⊢ ccskp.bstep_open X T2 X']} [g ⊢ bo_enrich B B1] → [g ⊢ bo_enrich B B2] → [g ⊢ eqbo B1 B2] =
+rec functional_bo_enrich: (g:ctx) (B:[g ⊢ ccsk.bstep X T X']) (B1:[g ⊢ ccskp.bstep_open X T1 X'])
+  (B2:[g ⊢ ccskp.bstep_open X T2 X']) [g ⊢ bo_enrich B B1] → [g ⊢ bo_enrich B B2] → [g ⊢ eqbo B1 B2] =
 / total b (functional_bo_enrich _ _ _ _ _ _ b _ _ _ _) /
-mlam B B1 B2 ⇒ fn d1 d2 ⇒ unique_bstep_open [_ ⊢ B1] [_ ⊢ B2]
+fn d1,d2 ⇒ let [g ⊢ bo_en _ B1 \_._] = d1 in
+let [g ⊢ bo_en _ B2 \_._] = d2 in
+unique_bstep_open [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 % The domains of bc_enrich and bo_enrich are disjoint:
 % Given a CCSK backward transition B1, there aren't a CCSKP closed backward transition B2
 % and a CCSKP open backward transition B2' such that both bc_enrich(B1)=B2 and bo_enrich(B1)=B2'.
-rec no_bcbo_enrich: (g:ctx) {B:[g ⊢ ccsk.bstep X T X']} {B1:[g ⊢ ccskp.bstep_closed X T1 X']}
-  {B2:[g ⊢ ccskp.bstep_open X T2 X']} [g ⊢ bc_enrich B B1] → [g ⊢ bo_enrich B B2] → [g ⊢ false] =
+rec no_bcbo_enrich: (g:ctx) (B:[g ⊢ ccsk.bstep X T X']) (B1:[g ⊢ ccskp.bstep_closed X T1 X'])
+  (B2:[g ⊢ ccskp.bstep_open X T2 X']) [g ⊢ bc_enrich B B1] → [g ⊢ bo_enrich B B2] → [g ⊢ false] =
 / total b (no_bcbo_enrich _ _ _ _ _ _ b _ _ _ _) /
-mlam B B1 B2 ⇒ fn d1 d2 ⇒ no_bstep_closed_and_open [_ ⊢ B1] [_ ⊢ B2]
+fn d1,d2 ⇒ let [g ⊢ bc_en _ B1 _ _] = d1 in
+let [g ⊢ bo_en _ B2 \_._] = d2 in
+no_bstep_closed_and_open [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 
 % Functionality of enrich:
 % Given a CCSK combined transition S1, there is at most one CCSKP combined transition S2 such that enrich(S1)=S2.
-rec functional_enrich: (g:ctx) {S:[g ⊢ ccsk.step X T X']} {S1:[g ⊢ ccskp.step X T1 X']} {S2:[g ⊢ ccskp.step X T2 X']}
+rec functional_enrich: (g:ctx) (S:[g ⊢ ccsk.step X T X']) (S1:[g ⊢ ccskp.step X T1 X']) (S2:[g ⊢ ccskp.step X T2 X'])
   [g ⊢ enrich S S1] → [g ⊢ enrich S S2] → [g ⊢ eqst S1 S2] =
 / total d1 (functional_enrich _ _ _ _ _ _ _ _ _ d1 _) /
-mlam S S1 S2 ⇒ fn d1 d2 ⇒ case d1 of
+fn d1,d2 ⇒ case d1 of
   | [g ⊢ fcen D1] ⇒ (case d2 of
-       | [g ⊢ fcen D2] ⇒ let [g ⊢ reffc] = functional_fc_enrich _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
-       | [g ⊢ foen D2] ⇒ impossible no_fcfo_enrich _ _ _ [g ⊢ D1] [g ⊢ D2])
+       | [g ⊢ fcen D2] ⇒ let [g ⊢ reffc] = functional_fc_enrich [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
+       | [g ⊢ foen D2] ⇒ impossible no_fcfo_enrich [g ⊢ D1] [g ⊢ D2])
   | [g ⊢ foen D1] ⇒ (case d2 of
-       | [g ⊢ fcen D2] ⇒ impossible no_fcfo_enrich _ _ _ [g ⊢ D2] [g ⊢ D1]
-       | [g ⊢ foen D2] ⇒ let [g ⊢ reffo] = functional_fo_enrich _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst])
+       | [g ⊢ fcen D2] ⇒ impossible no_fcfo_enrich [g ⊢ D2] [g ⊢ D1]
+       | [g ⊢ foen D2] ⇒ let [g ⊢ reffo] = functional_fo_enrich [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst])
   | [g ⊢ bcen D1] ⇒ (case d2 of
-       | [g ⊢ bcen D2] ⇒ let [g ⊢ refbc] = functional_bc_enrich _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
-       | [g ⊢ boen D2] ⇒ impossible no_bcbo_enrich _ _ _ [g ⊢ D1] [g ⊢ D2])
+       | [g ⊢ bcen D2] ⇒ let [g ⊢ refbc] = functional_bc_enrich [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst]
+       | [g ⊢ boen D2] ⇒ impossible no_bcbo_enrich [g ⊢ D1] [g ⊢ D2])
   | [g ⊢ boen D1] ⇒ (case d2 of
-       | [g ⊢ bcen D2] ⇒ impossible no_bcbo_enrich _ _ _ [g ⊢ D2] [g ⊢ D1]
-       | [g ⊢ boen D2] ⇒ let [g ⊢ refbo] = functional_bo_enrich _ _ _ [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst])
+       | [g ⊢ bcen D2] ⇒ impossible no_bcbo_enrich [g ⊢ D2] [g ⊢ D1]
+       | [g ⊢ boen D2] ⇒ let [g ⊢ refbo] = functional_bo_enrich [g ⊢ D1] [g ⊢ D2] in [g ⊢ refst])
 ;
