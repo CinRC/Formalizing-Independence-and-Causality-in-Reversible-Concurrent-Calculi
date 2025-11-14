@@ -14,7 +14,7 @@ mlam T ⇒ case [_ ⊢ T] of
   | [g ⊢ pr_base _ _] ⇒ [g ⊢ ex_l lab_base]
   | [g ⊢ pr_suml T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_suml L)]
   | [g ⊢ pr_sumr T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_sumr L)]
-  | [g ⊢ pr_parl_cl T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parl L)]
+  | [g ⊢ pr_parl T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parl L)]
   | [g ⊢ pr_parr T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parr L)]
   | [g ⊢ pr_sync _ _] ⇒ [g ⊢ ex_l lab_sync]
 ;
@@ -43,7 +43,7 @@ mlam T ⇒ case [_ ⊢ T] of
   | [g ⊢ pr_base _ _] ⇒ [g ⊢ ex_k key_base]
   | [g ⊢ pr_suml T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_suml H)]
   | [g ⊢ pr_sumr T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_sumr H)]
-  | [g ⊢ pr_parl_cl T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_parl H)]
+  | [g ⊢ pr_parl T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_parl H)]
   | [g ⊢ pr_parr T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_parr H)]
   | [g ⊢ pr_sync T' _] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_sync H)]
 ;

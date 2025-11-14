@@ -2,23 +2,23 @@
 
 --open ccskp.
 
-% |_L a[k] and |_R b[m] are indep_clendent, if k != m.
+% |_L a[k] and |_R b[m] are independent, if k != m.
 let i1:[a:names,b:names,k:keys,m:keys,i:neq k m ⊢ 
-indep (pr_parl_cl (pr_base (inp a) k)) (pr_parr (pr_base (inp b) m))] =
+indep_cl (pr_parl (pr_base (inp a) k)) (pr_parr (pr_base (inp b) m))] =
 [a:names,b:names,k:keys,m:keys,i:neq k m ⊢ i_p2l key_base key_base i];
 
-% |_L |_L a[k] and |_L |_R b[m] are indep_clendent, if k != m.
+% |_L |_L a[k] and |_L |_R b[m] are independent, if k != m.
 let i2:[a:names,b:names,k:keys,m:keys,i:neq k m ⊢ 
-indep (pr_parl_cl (pr_parl_cl (pr_base (inp a) k))) (pr_parl_cl (pr_parr (pr_base (inp b) m)))] =
+indep_cl (pr_parl (pr_parl (pr_base (inp a) k))) (pr_parl (pr_parr (pr_base (inp b) m)))] =
 [a:names,b:names,k:keys,m:keys,i:neq k m ⊢ i_p1l (i_p2l key_base key_base i)];
 
-% <|_L |_R b[m], |_R b'[m]> and |_L |_L a[k] are indep_clendent, if k != m.
+% <|_L |_R b[m], |_R b'[m]> and |_L |_L a[k] are independent, if k != m.
 let i3:[a:names,b:names,k:keys,m:keys,i:neq m k ⊢ 
-indep (pr_sync (pr_parr (pr_base (inp b) m)) (pr_base (out b) m)) (pr_parl_cl (pr_parl_cl (pr_base (inp a) k)))] =
+indep_cl (pr_sync (pr_parr (pr_base (inp b) m)) (pr_base (out b) m)) (pr_parl (pr_parl (pr_base (inp a) k)))] =
 [a:names,b:names,k:keys,m:keys,i:neq m k ⊢ i_s2l (i_p2r key_base key_base i)];
 
 
-% a[k] and +_L a[k] are not indep_clendent.
+% a[k] and +_L a[k] are not independent.
 rec not_indep: [a:names,k:keys ⊢ indep_cl (pr_base (inp a) k) (pr_suml (pr_base (inp a) k))] → [⊢ false] =
 / total 1 /
 fn i ⇒ impossible i

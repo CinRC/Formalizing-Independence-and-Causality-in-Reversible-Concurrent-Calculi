@@ -9,29 +9,29 @@ let t1:[a:names,k:keys ⊢ pr_lab_cl] = [a:names,k:keys ⊢ pr_base (inp a) k];
 let t2:[a:names,k:keys ⊢ pr_lab_cl] = [a:names,k:keys ⊢ pr_suml (pr_base (inp a) k)];
 
 % |_R |_L b'[m] is a term of type pr_lab_cl.
-let t3:[b:names,m:keys ⊢ pr_lab_cl] = [b:names,m:keys ⊢ pr_parr (pr_parl_cl (pr_base (out b) m))];
+let t3:[b:names,m:keys ⊢ pr_lab_cl] = [b:names,m:keys ⊢ pr_parr (pr_parl (pr_base (out b) m))];
 
 % <|_L b[m], |_R b'[m]> is a term of type pr_lab_cl.
 let t4:[b:names,m:keys ⊢ pr_lab_cl] = [b:names,m:keys ⊢ pr_sync (pr_base (inp b) m) (pr_base (out b) m)];
 
 % <|_L +_L a'[k], |_R |_L |_R a[k]> is a term of type pr_lab_cl.
-let t5:[a:names,k:keys ⊢ pr_lab_cl] = [a:names,k:keys ⊢ pr_sync (pr_suml (pr_base (out a) k)) (pr_parl_cl (pr_parr (pr_base (inp a) k)))];
+let t5:[a:names,k:keys ⊢ pr_lab_cl] = [a:names,k:keys ⊢ pr_sync (pr_suml (pr_base (out a) k)) (pr_parl (pr_parr (pr_base (inp a) k)))];
 
 
 
-% a[k] is a valid_cl proof label. This is done by checking that the type (valid (pr_base (inp a) k)) is inhabited.
---query 1 1 v1:(valid (pr_base (inp a) k)).
+% a[k] is a valid proof label. This is done by checking that the type (valid (pr_base (inp a) k)) is inhabited.
+--query 1 1 v1:(valid_cl (pr_base (inp a) k)).
 % Alternatively, it is possible to use the "let" construct to check that v_base is a term of type (valid (pr_base (inp a) k)).
 let v1':[a:names,k:keys ⊢ valid_cl (pr_base (inp a) k)] = [a:names,k:keys ⊢ v_base];
 
-% +_L a[k] is a valid_cl proof label.
---query 1 1 v2:(valid (pr_suml (pr_base (inp a) k))).
+% +_L a[k] is a valid proof label.
+--query 1 1 v2:(valid_cl (pr_suml (pr_base (inp a) k))).
 
-% |_R |_L b'[m] is a valid_cl proof label.
---query 1 1 v3:(valid (pr_parr (pr_parl_cl (pr_base (out b) m)))).
+% |_R |_L b'[m] is a valid proof label.
+--query 1 1 v3:(valid_cl (pr_parr (pr_parl (pr_base (out b) m)))).
 
-% <|_L b[m], |_R b'[m]> is a valid_cl proof label.
---query 1 1 v4:(valid (pr_sync (pr_base (inp b) m) (pr_base (out b) m))).
+% <|_L b[m], |_R b'[m]> is a valid proof label.
+--query 1 1 v4:(valid_cl (pr_sync (pr_base (inp b) m) (pr_base (out b) m))).
 
-% <|_L +_L a'[k], |_R |_L |_R a[k]> is a valid_cl proof label.
---query 1 1 v5:(valid (pr_sync (pr_suml (pr_base (out a) k)) (pr_parl_cl (pr_parr (pr_base (inp a) k))))).
+% <|_L +_L a'[k], |_R |_L |_R a[k]> is a valid proof label.
+--query 1 1 v5:(valid_cl (pr_sync (pr_suml (pr_base (out a) k)) (pr_parl (pr_parr (pr_base (inp a) k))))).

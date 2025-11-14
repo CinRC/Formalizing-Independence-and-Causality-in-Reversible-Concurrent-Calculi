@@ -2,22 +2,22 @@
 
 --open ccskp.
 
-% a[k] and +_L a[k] are conn_clected.
+% a[k] and +_L a[k] are connected.
 let c1:[a:names,k:keys ⊢ conn_cl (pr_base (inp a) k) (pr_suml (pr_base (inp a) k))] = [a:names,k:keys ⊢ c_a1];
 
-% |_L |_L a[k] and |_L |_R b[m] are conn_clected.
+% |_L |_L a[k] and |_L |_R b[m] are connected.
 let c2:[a:names,b:names,k:keys,m:keys ⊢ 
-conn (pr_parl_cl (pr_parl_cl (pr_base (inp a) k))) (pr_parl_cl (pr_parr (pr_base (inp b) m)))] =
+conn_cl (pr_parl (pr_parl (pr_base (inp a) k))) (pr_parl (pr_parr (pr_base (inp b) m)))] =
 [a:names,b:names,k:keys,m:keys ⊢ c_p1l c_p2l];
 
-% <|_L b[m], |_R b'[m]> and |_L |_R b[m] are conn_clected.
+% <|_L b[m], |_R b'[m]> and |_L |_R b[m] are connected.
 let c3:[b:names,m:keys ⊢ 
-conn (pr_sync (pr_base (inp b) m) (pr_base (out b) m)) (pr_parl_cl (pr_parr (pr_base (inp b) m)))] =
+conn_cl (pr_sync (pr_base (inp b) m) (pr_base (out b) m)) (pr_parl (pr_parr (pr_base (inp b) m)))] =
 [b:names,m:keys ⊢ c_s2l c_a1];
 
 
-% +_L a[k] and |_L b[m] are not conn_clected.
-rec not_conn: [a:names,b:names,k:keys,m:keys ⊢ conn_cl (pr_suml (pr_base (inp a) k)) (pr_parl_cl (pr_base (inp b) m))] → [⊢ false] =
+% +_L a[k] and |_L b[m] are not connected.
+rec not_conn: [a:names,b:names,k:keys,m:keys ⊢ conn_cl (pr_suml (pr_base (inp a) k)) (pr_parl (pr_base (inp b) m))] → [⊢ false] =
 / total 1 /
 fn c ⇒ impossible c
 ;

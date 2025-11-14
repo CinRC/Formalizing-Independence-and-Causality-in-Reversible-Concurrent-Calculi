@@ -20,7 +20,7 @@ LF realised: pr_lab → type =
   | rl: std X → fstep X T X' → realised T
 ;
 
-% Lemma 2.5: every valid_cl proof label is realised
+% Lemma 2.5: every valid proof label is realised
 
 % Lemma 2.5 for closed proof labels
 rec cl_pr_lab_is_realised: (g:ctx) [g ⊢ valid_cl T] → [g ⊢ realised_cl T] =
@@ -50,8 +50,8 @@ fn v ⇒ case v of
     [g ⊢ orl (std_nu \a.D) (fo_nu_closed (\a.O) (\a.L) (\a.F))]
 ;
 % Lemma 2.5 for generalized proof labels
-rec pr_lab_cl_is_realised: (g:ctx) [g ⊢ valid T] → [g ⊢ realised T] =
-/ total v (pr_lab_cl_is_realised _ _ v) /
+rec pr_lab_is_realised: (g:ctx) [g ⊢ valid T] → [g ⊢ realised T] =
+/ total v (pr_lab_is_realised _ _ v) /
 fn v ⇒ case v of
   | [g ⊢ gpv V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fc F)]
   | [g ⊢ gov V] ⇒ let [g ⊢ orl D F] = op_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fo F)]
