@@ -319,33 +319,26 @@ fn s ⇒ case s of
 ;
 
 
-% In a subcase of Thm. 2.1(i) there are derivations of connectivity "conn T1 T2" in a context
+% In a subcase of Thm. 2.1(i) there are derivations of connectivity "conn_cl T1 T2" in a context
 % [g,a:names], without T1 and T2 depending on a: in such cases we need a technical lemma
 % (strengthening lemma) to get rid of the spurious dependence from the name a.
-
-% Auxiliary inductive type family for the strengthening lemma
-inductive ex_str_conn: (g:ctx) [g,a:names ⊢ conn_cl T1[..] T2[..]] → ctype =
-  | ex_conn: {C:[g,a:names ⊢ conn_cl T1[..] T2[..]]} [g ⊢ conn_cl T1 T2] → ex_str_conn [g,a:names ⊢ C]
-;
-
-% Strengthening lemma for connected labels
-rec strengthen_conn: (g:ctx) {C:[g,a:names ⊢ conn_cl T1[..] T2[..]]} ex_str_conn [g,a:names ⊢ C] =
-/ total c (strengthen_conn _ _ _ c) /
-mlam D ⇒ case [_ ⊢ D] of
-  | [g,a:names ⊢ c_a1] ⇒ ex_conn [g,a:names ⊢ c_a1] [g ⊢ c_a1]
-  | [g,a:names ⊢ c_a2] ⇒ ex_conn [g,a:names ⊢ c_a2] [g ⊢ c_a2]
-  | [g,a:names ⊢ c_c1l C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_c1l C] [g ⊢ c_c1l C']
-  | [g,a:names ⊢ c_c1r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_c1r C] [g ⊢ c_c1r C']
-  | [g,a:names ⊢ c_c2l] ⇒ ex_conn [g,a:names ⊢ c_c2l] [g ⊢ c_c2l]
-  | [g,a:names ⊢ c_c2r] ⇒ ex_conn [g,a:names ⊢ c_c2r] [g ⊢ c_c2r]
-  | [g,a:names ⊢ c_p1l C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_p1l C] [g ⊢ c_p1l C']
-  | [g,a:names ⊢ c_p1r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_p1r C] [g ⊢ c_p1r C']
-  | [g,a:names ⊢ c_p2l] ⇒ ex_conn [g,a:names ⊢ c_p2l] [g ⊢ c_p2l]
-  | [g,a:names ⊢ c_p2r] ⇒ ex_conn [g,a:names ⊢ c_p2r] [g ⊢ c_p2r]
-  | [g,a:names ⊢ c_s1l C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s1l C] [g ⊢ c_s1l C']
-  | [g,a:names ⊢ c_s1r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s1r C] [g ⊢ c_s1r C']
-  | [g,a:names ⊢ c_s2l C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s2l C] [g ⊢ c_s2l C']
-  | [g,a:names ⊢ c_s2r C] ⇒ let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in ex_conn [g,a:names ⊢ c_s2r C] [g ⊢ c_s2r C']
-  | [g,a:names ⊢ c_s3 C1 C2] ⇒ let ex_conn [g,a:names ⊢ C1] [g ⊢ C1'] = strengthen_conn [g,a:names ⊢ C1] in
-       let ex_conn [g,a:names ⊢ C2] [g ⊢ C2'] = strengthen_conn [g,a:names ⊢ C2] in ex_conn [g,a:names ⊢ c_s3 C1 C2] [g ⊢ c_s3 C1' C2']
+rec str_conn: (g:ctx) [g,a:names ⊢ conn_cl T1[..] T2[..]] → [g ⊢ conn_cl T1 T2] =
+/ total c (str_conn _ _ _ c) /
+fn c ⇒ case c of
+  | [g,a:names ⊢ c_a1] ⇒ [g ⊢ c_a1]
+  | [g,a:names ⊢ c_a2] ⇒ [g ⊢ c_a2]
+  | [g,a:names ⊢ c_c1l C] ⇒ let [g ⊢ C'] = str_conn [_ ⊢ C] in [g ⊢ c_c1l C']
+  | [g,a:names ⊢ c_c1r C] ⇒ let [g ⊢ C'] = str_conn [_ ⊢ C] in [g ⊢ c_c1r C']
+  | [g,a:names ⊢ c_c2l] ⇒ [g ⊢ c_c2l]
+  | [g,a:names ⊢ c_c2r] ⇒ [g ⊢ c_c2r]
+  | [g,a:names ⊢ c_p1l C] ⇒ let [g ⊢ C'] = str_conn [_ ⊢ C] in [g ⊢ c_p1l C']
+  | [g,a:names ⊢ c_p1r C] ⇒ let [g ⊢ C'] = str_conn [_ ⊢ C] in [g ⊢ c_p1r C']
+  | [g,a:names ⊢ c_p2l] ⇒ [g ⊢ c_p2l]
+  | [g,a:names ⊢ c_p2r] ⇒ [g ⊢ c_p2r]
+  | [g,a:names ⊢ c_s1l C] ⇒ let [g ⊢ C'] = str_conn [_ ⊢ C] in [g ⊢ c_s1l C']
+  | [g,a:names ⊢ c_s1r C] ⇒ let [g ⊢ C'] = str_conn [_ ⊢ C] in [g ⊢ c_s1r C']
+  | [g,a:names ⊢ c_s2l C] ⇒ let [g ⊢ C'] = str_conn [_ ⊢ C] in [g ⊢ c_s2l C']
+  | [g,a:names ⊢ c_s2r C] ⇒ let [g ⊢ C'] = str_conn [_ ⊢ C] in [g ⊢ c_s2r C']
+  | [g,a:names ⊢ c_s3 C1 C2] ⇒ let [g ⊢ C1'] = str_conn [_ ⊢ C1] in
+    let [g ⊢ C2'] = str_conn [_ ⊢ C2] in [g ⊢ c_s3 C1' C2']
 ;

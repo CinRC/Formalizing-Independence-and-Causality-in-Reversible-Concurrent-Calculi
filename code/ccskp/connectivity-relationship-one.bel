@@ -597,20 +597,20 @@ let [g ⊢ rch D S0*] = r in
         | [g ⊢ sc (fwc (fc_nu \a.F1))] ⇒ (case [g ⊢ S2] of
              | [g ⊢ sc (fwc (fc_nu \a.F2))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (fwc F1)) (sc (fwc F2)) S*'] in
-               let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in [g ⊢ c_cc C']
+               let [g ⊢ C'] = str_conn [g,a:names ⊢ C] in [g ⊢ c_cc C']
              | [g ⊢ so (fwo (fo_nu_cl (\_._) (\_._) (\a.F2)))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (fwc F1)) (sc (fwc F2)) S*'] in [g ⊢ c_co \a.C]
              | [g ⊢ so (fwo (fo_nu_op \a.F2))] ⇒
                let [g,a:names ⊢ c_co \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (fwc F1)) (so (fwo F2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_co \b.C']
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_co \b.C']
              | [g ⊢ sc (bwc (bc_nu \a.B2))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (fwc F1)) (sc (bwc B2)) S*'] in
-               let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in [g ⊢ c_cc C']
+               let [g ⊢ C'] = str_conn [g,a:names ⊢ C] in [g ⊢ c_cc C']
              | [g ⊢ so (bwo (bo_nu_cl (\_._) (\_._) (\a.B2)))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (fwc F1)) (sc (bwc B2)) S*'] in [g ⊢ c_co \a.C]
              | [g ⊢ so (bwo (bo_nu_op \a.B2))] ⇒
                let [g,a:names ⊢ c_co \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (fwc F1)) (so (bwo B2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_co \b.C'])
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_co \b.C'])
         | [g ⊢ so (fwo (fo_nu_cl (\_._) (\_._) (\a.F1)))] ⇒ (case [g ⊢ S2] of
              | [g ⊢ sc (fwc (fc_nu \a.F2))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (fwc F1)) (sc (fwc F2)) S*'] in [g ⊢ c_oc \a.C]
@@ -627,37 +627,37 @@ let [g ⊢ rch D S0*] = r in
         | [g ⊢ so (fwo (fo_nu_op \a.F1))] ⇒ (case [g ⊢ S2] of
              | [g ⊢ sc (fwc (fc_nu \a.F2))] ⇒
                let [g,a:names ⊢ c_oc \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (fwo F1)) (sc (fwc F2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oc \b.C']
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oc \b.C']
              | [g ⊢ so (fwo (fo_nu_cl (\_._) (\_._) (\a.F2)))] ⇒
                let [g,a:names ⊢ c_oc \b.C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (fwo F1)) (sc (fwc F2)) S*'] in [g ⊢ c_oo \b.C[..,b]]
              | [g ⊢ so (fwo (fo_nu_op \a.F2))] ⇒
                let [g,a:names ⊢ c_oo \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (fwo F1)) (so (fwo F2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oo \b.C']
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oo \b.C']
              | [g ⊢ sc (bwc (bc_nu \a.B2))] ⇒
                let [g,a:names ⊢ c_oc \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (fwo F1)) (sc (bwc B2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oc \b.C']
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oc \b.C']
              | [g ⊢ so (bwo (bo_nu_cl (\_._) (\_._) (\a.B2)))] ⇒
                let [g,a:names ⊢ c_oc \b.C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (fwo F1)) (sc (bwc B2)) S*'] in [g ⊢ c_oo \b.C[..,b]]
              | [g ⊢ so (bwo (bo_nu_op \a.B2))] ⇒
                let [g,a:names ⊢ c_oo \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (fwo F1)) (so (bwo B2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oo \b.C'])
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oo \b.C'])
         | [g ⊢ sc (bwc (bc_nu \a.B1))] ⇒ (case [g ⊢ S2] of
              | [g ⊢ sc (fwc (fc_nu \a.F2))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (bwc B1)) (sc (fwc F2)) S*'] in
-               let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in [g ⊢ c_cc C']
+               let [g ⊢ C'] = str_conn [g,a:names ⊢ C] in [g ⊢ c_cc C']
              | [g ⊢ so (fwo (fo_nu_cl (\_._) (\_._) (\a.F2)))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (bwc B1)) (sc (fwc F2)) S*'] in [g ⊢ c_co \a.C]
              | [g ⊢ so (fwo (fo_nu_op \a.F2))] ⇒
                let [g,a:names ⊢ c_co \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (bwc B1)) (so (fwo F2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_co \b.C']
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_co \b.C']
              | [g ⊢ sc (bwc (bc_nu \a.B2))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (bwc B1)) (sc (bwc B2)) S*'] in
-               let ex_conn [g,a:names ⊢ C] [g ⊢ C'] = strengthen_conn [g,a:names ⊢ C] in [g ⊢ c_cc C']
+               let [g ⊢ C'] = str_conn [g,a:names ⊢ C] in [g ⊢ c_cc C']
              | [g ⊢ so (bwo (bo_nu_cl (\_._) (\_._) (\a.B2)))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (bwc B1)) (sc (bwc B2)) S*'] in [g ⊢ c_co \a.C]
              | [g ⊢ so (bwo (bo_nu_op \a.B2))] ⇒
                let [g,a:names ⊢ c_co \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (bwc B1)) (so (bwo B2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_co \b.C'])
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_co \b.C'])
         | [g ⊢ so (bwo (bo_nu_cl (\_._) (\_._) (\a.B1)))] ⇒ (case [g ⊢ S2] of
              | [g ⊢ sc (fwc (fc_nu \a.F2))] ⇒
                let [g,a:names ⊢ c_cc C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (sc (bwc B1)) (sc (fwc F2)) S*'] in [g ⊢ c_oc \a.C]
@@ -674,18 +674,18 @@ let [g ⊢ rch D S0*] = r in
         | [g ⊢ so (bwo (bo_nu_op \a.B1))] ⇒ (case [g ⊢ S2] of
              | [g ⊢ sc (fwc (fc_nu \a.F2))] ⇒
                let [g,a:names ⊢ c_oc \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (bwo B1)) (sc (fwc F2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oc \b.C']
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oc \b.C']
              | [g ⊢ so (fwo (fo_nu_cl (\_._) (\_._) (\a.F2)))] ⇒
                let [g,a:names ⊢ c_oc \b.C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (bwo B1)) (sc (fwc F2)) S*'] in [g ⊢ c_oo \b.C[..,b]]
              | [g ⊢ so (fwo (fo_nu_op \a.F2))] ⇒
                let [g,a:names ⊢ c_oo \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (bwo B1)) (so (fwo F2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oo \b.C']
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oo \b.C']
              | [g ⊢ sc (bwc (bc_nu \a.B2))] ⇒
                let [g,a:names ⊢ c_oc \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (bwo B1)) (sc (bwc B2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oc \b.C']
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oc \b.C']
              | [g ⊢ so (bwo (bo_nu_cl (\_._) (\_._) (\a.B2)))] ⇒
                let [g,a:names ⊢ c_oc \b.C] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (bwo B1)) (sc (bwc B2)) S*'] in [g ⊢ c_oo \b.C[..,b]]
              | [g ⊢ so (bwo (bo_nu_op \a.B2))] ⇒
                let [g,a:names ⊢ c_oo \b.C[..,b,a]] = conn_rel_one [g,a:names ⊢ rch D' S0*'] [g,a:names ⊢ ct (so (bwo B1)) (so (bwo B2)) S*'] in
-               let ex_conn [g,a:names,b:names ⊢ C] [g,b:names ⊢ C'] = strengthen_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oo \b.C'])))
+               let [g,b:names ⊢ C'] = str_conn [g,a:names,b:names ⊢ C] in [g ⊢ c_oo \b.C'])))
 ;
