@@ -170,7 +170,7 @@ opam install --deps-only ./beluga.opam
   + `ex-processes.cfg`: … test examples on processes (in `examples` folder)
   + `ex-proof-labels.cfg`: … test examples on proof labels (in `examples` folder)
   + `ex-transitions.cfg`: … test examples on transitions (in `examples` folder)
-  + `ex-causality-relations.cfg`: … test examples on conn_clectivity, dep_clendence and indep_clendence (in `examples` folder)
+  + `ex-causality-relations.cfg`: … test examples on connectivity, dependence and independence (in `examples` folder)
 - `code\`: Contains the Beluga formalization of …
   + `shared\`: … shared …
     * `definitions.bel`: … definitions
@@ -202,8 +202,8 @@ opam install --deps-only ./beluga.opam
     * `stuck-std.bel`: … are standard and stuck
     * `stuck-keyed.bel`: … contain keys and are stuck
   + `proof-labels\`: … proof labels that …
-    * `valid.bel`: … are valid_cl
-    * `not-valid.bel`: … are not valid_cl
+    * `valid.bel`: … are valid
+    * `not-valid.bel`: … are not valid
   + `transitions\`: … transitions, in particular …
     * `forward-transitions-ccsk.bel`: … forward transitions in CCSK
     * `backward-transitions-ccsk.bel`: … backward transitions in CCSK
@@ -214,8 +214,8 @@ opam install --deps-only ./beluga.opam
     * `stuck-std-ccskp.bel`: … proofs that some standard processes are stuck in CCSKP
     * `stuck-keyed-ccskp.bel`: … proofs that some processes containing keys are stuck in CCSKP
   + `causality-relations\`: … causality relations on proof labels, in particular …
-    * `connectivity.bel`: … conn_clected proof labels
-    * `dependence.bel`: … dep_clendent proof labels
-    * `independence.bel`: … indep_clendent proof labels
+    * `connectivity.bel`: … connected proof labels
+    * `dependence.bel`: … dependent proof labels
+    * `independence.bel`: … independent proof labels
 
 The `.github\workflows\` repository contains workflows used to build automatically the code and run the tests.
