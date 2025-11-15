@@ -19,9 +19,9 @@ let t5:[a:names,k:keys ⊢ pr_lab_cl] = [a:names,k:keys ⊢ pr_sync (pr_suml (pr
 
 
 
-% a[k] is a valid proof label. This is done by checking that the type (valid (pr_base (inp a) k)) is inhabited.
+% a[k] is a valid proof label. This is done by checking that the type (valid_cl (pr_base (inp a) k)) is inhabited.
 --query 1 1 v1:(valid_cl (pr_base (inp a) k)).
-% Alternatively, it is possible to use the "let" construct to check that v_base is a term of type (valid (pr_base (inp a) k)).
+% Alternatively, it is possible to use the "let" construct to check that v_base is a term of type (valid_cl (pr_base (inp a) k)).
 let v1':[a:names,k:keys ⊢ valid_cl (pr_base (inp a) k)] = [a:names,k:keys ⊢ v_base];
 
 % +_L a[k] is a valid proof label.

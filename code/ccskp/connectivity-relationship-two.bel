@@ -27,12 +27,12 @@ rec conn_rel_two_base: (g:ctx) [g ⊢ valid_cl T1] → [g ⊢ valid_cl T2] → [
 / total c (conn_rel_two_base _ _ _ _ _ c _ _) /
 fn v1,v2,c,n1,n2 ⇒ case c of
   | [g ⊢ c_a1] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T2] = cl_pr_lab_is_realised v2 in
-    let [g ⊢ ex_k H] = existence_of_key [g ⊢ T2] in
+    let [g ⊢ ex_k H] = total_key [g ⊢ T2] in
     let [g ⊢ H]:[g ⊢ key _ K[]] = [g ⊢ H] in
     let [g ⊢ ex_n I] = existence_of_different_key [g] [⊢ K] in
     [g ⊢ c_fw (std_pref D) (fc_pref D) (fc_pref D) (fc_kpref F H I) lab_base lab_base]
   | [g ⊢ c_a2] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T1] = cl_pr_lab_is_realised v1 in
-    let [g ⊢ ex_k H] = existence_of_key [g ⊢ T1] in
+    let [g ⊢ ex_k H] = total_key [g ⊢ T1] in
     let [g ⊢ H]:[g ⊢ key _ K[]] = [g ⊢ H] in
     let [g ⊢ ex_n I] = existence_of_different_key [g] [⊢ K] in
     [g ⊢ c_bw (std_pref D) (fc_kpref F H I) (bc_pref D) (fc_pref D) lab_base lab_base]
@@ -210,12 +210,12 @@ rec conn_rel_two_fstep: (g:ctx) [g ⊢ valid_cl T1] → [g ⊢ valid_cl T2] → 
 / total c (conn_rel_two_fstep _ _ _ _ _ c) /
 fn v1,v2,c ⇒ case c of
   | [g ⊢ c_a1] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T2] = cl_pr_lab_is_realised v2 in
-    let [g ⊢ ex_k H] = existence_of_key [g ⊢ T2] in
+    let [g ⊢ ex_k H] = total_key [g ⊢ T2] in
     let [g ⊢ H]:[g ⊢ key _ K[]] = [g ⊢ H] in
     let [g ⊢ ex_n I] = existence_of_different_key [g] [⊢ K] in
     [g ⊢ ex_cf (fc_pref D) (fc_kpref F H I) (st_s* (sc (fwc (fc_pref D)))) (rch (std_pref D) id_s*)]
   | [g ⊢ c_a2] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T1] = cl_pr_lab_is_realised v1 in
-    let [g ⊢ ex_k H] = existence_of_key [g ⊢ T1] in
+    let [g ⊢ ex_k H] = total_key [g ⊢ T1] in
     let [g ⊢ H]:[g ⊢ key _ K[]] = [g ⊢ H] in
     let [g ⊢ ex_n I] = existence_of_different_key [g] [⊢ K] in
     [g ⊢ ex_cf (fc_kpref F H I) (fc_pref D) (st_s* (sc (bwc (bc_pref D)))) (rch (std_pref D) (st_s* (sc (fwc (fc_pref D)))))]
@@ -344,15 +344,15 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ ex_kn _ H3 N3] = no_key_of_prlab_in_std [g ⊢ TL3] [g ⊢ DR] in
                         [g ⊢ ex_cf (fc_synl FL1 LL1 HL1 FR1 LR1 HR1) (fc_synl FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (fwc (fc_parl FL3 H3 N3)))) (rch (std_par DL DR) id_s*)]
                       | [g ⊢ c_fw DR FR1 FR3 FR2 LR1' LR3] ⇒
-                        let [g ⊢ ex_k HL3] = existence_of_key [g ⊢ TL3] in
+                        let [g ⊢ ex_k HL3] = total_key [g ⊢ TL3] in
                         let [g ⊢ HL3]:[g ⊢ key _ KL3[]] = [g ⊢ HL3] in
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = [g ⊢ FR3] in
-                        let [g ⊢ ex_k HR3] = existence_of_key [g ⊢ TR3] in
+                        let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
                         (case compare [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LL1] [g ⊢ LL1'] in
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LR1] [g ⊢ LR1'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LL1] [g ⊢ LL1'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LR1] [g ⊢ LR1'] in
                              [g ⊢ ex_cf (fc_synl FL1 LL1 HL1 FR1 LR1 HR1) (fc_synl FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (fwc (fc_synl FL3 LL3 HL3 FR3 LR3 HR3)))) (rch (std_par DL DR) id_s*)]
                            | [g ⊢ c_neq I3] ⇒
                              let [g ⊢ NL3] = no_key_in_std [⊢ KL3] [g ⊢ DR] in
@@ -374,15 +374,15 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ ex_kn _ HR3 NR3] = no_key_of_prlab_in_std [g ⊢ TR3] [g ⊢ DL] in
                         [g ⊢ ex_cf (fc_synl FL1 LL1 HL1 FR1 LR1 HR1) (fc_synl FL2 LL2 HL2 FR2 LR2 HR2) (tr_s* (st_s* (sc (bwc (bc_parl BL3 HL3 NL3)))) (st_s* (sc (fwc (fc_parr FR3 HR3 NR3))))) (rch (std_par DL DR) (st_s* (sc (fwc (fc_parl FL3 HL3 NL3)))))]
                       | [g ⊢ c_bw DR FR1 BR3 FR2 LR2' LR3] ⇒
-                        let [g ⊢ ex_k HL3] = existence_of_key [g ⊢ TL3] in
+                        let [g ⊢ ex_k HL3] = total_key [g ⊢ TL3] in
                         let [g ⊢ HL3]:[g ⊢ key _ KL3[]] = [g ⊢ HL3] in
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = closed_loop_lemma_two [g ⊢ BR3] in
-                        let [g ⊢ ex_k HR3] = existence_of_key [g ⊢ TR3] in
+                        let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
                         (case compare [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LL2] [g ⊢ LL2'] in
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LR2] [g ⊢ LR2'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LL2] [g ⊢ LL2'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LR2] [g ⊢ LR2'] in
                              [g ⊢ ex_cf (fc_synl FL1 LL1 HL1 FR1 LR1 HR1) (fc_synl FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (bwc (bc_synl BL3 LL3 HL3 BR3 LR3 HR3)))) (rch (std_par DL DR) (st_s* (sc (fwc (fc_synl FL3 LL3 HL3 FR3 LR3 HR3)))))]
                            | [g ⊢ c_neq I3] ⇒
                              let [g ⊢ NL3] = no_key_in_std [⊢ KL3] [g ⊢ DR] in
@@ -407,15 +407,15 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ ex_kn _ H3 N3] = no_key_of_prlab_in_std [g ⊢ TL3] [g ⊢ DR] in
                         [g ⊢ ex_cf (fc_synl FL1 LL1 HL1 FR1 LR1 HR1) (fc_synr FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (fwc (fc_parl FL3 H3 N3)))) (rch (std_par DL DR) id_s*)]
                       | [g ⊢ c_fw DR FR1 FR3 FR2 LR1' LR3] ⇒
-                        let [g ⊢ ex_k HL3] = existence_of_key [g ⊢ TL3] in
+                        let [g ⊢ ex_k HL3] = total_key [g ⊢ TL3] in
                         let [g ⊢ HL3]:[g ⊢ key _ KL3[]] = [g ⊢ HL3] in
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = [g ⊢ FR3] in
-                        let [g ⊢ ex_k HR3] = existence_of_key [g ⊢ TR3] in
+                        let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
                         (case compare [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LL1] [g ⊢ LL1'] in
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LR1] [g ⊢ LR1'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LL1] [g ⊢ LL1'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LR1] [g ⊢ LR1'] in
                              [g ⊢ ex_cf (fc_synl FL1 LL1 HL1 FR1 LR1 HR1) (fc_synr FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (fwc (fc_synl FL3 LL3 HL3 FR3 LR3 HR3)))) (rch (std_par DL DR) id_s*)]
                            | [g ⊢ c_neq I3] ⇒
                              let [g ⊢ NL3] = no_key_in_std [⊢ KL3] [g ⊢ DR] in
@@ -437,15 +437,15 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ ex_kn _ HR3 NR3] = no_key_of_prlab_in_std [g ⊢ TR3] [g ⊢ DL] in
                         [g ⊢ ex_cf (fc_synl FL1 LL1 HL1 FR1 LR1 HR1) (fc_synr FL2 LL2 HL2 FR2 LR2 HR2) (tr_s* (st_s* (sc (bwc (bc_parl BL3 HL3 NL3)))) (st_s* (sc (fwc (fc_parr FR3 HR3 NR3))))) (rch (std_par DL DR) (st_s* (sc (fwc (fc_parl FL3 HL3 NL3)))))]
                       | [g ⊢ c_bw DR FR1 BR3 FR2 LR2' LR3] ⇒
-                        let [g ⊢ ex_k HL3] = existence_of_key [g ⊢ TL3] in
+                        let [g ⊢ ex_k HL3] = total_key [g ⊢ TL3] in
                         let [g ⊢ HL3]:[g ⊢ key _ KL3[]] = [g ⊢ HL3] in
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = closed_loop_lemma_two [g ⊢ BR3] in
-                        let [g ⊢ ex_k HR3] = existence_of_key [g ⊢ TR3] in
+                        let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
                         (case compare [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LL2] [g ⊢ LL2'] in
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LR2] [g ⊢ LR2'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LL2] [g ⊢ LL2'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LR2] [g ⊢ LR2'] in
                              [g ⊢ ex_cf (fc_synl FL1 LL1 HL1 FR1 LR1 HR1) (fc_synr FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (bwc (bc_synr BL3 LL3 HL3 BR3 LR3 HR3)))) (rch (std_par DL DR) (st_s* (sc (fwc (fc_synr FL3 LL3 HL3 FR3 LR3 HR3)))))]
                            | [g ⊢ c_neq I3] ⇒
                              let [g ⊢ NL3] = no_key_in_std [⊢ KL3] [g ⊢ DR] in
@@ -471,15 +471,15 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ ex_kn _ H3 N3] = no_key_of_prlab_in_std [g ⊢ TL3] [g ⊢ DR] in
                         [g ⊢ ex_cf (fc_synr FL1 LL1 HL1 FR1 LR1 HR1) (fc_synl FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (fwc (fc_parl FL3 H3 N3)))) (rch (std_par DL DR) id_s*)]
                       | [g ⊢ c_fw DR FR1 FR3 FR2 LR1' LR3] ⇒
-                        let [g ⊢ ex_k HL3] = existence_of_key [g ⊢ TL3] in
+                        let [g ⊢ ex_k HL3] = total_key [g ⊢ TL3] in
                         let [g ⊢ HL3]:[g ⊢ key _ KL3[]] = [g ⊢ HL3] in
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = [g ⊢ FR3] in
-                        let [g ⊢ ex_k HR3] = existence_of_key [g ⊢ TR3] in
+                        let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
                         (case compare [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LL1] [g ⊢ LL1'] in
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LR1] [g ⊢ LR1'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LL1] [g ⊢ LL1'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LR1] [g ⊢ LR1'] in
                              [g ⊢ ex_cf (fc_synr FL1 LL1 HL1 FR1 LR1 HR1) (fc_synl FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (fwc (fc_synr FL3 LL3 HL3 FR3 LR3 HR3)))) (rch (std_par DL DR) id_s*)]
                            | [g ⊢ c_neq I3] ⇒
                              let [g ⊢ NL3] = no_key_in_std [⊢ KL3] [g ⊢ DR] in
@@ -501,15 +501,15 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ ex_kn _ HR3 NR3] = no_key_of_prlab_in_std [g ⊢ TR3] [g ⊢ DL] in
                         [g ⊢ ex_cf (fc_synr FL1 LL1 HL1 FR1 LR1 HR1) (fc_synl FL2 LL2 HL2 FR2 LR2 HR2) (tr_s* (st_s* (sc (bwc (bc_parl BL3 HL3 NL3)))) (st_s* (sc (fwc (fc_parr FR3 HR3 NR3))))) (rch (std_par DL DR) (st_s* (sc (fwc (fc_parl FL3 HL3 NL3)))))]
                       | [g ⊢ c_bw DR FR1 BR3 FR2 LR2' LR3] ⇒
-                        let [g ⊢ ex_k HL3] = existence_of_key [g ⊢ TL3] in
+                        let [g ⊢ ex_k HL3] = total_key [g ⊢ TL3] in
                         let [g ⊢ HL3]:[g ⊢ key _ KL3[]] = [g ⊢ HL3] in
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = closed_loop_lemma_two [g ⊢ BR3] in
-                        let [g ⊢ ex_k HR3] = existence_of_key [g ⊢ TR3] in
+                        let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
                         (case compare [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LL2] [g ⊢ LL2'] in
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LR2] [g ⊢ LR2'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LL2] [g ⊢ LL2'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LR2] [g ⊢ LR2'] in
                              [g ⊢ ex_cf (fc_synr FL1 LL1 HL1 FR1 LR1 HR1) (fc_synl FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (bwc (bc_synl BL3 LL3 HL3 BR3 LR3 HR3)))) (rch (std_par DL DR) (st_s* (sc (fwc (fc_synl FL3 LL3 HL3 FR3 LR3 HR3)))))]
                            | [g ⊢ c_neq I3] ⇒
                              let [g ⊢ NL3] = no_key_in_std [⊢ KL3] [g ⊢ DR] in
@@ -534,15 +534,15 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ ex_kn _ H3 N3] = no_key_of_prlab_in_std [g ⊢ TL3] [g ⊢ DR] in
                         [g ⊢ ex_cf (fc_synr FL1 LL1 HL1 FR1 LR1 HR1) (fc_synr FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (fwc (fc_parl FL3 H3 N3)))) (rch (std_par DL DR) id_s*)]
                       | [g ⊢ c_fw DR FR1 FR3 FR2 LR1' LR3] ⇒
-                        let [g ⊢ ex_k HL3] = existence_of_key [g ⊢ TL3] in
+                        let [g ⊢ ex_k HL3] = total_key [g ⊢ TL3] in
                         let [g ⊢ HL3]:[g ⊢ key _ KL3[]] = [g ⊢ HL3] in
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = [g ⊢ FR3] in
-                        let [g ⊢ ex_k HR3] = existence_of_key [g ⊢ TR3] in
+                        let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
                         (case compare [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LL1] [g ⊢ LL1'] in
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LR1] [g ⊢ LR1'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LL1] [g ⊢ LL1'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LR1] [g ⊢ LR1'] in
                              [g ⊢ ex_cf (fc_synr FL1 LL1 HL1 FR1 LR1 HR1) (fc_synr FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (fwc (fc_synr FL3 LL3 HL3 FR3 LR3 HR3)))) (rch (std_par DL DR) id_s*)]
                            | [g ⊢ c_neq I3] ⇒
                              let [g ⊢ NL3] = no_key_in_std [⊢ KL3] [g ⊢ DR] in
@@ -564,15 +564,15 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ ex_kn _ HR3 NR3] = no_key_of_prlab_in_std [g ⊢ TR3] [g ⊢ DL] in
                         [g ⊢ ex_cf (fc_synr FL1 LL1 HL1 FR1 LR1 HR1) (fc_synr FL2 LL2 HL2 FR2 LR2 HR2) (tr_s* (st_s* (sc (bwc (bc_parl BL3 HL3 NL3)))) (st_s* (sc (fwc (fc_parr FR3 HR3 NR3))))) (rch (std_par DL DR) (st_s* (sc (fwc (fc_parl FL3 HL3 NL3)))))]
                       | [g ⊢ c_bw DR FR1 BR3 FR2 LR2' LR3] ⇒
-                        let [g ⊢ ex_k HL3] = existence_of_key [g ⊢ TL3] in
+                        let [g ⊢ ex_k HL3] = total_key [g ⊢ TL3] in
                         let [g ⊢ HL3]:[g ⊢ key _ KL3[]] = [g ⊢ HL3] in
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = closed_loop_lemma_two [g ⊢ BR3] in
-                        let [g ⊢ ex_k HR3] = existence_of_key [g ⊢ TR3] in
+                        let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
                         (case compare [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LL2] [g ⊢ LL2'] in
-                             let [g ⊢ refl] = uniqueness_of_lab [g ⊢ LR2] [g ⊢ LR2'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LL2] [g ⊢ LL2'] in
+                             let [g ⊢ refl] = functional_lab [g ⊢ LR2] [g ⊢ LR2'] in
                              [g ⊢ ex_cf (fc_synr FL1 LL1 HL1 FR1 LR1 HR1) (fc_synr FL2 LL2 HL2 FR2 LR2 HR2) (st_s* (sc (bwc (bc_synr BL3 LL3 HL3 BR3 LR3 HR3)))) (rch (std_par DL DR) (st_s* (sc (fwc (fc_synr FL3 LL3 HL3 FR3 LR3 HR3)))))]
                            | [g ⊢ c_neq I3] ⇒
                              let [g ⊢ NL3] = no_key_in_std [⊢ KL3] [g ⊢ DR] in

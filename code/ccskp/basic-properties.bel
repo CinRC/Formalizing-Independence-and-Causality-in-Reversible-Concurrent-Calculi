@@ -22,7 +22,7 @@ LF ex_key_notin: pr_lab_cl → std _ → type =
 % The key of a proof keyed label does not occur in a standard process:
 rec no_key_of_prlab_in_std: (g:ctx) {T:[g ⊢ pr_lab_cl]} {D:[g ⊢ std X]} [g ⊢ ex_key_notin T D] =
 / total t (no_key_of_prlab_in_std _ t _ _) /
-mlam T,D ⇒ let [g ⊢ ex_k H] = existence_of_key [_ ⊢ T] in
+mlam T,D ⇒ let [g ⊢ ex_k H] = total_key [_ ⊢ T] in
        let [g ⊢ H]:[g ⊢ key _ K[]] = [g ⊢ H] in
        let [g ⊢ N] = no_key_in_std [⊢ K] [g ⊢ D] in [g ⊢ ex_kn D H N]
 ;

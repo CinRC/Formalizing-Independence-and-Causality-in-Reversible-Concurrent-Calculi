@@ -1,4 +1,5 @@
-%%% Uniqueness results for CCSKP %%%
+%%% Functionality and totality for lab and key;      %%%
+%%% Uniqueness of the derivation of CCSKP predicates %%%
 
 --open ccskp.
 
@@ -7,27 +8,29 @@ LF ex_lab: pr_lab_cl → type =
   | ex_l: lab T A → ex_lab T
 ;
 
-% Proof of existence of a label in a proof keyed label
-rec existence_of_lab: (g:ctx) {T:[g ⊢ pr_lab_cl]} [g ⊢ ex_lab T] =
-/ total t (existence_of_lab _ t) /
+% Totality of lab: given a proof keyed label T,
+% there exists at least one label A such that lab(T)=A.
+rec total_lab: (g:ctx) {T:[g ⊢ pr_lab_cl]} [g ⊢ ex_lab T] =
+/ total t (total_lab _ t) /
 mlam T ⇒ case [_ ⊢ T] of
   | [g ⊢ pr_base _ _] ⇒ [g ⊢ ex_l lab_base]
-  | [g ⊢ pr_suml T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_suml L)]
-  | [g ⊢ pr_sumr T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_sumr L)]
-  | [g ⊢ pr_parl T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parl L)]
-  | [g ⊢ pr_parr T'] ⇒ let [g ⊢ ex_l L] = existence_of_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parr L)]
+  | [g ⊢ pr_suml T'] ⇒ let [g ⊢ ex_l L] = total_lab [g ⊢ T'] in [g ⊢ ex_l (lab_suml L)]
+  | [g ⊢ pr_sumr T'] ⇒ let [g ⊢ ex_l L] = total_lab [g ⊢ T'] in [g ⊢ ex_l (lab_sumr L)]
+  | [g ⊢ pr_parl T'] ⇒ let [g ⊢ ex_l L] = total_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parl L)]
+  | [g ⊢ pr_parr T'] ⇒ let [g ⊢ ex_l L] = total_lab [g ⊢ T'] in [g ⊢ ex_l (lab_parr L)]
   | [g ⊢ pr_sync _ _] ⇒ [g ⊢ ex_l lab_sync]
 ;
 
-% Proof of uniqueness of a label in a proof keyed label
-rec uniqueness_of_lab: (g:ctx) [g ⊢ lab T A] → [g ⊢ lab T B] → [g ⊢ eql A B] =
-/ total l1 (uniqueness_of_lab _ _ _ _ l1 _) /
+% Functionality of lab: given a proof keyed label T,
+% there is at most one label A such that lab(T)=A.
+rec functional_lab: (g:ctx) [g ⊢ lab T A] → [g ⊢ lab T B] → [g ⊢ eql A B] =
+/ total l1 (functional_lab _ _ _ _ l1 _) /
 fn l1,l2 ⇒ case l1 of
   | [g ⊢ lab_base] ⇒ let [g ⊢ lab_base] = l2 in [g ⊢ refl]
-  | [g ⊢ lab_suml L1] ⇒ let [g ⊢ lab_suml L2] = l2 in uniqueness_of_lab [g ⊢ L1] [g ⊢ L2]
-  | [g ⊢ lab_sumr L1] ⇒ let [g ⊢ lab_sumr L2] = l2 in uniqueness_of_lab [g ⊢ L1] [g ⊢ L2]
-  | [g ⊢ lab_parl L1] ⇒ let [g ⊢ lab_parl L2] = l2 in uniqueness_of_lab [g ⊢ L1] [g ⊢ L2]
-  | [g ⊢ lab_parr L1] ⇒ let [g ⊢ lab_parr L2] = l2 in uniqueness_of_lab [g ⊢ L1] [g ⊢ L2]
+  | [g ⊢ lab_suml L1] ⇒ let [g ⊢ lab_suml L2] = l2 in functional_lab [g ⊢ L1] [g ⊢ L2]
+  | [g ⊢ lab_sumr L1] ⇒ let [g ⊢ lab_sumr L2] = l2 in functional_lab [g ⊢ L1] [g ⊢ L2]
+  | [g ⊢ lab_parl L1] ⇒ let [g ⊢ lab_parl L2] = l2 in functional_lab [g ⊢ L1] [g ⊢ L2]
+  | [g ⊢ lab_parr L1] ⇒ let [g ⊢ lab_parr L2] = l2 in functional_lab [g ⊢ L1] [g ⊢ L2]
   | [g ⊢ lab_sync] ⇒ let [g ⊢ lab_sync] = l2 in [g ⊢ refl]
 ;
 
@@ -36,28 +39,30 @@ LF ex_key: pr_lab_cl → type =
   | ex_k: key T K → ex_key T
 ;
 
-% Proof of existence of a key in a proof keyed label
-rec existence_of_key: (g:ctx) {T:[g ⊢ pr_lab_cl]} [g ⊢ ex_key T] =
-/ total t (existence_of_key _ t) /
+% Totality of key: given a proof keyed label T,
+% there exists at least one key K such that key(T)=K.
+rec total_key: (g:ctx) {T:[g ⊢ pr_lab_cl]} [g ⊢ ex_key T] =
+/ total t (total_key _ t) /
 mlam T ⇒ case [_ ⊢ T] of
   | [g ⊢ pr_base _ _] ⇒ [g ⊢ ex_k key_base]
-  | [g ⊢ pr_suml T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_suml H)]
-  | [g ⊢ pr_sumr T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_sumr H)]
-  | [g ⊢ pr_parl T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_parl H)]
-  | [g ⊢ pr_parr T'] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_parr H)]
-  | [g ⊢ pr_sync T' _] ⇒ let [g ⊢ ex_k H] = existence_of_key [g ⊢ T'] in [g ⊢ ex_k (key_sync H)]
+  | [g ⊢ pr_suml T'] ⇒ let [g ⊢ ex_k H] = total_key [g ⊢ T'] in [g ⊢ ex_k (key_suml H)]
+  | [g ⊢ pr_sumr T'] ⇒ let [g ⊢ ex_k H] = total_key [g ⊢ T'] in [g ⊢ ex_k (key_sumr H)]
+  | [g ⊢ pr_parl T'] ⇒ let [g ⊢ ex_k H] = total_key [g ⊢ T'] in [g ⊢ ex_k (key_parl H)]
+  | [g ⊢ pr_parr T'] ⇒ let [g ⊢ ex_k H] = total_key [g ⊢ T'] in [g ⊢ ex_k (key_parr H)]
+  | [g ⊢ pr_sync T' _] ⇒ let [g ⊢ ex_k H] = total_key [g ⊢ T'] in [g ⊢ ex_k (key_sync H)]
 ;
 
-% Proof of uniqueness of a key in a proof keyed label
-rec uniqueness_of_key: (g:ctx) [g ⊢ key T K[]] → [g ⊢ key T M[]] → [g ⊢ eqk K[] M[]] =
-/ total h1 (uniqueness_of_key _ _ _ _ h1 _) /
+% Functionality of key: given a proof keyed label T,
+% there is at most one key K such that key(T)=K.
+rec functional_key: (g:ctx) [g ⊢ key T K[]] → [g ⊢ key T M[]] → [g ⊢ eqk K[] M[]] =
+/ total h1 (functional_key _ _ _ _ h1 _) /
 fn h1,h2 ⇒ case h1 of
   | [g ⊢ key_base] ⇒ let [g ⊢ key_base] = h2 in [g ⊢ refk]
-  | [g ⊢ key_suml H1] ⇒ let [g ⊢ key_suml H2] = h2 in uniqueness_of_key [g ⊢ H1] [g ⊢ H2]
-  | [g ⊢ key_sumr H1] ⇒ let [g ⊢ key_sumr H2] = h2 in uniqueness_of_key [g ⊢ H1] [g ⊢ H2]
-  | [g ⊢ key_parl H1] ⇒ let [g ⊢ key_parl H2] = h2 in uniqueness_of_key [g ⊢ H1] [g ⊢ H2]
-  | [g ⊢ key_parr H1] ⇒ let [g ⊢ key_parr H2] = h2 in uniqueness_of_key [g ⊢ H1] [g ⊢ H2]
-  | [g ⊢ key_sync H1] ⇒ let [g ⊢ key_sync H2] = h2 in uniqueness_of_key [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ key_suml H1] ⇒ let [g ⊢ key_suml H2] = h2 in functional_key [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ key_sumr H1] ⇒ let [g ⊢ key_sumr H2] = h2 in functional_key [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ key_parl H1] ⇒ let [g ⊢ key_parl H2] = h2 in functional_key [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ key_parr H1] ⇒ let [g ⊢ key_parr H2] = h2 in functional_key [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ key_sync H1] ⇒ let [g ⊢ key_sync H2] = h2 in functional_key [g ⊢ H1] [g ⊢ H2]
 ;
 
 % Equality of derivations of lab T A

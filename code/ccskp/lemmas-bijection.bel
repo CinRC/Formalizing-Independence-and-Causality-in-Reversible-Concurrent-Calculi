@@ -319,7 +319,7 @@ fn v ⇒ case v of
          (case occur_in_valid_pr_lab [g,a:names ⊢ V2] of
             | oc [g,a:names ⊢ T2] [g,a:names ⊢ O] ⇒
               let [g,a:names ⊢ L2'] = occurs_in_out [g,a:names ⊢ O] [g,a:names ⊢ L2] in
-              let [g,a:names ⊢ refl] = uniqueness_of_lab [g,a:names ⊢ L2] [g,a:names ⊢ L2'] in
+              let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L2] [g,a:names ⊢ L2'] in
               impossible occurs_not_in_inp [g,a:names ⊢ L1]
             | noc [g,a:names ⊢ T2] [g,a:names ⊢ E2] ⇒
               let [g,a:names ⊢ refpl] = [g,a:names ⊢ E2] in noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]))
@@ -329,7 +329,7 @@ fn v ⇒ case v of
          (case occur_in_valid_pr_lab [g,a:names ⊢ V2] of
             | oc [g,a:names ⊢ T2] [g,a:names ⊢ O] ⇒
               let [g,a:names ⊢ L2'] = occurs_in_inp [g,a:names ⊢ O] [g,a:names ⊢ L2] in
-              let [g,a:names ⊢ refl] = uniqueness_of_lab [g,a:names ⊢ L2] [g,a:names ⊢ L2'] in
+              let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L2] [g,a:names ⊢ L2'] in
               impossible occurs_not_in_out [g,a:names ⊢ L1]
             | noc [g,a:names ⊢ T2] [g,a:names ⊢ E2] ⇒
               let [g,a:names ⊢ refpl] = [g,a:names ⊢ E2] in noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]))
@@ -432,7 +432,7 @@ mlam O ⇒ fn v ⇒ case [_,b:names,a:names ⊢ O] of
          let ex_sol [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O1'] e = str_occl [_ ⊢ O1] [_ ⊢ V1] in
          let [g,b:names,a:names ⊢ refpl] = e in
          let [g,b:names,a:names ⊢ L1'] = occurs_in_inp [_ ⊢ O1'] [_ ⊢ L1] in
-         let [g,b:names,a:names ⊢ refl] = uniqueness_of_lab [_ ⊢ L1] [_ ⊢ L1'] in
+         let [g,b:names,a:names ⊢ refl] = functional_lab [_ ⊢ L1] [_ ⊢ L1'] in
          let ex_slo [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L2'] e = str_lab_out [_ ⊢ L2] in
          let [g,b:names,a:names ⊢ refpl] = e in
          ex_sol [_ ⊢ _] [_ ⊢ occ_sync O1'] [_ ⊢ refpl]
@@ -440,7 +440,7 @@ mlam O ⇒ fn v ⇒ case [_,b:names,a:names ⊢ O] of
          let ex_sol [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O1'] e = str_occl [_ ⊢ O1] [_ ⊢ V1] in
          let [g,b:names,a:names ⊢ refpl] = e in
          let [g,b:names,a:names ⊢ L1'] = occurs_in_out [_ ⊢ O1'] [_ ⊢ L1] in
-         let [g,b:names,a:names ⊢ refl] = uniqueness_of_lab [_ ⊢ L1] [_ ⊢ L1'] in
+         let [g,b:names,a:names ⊢ refl] = functional_lab [_ ⊢ L1] [_ ⊢ L1'] in
          let ex_sli [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ L2'] e = str_lab_inp [_ ⊢ L2] in
          let [g,b:names,a:names ⊢ refpl] = e in
          ex_sol [_ ⊢ _] [_ ⊢ occ_sync O1'] [_ ⊢ refpl])

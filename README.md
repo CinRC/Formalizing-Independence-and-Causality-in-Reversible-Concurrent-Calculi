@@ -174,20 +174,20 @@ opam install --deps-only ./beluga.opam
 - `code\`: Contains the Beluga formalization of …
   + `shared\`: … shared …
     * `definitions.bel`: … definitions
-    * `unique.bel`: … proofs of uniqueness
+    * `unique.bel`: … proofs of uniqueness of the derivation of predicates
     * `basic-properties.bel`: … properties of keys
   + `ccsk\`: … CCSK …
     * `definitions.bel`: … definitions
-    * `unique-step.bel`: … uniqueness of transitions
+    * `unique-step.bel`: … uniqueness of the derivation of transitions
   + `ccskp\`: … CCSKP …
     * `definitions.bel`: … definitions
-    * `unique.bel`: … uniqueness of predicates
+    * `unique.bel`: … uniqueness of the derivation of predicates
     * `basic-properties.bel`: … basic properties (e.g. loop lemma, symmetry of transitions and paths)
     * `lemmas-connectivity-one.bel`: … auxiliary lemmas for Proposition 4.4 (1)
     * `connectivity-relationship-one.bel`: … Proposition 4.4 (1)
     * `lemmas-connectivity-two.bel`: … auxiliary lemmas for Proposition 4.4 (2)
     * `connectivity-relationship-two.bel`: … Proposition 4.4 (2)
-    * `unique-step.bel`: … uniqueness of transitions
+    * `unique-step.bel`: … uniqueness of the derivation of transitions
     * `lemmas-bijection.bel`: … auxiliary lemmas for the CCSK-CCSKP bijection
   + `bijection\`: the proof of the bijection between CCSK and CCSKP, in particular...
     * `definitions.bel`: … definitions of the forget and enrich functions (as relations)

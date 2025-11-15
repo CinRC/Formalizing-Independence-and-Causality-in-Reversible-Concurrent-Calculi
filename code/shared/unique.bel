@@ -1,4 +1,4 @@
-%%% Uniqueness proofs shared by CCSK and CCSKP %%%
+%%% Uniqueness of the derivation of predicates shared by CCSK and CCSKP %%%
 
 % Equality of derivations of [g ⊢ less K[] M[]]
 inductive eqls: (g:ctx) [g ⊢ less K[] M[]] → [g ⊢ less K[] M[]] → ctype =
