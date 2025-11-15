@@ -10,7 +10,7 @@ rec inverse_fc_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_cl X T1 X']) (F2:[g ⊢ ccsk.
 / total f1 (inverse_fc_one _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fc_fg F1 F2 _ _] = d1 in
 let [g ⊢ fc_en F2 F3 _ _] = d2 in
-unique_fstep_closed [g ⊢ F1] [g ⊢ F3]
+unique_fstep_cl [g ⊢ F1] [g ⊢ F3]
 ;
 
 % fc_forget and fo_enrich are not composable.
@@ -19,7 +19,7 @@ rec no_fc_fo_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_cl X T1 X']) (F2:[g ⊢ ccsk.fs
 / total f1 (no_fc_fo_one _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fc_fg F1 F2 _ _] = d1 in
 let [g ⊢ fo_en F2 F3 \_._] = d2 in
-no_fstep_closed_and_open [g ⊢ F1] [g ⊢ F3]
+no_fstep_cl_and_op [g ⊢ F1] [g ⊢ F3]
 ;
 
 % fo_enrich ∘ fo_forget = id.
@@ -28,7 +28,7 @@ rec inverse_fo_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_op X T1 X']) (F2:[g ⊢ ccsk.
 / total f1 (inverse_fo_one _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fo_fg F1 F2 \_._] = d1 in
 let [g ⊢ fo_en F2 F3 \_._] = d2 in
-unique_fstep_open [g ⊢ F1] [g ⊢ F3]
+unique_fstep_op [g ⊢ F1] [g ⊢ F3]
 ;
 
 % fo_forget and fc_enrich are not composable.
@@ -37,7 +37,7 @@ rec no_fo_fc_one: (g:ctx) (F1:[g ⊢ ccskp.fstep_op X T1 X']) (F2:[g ⊢ ccsk.fs
 / total f1 (no_fo_fc_one _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fo_fg F1 F2 \_._] = d1 in
 let [g ⊢ fc_en F2 F3 _ _] = d2 in
-no_fstep_closed_and_open [g ⊢ F3] [g ⊢ F1]
+no_fstep_cl_and_op [g ⊢ F3] [g ⊢ F1]
 ;
 
 
@@ -47,7 +47,7 @@ rec inverse_bc_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_cl X T1 X']) (B2:[g ⊢ ccsk.
 / total b1 (inverse_bc_one _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bc_fg B1 B2 _ _] = d1 in
 let [g ⊢ bc_en B2 B3 _ _] = d2 in
-unique_bstep_closed [g ⊢ B1] [g ⊢ B3]
+unique_bstep_cl [g ⊢ B1] [g ⊢ B3]
 ;
 
 % bc_forget and bo_enrich are not composable.
@@ -56,7 +56,7 @@ rec no_bc_bo_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_cl X T1 X']) (B2:[g ⊢ ccsk.bs
 / total b1 (no_bc_bo_one _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bc_fg B1 B2 _ _] = d1 in
 let [g ⊢ bo_en B2 B3 \_._] = d2 in
-no_bstep_closed_and_open [g ⊢ B1] [g ⊢ B3]
+no_bstep_cl_and_op [g ⊢ B1] [g ⊢ B3]
 ;
 
 % bo_enrich ∘ bo_forget = id.
@@ -74,7 +74,7 @@ rec no_bo_bc_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_op X T1 X']) (B2:[g ⊢ ccsk.bs
 / total b1 (no_bo_bc_one _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bo_fg B1 B2 \_._] = d1 in
 let [g ⊢ bc_en B2 B3 _ _] = d2 in
-no_bstep_closed_and_open [g ⊢ B3] [g ⊢ B1]
+no_bstep_cl_and_op [g ⊢ B3] [g ⊢ B1]
 ;
 
 

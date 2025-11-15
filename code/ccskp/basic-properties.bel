@@ -31,105 +31,105 @@ mlam T,D ⇒ let [g ⊢ ex_k H] = total_key [_ ⊢ T] in
 %%% Properties of transitions %%%
 
 % Loop lemma - first implication for closed transitions
-rec closed_loop_lemma_one: (g:ctx) [g ⊢ fstep_cl X T X'] → [g ⊢ bstep_cl X' T X] =
-/ total f (closed_loop_lemma_one _ _ _ _ f) /
+rec loop_lemma_one_cl: (g:ctx) [g ⊢ fstep_cl X T X'] → [g ⊢ bstep_cl X' T X] =
+/ total f (loop_lemma_one_cl _ _ _ _ f) /
 fn f ⇒ case f of
   | [g ⊢ fc_pref D] ⇒ [g ⊢ bc_pref D]
-  | [g ⊢ fc_kpref F H I] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_kpref B H I]
-  | [g ⊢ fc_suml F D] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_suml B D]
-  | [g ⊢ fc_sumr F D] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_sumr B D]
-  | [g ⊢ fc_parl F H N] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_parl B H N]
-  | [g ⊢ fc_parr F H N] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc_parr B H N]
-  | [g ⊢ fc_synl F1 L1 H1 F2 L2 H2] ⇒ let [g ⊢ B1] = closed_loop_lemma_one [g ⊢ F1] in
-       let [g ⊢ B2] = closed_loop_lemma_one [g ⊢ F2] in [g ⊢ bc_synl B1 L1 H1 B2 L2 H2]
-  | [g ⊢ fc_synr F1 L1 H1 F2 L2 H2] ⇒ let [g ⊢ B1] = closed_loop_lemma_one [g ⊢ F1] in
-       let [g ⊢ B2] = closed_loop_lemma_one [g ⊢ F2] in [g ⊢ bc_synr B1 L1 H1 B2 L2 H2]
-  | [g ⊢ fc_nu \a.F] ⇒ let [g,a:names ⊢ B] = closed_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bc_nu \a.B]
+  | [g ⊢ fc_kpref F H I] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ bc_kpref B H I]
+  | [g ⊢ fc_suml F D] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ bc_suml B D]
+  | [g ⊢ fc_sumr F D] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ bc_sumr B D]
+  | [g ⊢ fc_parl F H N] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ bc_parl B H N]
+  | [g ⊢ fc_parr F H N] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ bc_parr B H N]
+  | [g ⊢ fc_synl F1 L1 H1 F2 L2 H2] ⇒ let [g ⊢ B1] = loop_lemma_one_cl [g ⊢ F1] in
+       let [g ⊢ B2] = loop_lemma_one_cl [g ⊢ F2] in [g ⊢ bc_synl B1 L1 H1 B2 L2 H2]
+  | [g ⊢ fc_synr F1 L1 H1 F2 L2 H2] ⇒ let [g ⊢ B1] = loop_lemma_one_cl [g ⊢ F1] in
+       let [g ⊢ B2] = loop_lemma_one_cl [g ⊢ F2] in [g ⊢ bc_synr B1 L1 H1 B2 L2 H2]
+  | [g ⊢ fc_nu \a.F] ⇒ let [g,a:names ⊢ B] = loop_lemma_one_cl [g,a:names ⊢ F] in [g ⊢ bc_nu \a.B]
 ;
 
 % Loop lemma - first implication for open transitions
-rec open_loop_lemma_one: (g:ctx) [g ⊢ fstep_op X T X'] → [g ⊢ bstep_op X' T X] =
-/ total f (open_loop_lemma_one _ _ _ _ f) /
+rec loop_lemma_one_op: (g:ctx) [g ⊢ fstep_op X T X'] → [g ⊢ bstep_op X' T X] =
+/ total f (loop_lemma_one_op _ _ _ _ f) /
 fn f ⇒ case f of
   | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)] ⇒
-    let [g,a:names ⊢ B] = closed_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_cl (\a.O) (\a.L) (\a.B)]
-  | [g ⊢ fo_kpref F (\a.H) I] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_kpref B (\a.H) I]
-  | [g ⊢ fo_suml F D] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_suml B D]
-  | [g ⊢ fo_sumr F D] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_sumr B D]
-  | [g ⊢ fo_parl F (\a.H) N] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_parl B (\a.H) N]
-  | [g ⊢ fo_parr F (\a.H) N] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_parr B (\a.H) N]
-  | [g ⊢ fo_nu_op \a.F] ⇒ let [g,a:names ⊢ B] = open_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_op \a.B]
+    let [g,a:names ⊢ B] = loop_lemma_one_cl [g,a:names ⊢ F] in [g ⊢ bo_nu_cl (\a.O) (\a.L) (\a.B)]
+  | [g ⊢ fo_kpref F (\a.H) I] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ bo_kpref B (\a.H) I]
+  | [g ⊢ fo_suml F D] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ bo_suml B D]
+  | [g ⊢ fo_sumr F D] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ bo_sumr B D]
+  | [g ⊢ fo_parl F (\a.H) N] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ bo_parl B (\a.H) N]
+  | [g ⊢ fo_parr F (\a.H) N] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ bo_parr B (\a.H) N]
+  | [g ⊢ fo_nu_op \a.F] ⇒ let [g,a:names ⊢ B] = loop_lemma_one_op [g,a:names ⊢ F] in [g ⊢ bo_nu_op \a.B]
 ;
 
 % Loop lemma - first implication
 rec loop_lemma_one: (g:ctx) [g ⊢ fstep X T X'] → [g ⊢ bstep X' T X] =
 / total f (loop_lemma_one _ _ _ _ f) /
 fn f ⇒ case f of
-  | [g ⊢ fc F] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bc B]
-  | [g ⊢ fo F] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo B]
+  | [g ⊢ fc F] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ bc B]
+  | [g ⊢ fo F] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ bo B]
 ;
 
 % Loop lemma - second implication for closed transitions
-rec closed_loop_lemma_two: (g:ctx) [g ⊢ bstep_cl X' T X] → [g ⊢ fstep_cl X T X'] =
-/ total b (closed_loop_lemma_two _ _ _ _ b) /
+rec loop_lemma_two_cl: (g:ctx) [g ⊢ bstep_cl X' T X] → [g ⊢ fstep_cl X T X'] =
+/ total b (loop_lemma_two_cl _ _ _ _ b) /
 fn b ⇒ case b of
   | [g ⊢ bc_pref D] ⇒ [g ⊢ fc_pref D]
-  | [g ⊢ bc_kpref B H I] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_kpref F H I]
-  | [g ⊢ bc_suml B D] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_suml F D]
-  | [g ⊢ bc_sumr B D] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_sumr F D]
-  | [g ⊢ bc_parl B H N] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_parl F H N]
-  | [g ⊢ bc_parr B H N] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc_parr F H N]
-  | [g ⊢ bc_synl B1 L1 H1 B2 L2 H2] ⇒ let [g ⊢ F1] = closed_loop_lemma_two [g ⊢ B1] in
-       let [g ⊢ F2] = closed_loop_lemma_two [g ⊢ B2] in [g ⊢ fc_synl F1 L1 H1 F2 L2 H2]
-  | [g ⊢ bc_synr B1 L1 H1 B2 L2 H2] ⇒ let [g ⊢ F1] = closed_loop_lemma_two [g ⊢ B1] in
-       let [g ⊢ F2] = closed_loop_lemma_two [g ⊢ B2] in [g ⊢ fc_synr F1 L1 H1 F2 L2 H2]
-  | [g ⊢ bc_nu \a.B] ⇒ let [g,a:names ⊢ F] = closed_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fc_nu \a.F]
+  | [g ⊢ bc_kpref B H I] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ fc_kpref F H I]
+  | [g ⊢ bc_suml B D] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ fc_suml F D]
+  | [g ⊢ bc_sumr B D] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ fc_sumr F D]
+  | [g ⊢ bc_parl B H N] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ fc_parl F H N]
+  | [g ⊢ bc_parr B H N] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ fc_parr F H N]
+  | [g ⊢ bc_synl B1 L1 H1 B2 L2 H2] ⇒ let [g ⊢ F1] = loop_lemma_two_cl [g ⊢ B1] in
+       let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in [g ⊢ fc_synl F1 L1 H1 F2 L2 H2]
+  | [g ⊢ bc_synr B1 L1 H1 B2 L2 H2] ⇒ let [g ⊢ F1] = loop_lemma_two_cl [g ⊢ B1] in
+       let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in [g ⊢ fc_synr F1 L1 H1 F2 L2 H2]
+  | [g ⊢ bc_nu \a.B] ⇒ let [g,a:names ⊢ F] = loop_lemma_two_cl [g,a:names ⊢ B] in [g ⊢ fc_nu \a.F]
 ;
 
 % Loop lemma - second implication for open transitions
-rec open_loop_lemma_two: (g:ctx) [g ⊢ bstep_op X' T X] → [g ⊢ fstep_op X T X'] =
-/ total b (open_loop_lemma_two _ _ _ _ b) /
+rec loop_lemma_two_op: (g:ctx) [g ⊢ bstep_op X' T X] → [g ⊢ fstep_op X T X'] =
+/ total b (loop_lemma_two_op _ _ _ _ b) /
 fn b ⇒ case b of
   | [g ⊢ bo_nu_cl (\a.O) (\a.L) (\a.B)] ⇒
-    let [g,a:names ⊢ F] = closed_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)]
-  | [g ⊢ bo_kpref B (\a.H) I] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_kpref F (\a.H) I]
-  | [g ⊢ bo_suml B D] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_suml F D]
-  | [g ⊢ bo_sumr B D] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_sumr F D]
-  | [g ⊢ bo_parl B (\a.H) N] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_parl F (\a.H) N]
-  | [g ⊢ bo_parr B (\a.H) N] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_parr F (\a.H) N]
-  | [g ⊢ bo_nu_op \a.B] ⇒ let [g,a:names ⊢ F] = open_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_op \a.F]
+    let [g,a:names ⊢ F] = loop_lemma_two_cl [g,a:names ⊢ B] in [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)]
+  | [g ⊢ bo_kpref B (\a.H) I] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ fo_kpref F (\a.H) I]
+  | [g ⊢ bo_suml B D] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ fo_suml F D]
+  | [g ⊢ bo_sumr B D] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ fo_sumr F D]
+  | [g ⊢ bo_parl B (\a.H) N] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ fo_parl F (\a.H) N]
+  | [g ⊢ bo_parr B (\a.H) N] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ fo_parr F (\a.H) N]
+  | [g ⊢ bo_nu_op \a.B] ⇒ let [g,a:names ⊢ F] = loop_lemma_two_op [g,a:names ⊢ B] in [g ⊢ fo_nu_op \a.F]
 ;
 
 % Loop lemma - second implication
 rec loop_lemma_two: (g:ctx) [g ⊢ bstep X' T X] → [g ⊢ fstep X T X'] =
 / total b (loop_lemma_two _ _ _ _ b) /
 fn b ⇒ case b of
-  | [g ⊢ bc B] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fc F]
-  | [g ⊢ bo B] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo F]
+  | [g ⊢ bc B] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ fc F]
+  | [g ⊢ bo B] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ fo F]
 ;
 
 % Proof that step is symmetric for closed transitions
-rec symmetric_step_closed: (g:ctx) [g ⊢ step_cl X T Y] → [g ⊢ step_cl Y T X] =
-/ total s (symmetric_step_closed _ _ _ s) /
+rec symmetric_step_cl: (g:ctx) [g ⊢ step_cl X T Y] → [g ⊢ step_cl Y T X] =
+/ total s (symmetric_step_cl _ _ _ s) /
 fn s ⇒ case s of
-    | [g ⊢ fwc F] ⇒ let [g ⊢ B] = closed_loop_lemma_one [g ⊢ F] in [g ⊢ bwc B]
-    | [g ⊢ bwc B] ⇒ let [g ⊢ F] = closed_loop_lemma_two [g ⊢ B] in [g ⊢ fwc F]
+    | [g ⊢ fwc F] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ bwc B]
+    | [g ⊢ bwc B] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ fwc F]
 ;
 
 % Proof that step is symmetric for open transitions
-rec symmetric_step_open: (g:ctx) [g ⊢ step_op X T Y] → [g ⊢ step_op Y T X] =
-/ total s (symmetric_step_open _ _ _ s) /
+rec symmetric_step_op: (g:ctx) [g ⊢ step_op X T Y] → [g ⊢ step_op Y T X] =
+/ total s (symmetric_step_op _ _ _ s) /
 fn s ⇒ case s of
-    | [g ⊢ fwo F] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bwo B]
-    | [g ⊢ bwo B] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fwo F]
+    | [g ⊢ fwo F] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ bwo B]
+    | [g ⊢ bwo B] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ fwo F]
 ;
 
 % Proof that step is symmetric
 rec symmetric_step: (g:ctx) [g ⊢ step X T Y] → [g ⊢ step Y T X] =
 / total s (symmetric_step _ _ _ s) /
 fn s ⇒ case s of
-    | [g ⊢ sc S] ⇒ let [g ⊢ S'] = symmetric_step_closed [g ⊢ S] in [g ⊢ sc S']
-    | [g ⊢ so S] ⇒ let [g ⊢ S'] = symmetric_step_open [g ⊢ S] in [g ⊢ so S']
+    | [g ⊢ sc S] ⇒ let [g ⊢ S'] = symmetric_step_cl [g ⊢ S] in [g ⊢ sc S']
+    | [g ⊢ so S] ⇒ let [g ⊢ S'] = symmetric_step_op [g ⊢ S] in [g ⊢ so S']
 ;
 
 % Proof that step* is symmetric

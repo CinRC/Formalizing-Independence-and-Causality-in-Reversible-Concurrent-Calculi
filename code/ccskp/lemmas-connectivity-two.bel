@@ -23,38 +23,38 @@ LF realised: pr_lab → type =
 % Lemma 2.5: every valid proof label is realised
 
 % Lemma 2.5 for closed proof labels
-rec cl_pr_lab_is_realised: (g:ctx) [g ⊢ valid_cl T] → [g ⊢ realised_cl T] =
-/ total v (cl_pr_lab_is_realised _ _ v) /
+rec pr_lab_is_realised_cl: (g:ctx) [g ⊢ valid_cl T] → [g ⊢ realised_cl T] =
+/ total v (pr_lab_is_realised_cl _ _ v) /
 fn v ⇒ case v of
   | [g ⊢ v_base] ⇒ [g ⊢ crl (std_pref std_null) (fc_pref std_null)]
-  | [g ⊢ v_suml V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ crl (std_sum D std_null) (fc_suml F std_null)]
-  | [g ⊢ v_sumr V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ crl (std_sum std_null D) (fc_sumr F std_null)]
-  | [g ⊢ v_parl V] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T] = cl_pr_lab_is_realised [g ⊢ V] in
+  | [g ⊢ v_suml V] ⇒ let [g ⊢ crl D F] = pr_lab_is_realised_cl [g ⊢ V] in [g ⊢ crl (std_sum D std_null) (fc_suml F std_null)]
+  | [g ⊢ v_sumr V] ⇒ let [g ⊢ crl D F] = pr_lab_is_realised_cl [g ⊢ V] in [g ⊢ crl (std_sum std_null D) (fc_sumr F std_null)]
+  | [g ⊢ v_parl V] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T] = pr_lab_is_realised_cl [g ⊢ V] in
     let [g ⊢ ex_k H] = total_key [g ⊢ T] in
     [g ⊢ crl (std_par D std_null) (fc_parl F H not_null)]
-  | [g ⊢ v_parr V] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T] = cl_pr_lab_is_realised [g ⊢ V] in
+  | [g ⊢ v_parr V] ⇒ let [g ⊢ crl D F]:[g ⊢ realised_cl T] = pr_lab_is_realised_cl [g ⊢ V] in
     let [g ⊢ ex_k H] = total_key [g ⊢ T] in
     [g ⊢ crl (std_par std_null D) (fc_parr F H not_null)]
-  | [g ⊢ v_synl V1 V2 L1 H1 L2 H2] ⇒ let [g ⊢ crl D1 F1] = cl_pr_lab_is_realised [g ⊢ V1] in
-    let [g ⊢ crl D2 F2] = cl_pr_lab_is_realised [g ⊢ V2] in
+  | [g ⊢ v_synl V1 V2 L1 H1 L2 H2] ⇒ let [g ⊢ crl D1 F1] = pr_lab_is_realised_cl [g ⊢ V1] in
+    let [g ⊢ crl D2 F2] = pr_lab_is_realised_cl [g ⊢ V2] in
     [g ⊢ crl (std_par D1 D2) (fc_synl F1 L1 H1 F2 L2 H2)]
-  | [g ⊢ v_synr V1 V2 L1 H1 L2 H2] ⇒ let [g ⊢ crl D1 F1] = cl_pr_lab_is_realised [g ⊢ V1] in
-    let [g ⊢ crl D2 F2] = cl_pr_lab_is_realised [g ⊢ V2] in
+  | [g ⊢ v_synr V1 V2 L1 H1 L2 H2] ⇒ let [g ⊢ crl D1 F1] = pr_lab_is_realised_cl [g ⊢ V1] in
+    let [g ⊢ crl D2 F2] = pr_lab_is_realised_cl [g ⊢ V2] in
     [g ⊢ crl (std_par D1 D2) (fc_synr F1 L1 H1 F2 L2 H2)]
 ;
 % Lemma 2.5 for open proof labels
-rec op_pr_lab_is_realised: (g:ctx) [g ⊢ valid_op T] → [g ⊢ realised_op T] =
-/ total v (op_pr_lab_is_realised _ _ v) /
+rec pr_lab_is_realised_op: (g:ctx) [g ⊢ valid_op T] → [g ⊢ realised_op T] =
+/ total v (pr_lab_is_realised_op _ _ v) /
 fn v ⇒ case v of
-  | [g ⊢ vo_base (\a.O) (\a.L) (\a.V)] ⇒ let [g,a:names ⊢ crl D F] = cl_pr_lab_is_realised [g,a:names ⊢ V] in
+  | [g ⊢ vo_base (\a.O) (\a.L) (\a.V)] ⇒ let [g,a:names ⊢ crl D F] = pr_lab_is_realised_cl [g,a:names ⊢ V] in
     [g ⊢ orl (std_nu \a.D) (fo_nu_cl (\a.O) (\a.L) (\a.F))]
 ;
 % Lemma 2.5 for generalized proof labels
 rec pr_lab_is_realised: (g:ctx) [g ⊢ valid T] → [g ⊢ realised T] =
 / total v (pr_lab_is_realised _ _ v) /
 fn v ⇒ case v of
-  | [g ⊢ v_cl V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fc F)]
-  | [g ⊢ v_op V] ⇒ let [g ⊢ orl D F] = op_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fo F)]
+  | [g ⊢ v_cl V] ⇒ let [g ⊢ crl D F] = pr_lab_is_realised_cl [g ⊢ V] in [g ⊢ rl D (fc F)]
+  | [g ⊢ v_op V] ⇒ let [g ⊢ orl D F] = pr_lab_is_realised_op [g ⊢ V] in [g ⊢ rl D (fo F)]
 ;
 
 
@@ -135,9 +135,9 @@ fn s,d ⇒ case s of
 
 % If a standard process makes a closed forward transition F indexed by the key K,
 % then any key different than K does not occur in the target of F
-rec lemma_fstep_closed_std: (g:ctx) [g ⊢ std X] → [g ⊢ fstep_cl X T Y] →
+rec lemma_fstep_cl_std: (g:ctx) [g ⊢ std X] → [g ⊢ fstep_cl X T Y] →
   [g ⊢ key T M[]] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] Y] =
-/ total d (lemma_fstep_closed_std _ _ _ _ _ _ d _ _ _) /
+/ total d (lemma_fstep_cl_std _ _ _ _ _ _ d _ _ _) /
 fn d,f,h,i ⇒ let [g ⊢ I]:[g ⊢ neq _ K[]] = i in
 case d of
   | [g ⊢ std_null] ⇒ impossible f
@@ -147,28 +147,28 @@ case d of
     let [g ⊢ I] = symmetric_neq i in [g ⊢ not_kpref I N]
   | [g ⊢ std_sum D1 D2] ⇒ (case f of
        | [g ⊢ fc_suml FL _] ⇒ let [g ⊢ key_suml H] = h in
-         let [g ⊢ N1] = lemma_fstep_closed_std [g ⊢ D1] [g ⊢ FL] [g ⊢ H] i in
+         let [g ⊢ N1] = lemma_fstep_cl_std [g ⊢ D1] [g ⊢ FL] [g ⊢ H] i in
          let [g ⊢ N2] = no_key_in_std [⊢ K] [g ⊢ D2] in [g ⊢ not_sum N1 N2]
        | [g ⊢ fc_sumr FR _] ⇒ let [g ⊢ key_sumr H] = h in
          let [g ⊢ N1] = no_key_in_std [⊢ K] [g ⊢ D1] in
-         let [g ⊢ N2] = lemma_fstep_closed_std [g ⊢ D2] [g ⊢ FR] [g ⊢ H] i in [g ⊢ not_sum N1 N2])
+         let [g ⊢ N2] = lemma_fstep_cl_std [g ⊢ D2] [g ⊢ FR] [g ⊢ H] i in [g ⊢ not_sum N1 N2])
   | [g ⊢ std_par D1 D2] ⇒ (case f of
        | [g ⊢ fc_parl F1 _ _] ⇒ let [g ⊢ key_parl H] = h in
-         let [g ⊢ N1] = lemma_fstep_closed_std [g ⊢ D1] [g ⊢ F1] [g ⊢ H] i in
+         let [g ⊢ N1] = lemma_fstep_cl_std [g ⊢ D1] [g ⊢ F1] [g ⊢ H] i in
          let [g ⊢ N2] = no_key_in_std [⊢ K] [g ⊢ D2] in [g ⊢ not_par N1 N2]
        | [g ⊢ fc_parr F2 _ _] ⇒ let [g ⊢ key_parr H] = h in
          let [g ⊢ N1] = no_key_in_std [⊢ K] [g ⊢ D1] in
-         let [g ⊢ N2] = lemma_fstep_closed_std [g ⊢ D2] [g ⊢ F2] [g ⊢ H] i in [g ⊢ not_par N1 N2]
+         let [g ⊢ N2] = lemma_fstep_cl_std [g ⊢ D2] [g ⊢ F2] [g ⊢ H] i in [g ⊢ not_par N1 N2]
        | [g ⊢ fc_synl F1 _ H1 F2 _ H2] ⇒  let [g ⊢ key_sync H] = h in
          let [g ⊢ refk] = functional_key [g ⊢ H] [g ⊢ H1] in
-         let [g ⊢ N1] = lemma_fstep_closed_std [g ⊢ D1] [g ⊢ F1] [g ⊢ H1] i in
-         let [g ⊢ N2] = lemma_fstep_closed_std [g ⊢ D2] [g ⊢ F2] [g ⊢ H2] i in [g ⊢ not_par N1 N2]
+         let [g ⊢ N1] = lemma_fstep_cl_std [g ⊢ D1] [g ⊢ F1] [g ⊢ H1] i in
+         let [g ⊢ N2] = lemma_fstep_cl_std [g ⊢ D2] [g ⊢ F2] [g ⊢ H2] i in [g ⊢ not_par N1 N2]
        | [g ⊢ fc_synr F1 _ H1 F2 _ H2] ⇒ let [g ⊢ key_sync H] = h in
          let [g ⊢ refk] = functional_key [g ⊢ H] [g ⊢ H1] in
-         let [g ⊢ N1] = lemma_fstep_closed_std [g ⊢ D1] [g ⊢ F1] [g ⊢ H1] i in
-         let [g ⊢ N2] = lemma_fstep_closed_std [g ⊢ D2] [g ⊢ F2] [g ⊢ H2] i in [g ⊢ not_par N1 N2])
+         let [g ⊢ N1] = lemma_fstep_cl_std [g ⊢ D1] [g ⊢ F1] [g ⊢ H1] i in
+         let [g ⊢ N2] = lemma_fstep_cl_std [g ⊢ D2] [g ⊢ F2] [g ⊢ H2] i in [g ⊢ not_par N1 N2])
   | [g ⊢ std_nu \a.D] ⇒ let [g ⊢ fc_nu \a.F] = f in
     let [g ⊢ H] = h in
-    let [g,a:names ⊢ N] = lemma_fstep_closed_std [g,a:names ⊢ D] [g,a:names ⊢ F]
+    let [g,a:names ⊢ N] = lemma_fstep_cl_std [g,a:names ⊢ D] [g,a:names ⊢ F]
         [g,a:names ⊢ H[..]] [g,a:names ⊢ I[..]] in [g ⊢ not_nu \a.N]
 ;

@@ -66,7 +66,7 @@ rec functional_fc_enrich: (g:ctx) (F:[g ⊢ ccsk.fstep X T X']) (F1:[g ⊢ ccskp
 / total f (functional_fc_enrich _ _ _ _ _ _ f _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fc_en _ F1 _ _] = d1 in
 let [g ⊢ fc_en _ F2 _ _] = d2 in
-unique_fstep_closed [_ ⊢ F1] [_ ⊢ F2]
+unique_fstep_cl [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % Functionality of fo_enrich:
@@ -76,7 +76,7 @@ rec functional_fo_enrich: (g:ctx) (F:[g ⊢ ccsk.fstep X T X']) (F1:[g ⊢ ccskp
 / total f (functional_fo_enrich _ _ _ _ _ _ f _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fo_en _ F1 \_._] = d1 in
 let [g ⊢ fo_en _ F2 \_._] = d2 in
-unique_fstep_open [_ ⊢ F1] [_ ⊢ F2]
+unique_fstep_op [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % The domains of fc_enrich and fo_enrich are disjoint:
@@ -87,7 +87,7 @@ rec no_fcfo_enrich: (g:ctx) (F:[g ⊢ ccsk.fstep X T X']) (F1:[g ⊢ ccskp.fstep
 / total f (no_fcfo_enrich _ _ _ _ _ _ f _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fc_en _ F1 _ _] = d1 in
 let [g ⊢ fo_en _ F2 \_._] = d2 in
-no_fstep_closed_and_open [_ ⊢ F1] [_ ⊢ F2]
+no_fstep_cl_and_op [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % Functionality of bc_enrich:
@@ -97,7 +97,7 @@ rec functional_bc_enrich: (g:ctx) (B:[g ⊢ ccsk.bstep X T X']) (B1:[g ⊢ ccskp
 / total b (functional_bc_enrich _ _ _ _ _ _ b _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bc_en _ B1 _ _] = d1 in
 let [g ⊢ bc_en _ B2 _ _] = d2 in
-unique_bstep_closed [_ ⊢ B1] [_ ⊢ B2]
+unique_bstep_cl [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 % Functionality of bo_enrich:
@@ -118,7 +118,7 @@ rec no_bcbo_enrich: (g:ctx) (B:[g ⊢ ccsk.bstep X T X']) (B1:[g ⊢ ccskp.bstep
 / total b (no_bcbo_enrich _ _ _ _ _ _ b _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ bc_en _ B1 _ _] = d1 in
 let [g ⊢ bo_en _ B2 \_._] = d2 in
-no_bstep_closed_and_open [_ ⊢ B1] [_ ⊢ B2]
+no_bstep_cl_and_op [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 

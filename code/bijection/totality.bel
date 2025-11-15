@@ -96,7 +96,7 @@ rec total_fo_forget: (g:ctx) {F:[g ⊢ ccskp.fstep_op X T X']} [g ⊢ ex_fo_forg
 / total f (total_fo_forget _ _ _ _ f) /
 mlam F ⇒ case [_ ⊢ F] of
   | [g ⊢ ccskp.fo_nu_cl (\a.O) (\a.L) (\a.F1)] ⇒
-    let [g,a:names ⊢ L'] = lab_of_fstep_open [g ⊢ F] in
+    let [g,a:names ⊢ L'] = fstep_op_impl_tau [g ⊢ F] in
     let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
     let [g,a:names ⊢ ex_fcfg (fc_fg F1 F1' L'' H)] = total_fc_forget [g,a:names ⊢ F1] in
     let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L] [g,a:names ⊢ L''] in
@@ -179,7 +179,7 @@ rec total_bo_forget: (g:ctx) {B:[g ⊢ ccskp.bstep_op X' T X]} [g ⊢ ex_bo_forg
 / total b (total_bo_forget _ _ _ _ b) /
 mlam B ⇒ case [_ ⊢ B] of
   | [g ⊢ ccskp.bo_nu_cl (\a.O) (\a.L) (\a.B1)] ⇒
-    let [g,a:names ⊢ L'] = lab_of_bstep_open [g ⊢ B] in
+    let [g,a:names ⊢ L'] = bstep_op_impl_tau [g ⊢ B] in
     let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
     let [g,a:names ⊢ ex_bcfg (bc_fg B1 B1' L'' H)] = total_bc_forget [g,a:names ⊢ B1] in
     let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L] [g,a:names ⊢ L''] in
@@ -258,10 +258,10 @@ mlam F ⇒ case [_ ⊢ F] of
   | [g ⊢ ccsk.fs_nu \a.F1] ⇒
     (case total_f_enrich [g,a:names ⊢ F1] of
        | [g,a:names ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒
-         let [g,a:names ⊢ V] = valid_pr_lab_in_fstep_closed [g,a:names ⊢ F1'] in
-         (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
+         let [g,a:names ⊢ V] = valid_in_fstep_cl [g,a:names ⊢ F1'] in
+         (case dec_occurs [g,a:names ⊢ V] of
             | occ [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
-              let [g,a:names ⊢ L'] = occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
+              let [g,a:names ⊢ L'] = occurs_impl_tau [g,a:names ⊢ O] [g,a:names ⊢ L] in
               let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
               [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_cl (\a.O) (\a.L) (\a.F1')) (\a.H))]
             | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
@@ -270,7 +270,7 @@ mlam F ⇒ case [_ ⊢ F] of
               let [g ⊢ H'] = str_key [g,a:names ⊢ H] in
               [g ⊢ ex_fcen (fc_en F (ccskp.fc_nu \a.F1') L' H')])
        | [g,a:names ⊢ ex_foen (fo_en F1 F1' \b.H[..,b,a])] ⇒
-         let ex_sfo [g,b:names ⊢ F1'] [g,b:names ⊢ F1''] e = str_fstep_open [g,b:names ⊢ F1'] in
+         let ex_sfo [g,b:names ⊢ F1'] [g,b:names ⊢ F1''] e = str_fstep_op [g,b:names ⊢ F1'] in
          let [g,a:names,b:names ⊢ refpl] = e in
          [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_op \a.F1'') \a.H[..,a])])
 ;
@@ -313,10 +313,10 @@ mlam B ⇒ case [_ ⊢ B] of
   | [g ⊢ ccsk.bs_nu \a.B1] ⇒
     (case total_b_enrich [g,a:names ⊢ B1] of
        | [g,a:names ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒
-         let [g,a:names ⊢ V] = valid_pr_lab_in_bstep_closed [g,a:names ⊢ B1'] in
-         (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
+         let [g,a:names ⊢ V] = valid_in_bstep_cl [g,a:names ⊢ B1'] in
+         (case dec_occurs [g,a:names ⊢ V] of
             | occ [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
-              let [g,a:names ⊢ L'] = occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
+              let [g,a:names ⊢ L'] = occurs_impl_tau [g,a:names ⊢ O] [g,a:names ⊢ L] in
               let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
               [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_cl (\a.O) (\a.L) (\a.B1')) (\a.H))]
             | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
