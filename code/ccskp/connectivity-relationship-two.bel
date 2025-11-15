@@ -349,7 +349,7 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = [g ⊢ FR3] in
                         let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
-                        (case compare [g] [⊢ KL3] [⊢ KR3] of
+                        (case dec_eq_keys [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
                              let [g ⊢ refl] = functional_lab [g ⊢ LL1] [g ⊢ LL1'] in
                              let [g ⊢ refl] = functional_lab [g ⊢ LR1] [g ⊢ LR1'] in
@@ -379,7 +379,7 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = closed_loop_lemma_two [g ⊢ BR3] in
                         let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
-                        (case compare [g] [⊢ KL3] [⊢ KR3] of
+                        (case dec_eq_keys [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
                              let [g ⊢ refl] = functional_lab [g ⊢ LL2] [g ⊢ LL2'] in
                              let [g ⊢ refl] = functional_lab [g ⊢ LR2] [g ⊢ LR2'] in
@@ -412,7 +412,7 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = [g ⊢ FR3] in
                         let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
-                        (case compare [g] [⊢ KL3] [⊢ KR3] of
+                        (case dec_eq_keys [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
                              let [g ⊢ refl] = functional_lab [g ⊢ LL1] [g ⊢ LL1'] in
                              let [g ⊢ refl] = functional_lab [g ⊢ LR1] [g ⊢ LR1'] in
@@ -442,7 +442,7 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = closed_loop_lemma_two [g ⊢ BR3] in
                         let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
-                        (case compare [g] [⊢ KL3] [⊢ KR3] of
+                        (case dec_eq_keys [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
                              let [g ⊢ refl] = functional_lab [g ⊢ LL2] [g ⊢ LL2'] in
                              let [g ⊢ refl] = functional_lab [g ⊢ LR2] [g ⊢ LR2'] in
@@ -476,7 +476,7 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = [g ⊢ FR3] in
                         let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
-                        (case compare [g] [⊢ KL3] [⊢ KR3] of
+                        (case dec_eq_keys [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
                              let [g ⊢ refl] = functional_lab [g ⊢ LL1] [g ⊢ LL1'] in
                              let [g ⊢ refl] = functional_lab [g ⊢ LR1] [g ⊢ LR1'] in
@@ -506,7 +506,7 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = closed_loop_lemma_two [g ⊢ BR3] in
                         let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
-                        (case compare [g] [⊢ KL3] [⊢ KR3] of
+                        (case dec_eq_keys [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
                              let [g ⊢ refl] = functional_lab [g ⊢ LL2] [g ⊢ LL2'] in
                              let [g ⊢ refl] = functional_lab [g ⊢ LR2] [g ⊢ LR2'] in
@@ -539,7 +539,7 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = [g ⊢ FR3] in
                         let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
-                        (case compare [g] [⊢ KL3] [⊢ KR3] of
+                        (case dec_eq_keys [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
                              let [g ⊢ refl] = functional_lab [g ⊢ LL1] [g ⊢ LL1'] in
                              let [g ⊢ refl] = functional_lab [g ⊢ LR1] [g ⊢ LR1'] in
@@ -569,7 +569,7 @@ fn v1,v2,c ⇒ case c of
                         let [g ⊢ FR3]:[g ⊢ fstep_cl _ TR3 _] = closed_loop_lemma_two [g ⊢ BR3] in
                         let [g ⊢ ex_k HR3] = total_key [g ⊢ TR3] in
                         let [g ⊢ HR3]:[g ⊢ key _ KR3[]] = [g ⊢ HR3] in
-                        (case compare [g] [⊢ KL3] [⊢ KR3] of
+                        (case dec_eq_keys [g] [⊢ KL3] [⊢ KR3] of
                            | [g ⊢ c_eq] ⇒
                              let [g ⊢ refl] = functional_lab [g ⊢ LL2] [g ⊢ LL2'] in
                              let [g ⊢ refl] = functional_lab [g ⊢ LR2] [g ⊢ LR2'] in

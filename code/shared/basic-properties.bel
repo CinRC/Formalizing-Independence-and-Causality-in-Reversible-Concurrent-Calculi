@@ -7,16 +7,17 @@ LF eq_or_neq: keys → keys → type =
   | c_neq: neq K M → eq_or_neq K M
 ;
 
+% Decidable equality for keys:
 % Given two keys, they are either equal or not equal
-rec compare: {g:ctx} {K:[⊢ keys]} {M:[⊢ keys]} [g ⊢ eq_or_neq K[] M[]] =
-/ total k (compare _ k _) /
+rec dec_eq_keys: {g:ctx} {K:[⊢ keys]} {M:[⊢ keys]} [g ⊢ eq_or_neq K[] M[]] =
+/ total k (dec_eq_keys _ k _) /
 mlam g,K,M ⇒ case [⊢ K] of
   | [⊢ z] ⇒ (case [⊢ M] of
      | [⊢ z] ⇒ [_ ⊢ c_eq]
      | [⊢ s M'] ⇒ [_ ⊢ c_neq (nless (lzero M'[]))])
   | [⊢ s K'] ⇒ (case [⊢ M] of
      | [⊢ z] ⇒ [_ ⊢ c_neq (ngreat (lzero K'[]))]
-     | [⊢ s M'] ⇒ (case compare [g] [⊢ K'] [⊢ M'] of
+     | [⊢ s M'] ⇒ (case dec_eq_keys [g] [⊢ K'] [⊢ M'] of
         | [g ⊢ c_eq] ⇒ [_ ⊢ c_eq]
         | [g ⊢ c_neq (nless D)] ⇒ [g ⊢ c_neq (nless (lsucc D))]
         | [g ⊢ c_neq (ngreat D)] ⇒ [g ⊢ c_neq (ngreat (lsucc D))]))
