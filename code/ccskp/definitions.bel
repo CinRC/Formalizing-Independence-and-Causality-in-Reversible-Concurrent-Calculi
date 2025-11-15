@@ -2,6 +2,17 @@
 
 module ccskp = struct
 
+% Recall that, unlike in the paper, restriction of names in processes is considered as
+% a binding operator and processes are identified up to alpha-renaming of bound names.
+% The LTS rules involving restrictions (res, \bar{res} in Fig.4 ) are not closed under
+% alpha-equivalence. In fact, the name "a" bound by the restrictions may occur free in 
+% the used proof label \theta.
+% Our solution consists in considering such occurrence of "a" in theta as bound, and
+% identifying proof labels up to alpha-renaming of bound names.
+% Thus, the encoding distinguishes between proof labels where occurrences of names are
+% free ("closed proof labels") and proof labels in which we abstract over the particular
+% choice of a bound name ("open proof labels").
+
 % Closed proof keyed labels 
 LF pr_lab_cl: type =
   | pr_base: labels → keys → pr_lab_cl
@@ -17,7 +28,7 @@ LF pr_lab_op: type =
   | open: (names → pr_lab_cl) → pr_lab_op
 ;
 
-% Type for the union of proof labels and open proof labels
+% Type for the union of closed and open proof labels
 LF pr_lab: type =
   | gp: pr_lab_cl → pr_lab
   | go: pr_lab_op → pr_lab 
@@ -43,7 +54,7 @@ LF key: pr_lab_cl → keys → type =
   | key_sync: key T1 K → key (pr_sync T1 T2) K
 ;
 
-% Occurrence of names in proof keyed labels
+% Occurrence of names in closed proof keyed labels
 LF occurs: names → pr_lab_cl → type =
   | occ_basel: occurs A (pr_base (inp A) K)
   | occ_baser: occurs A (pr_base (out A) K)
@@ -73,7 +84,7 @@ LF valid_op: pr_lab_op → type =
            → ({a:names} valid_cl (T a)) → valid_op (open T)
 ;
 
-% Valid generalized proof labels
+% Valid proof labels
 LF valid: pr_lab → type =
   | gpv: valid_cl T → valid (gp T)
   | gov: valid_op T → valid (go T)
