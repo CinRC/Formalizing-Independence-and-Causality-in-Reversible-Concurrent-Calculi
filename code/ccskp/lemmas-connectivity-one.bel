@@ -123,12 +123,12 @@ fn s ⇒ case s of
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
        | [g ⊢ sc (fwc (fc_nu \_._))] ⇒ [g ⊢ rs]
        | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
-            | [g ⊢ fo_nu_closed (\_._) (\_._) (\_._)] ⇒ [g ⊢ rs]
-            | [g ⊢ fo_nu_open \_._] ⇒ [g ⊢ rs])
+            | [g ⊢ fo_nu_cl (\_._) (\_._) (\_._)] ⇒ [g ⊢ rs]
+            | [g ⊢ fo_nu_op \_._] ⇒ [g ⊢ rs])
        | [g ⊢ sc (bwc (bc_nu \_._))] ⇒ [g ⊢ rs]
        | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
-            | [g ⊢ bo_nu_closed (\_._) (\_._) (\_._)] ⇒ [g ⊢ rs]
-            | [g ⊢ bo_nu_open \_._] ⇒ [g ⊢ rs]))
+            | [g ⊢ bo_nu_cl (\_._) (\_._) (\_._)] ⇒ [g ⊢ rs]
+            | [g ⊢ bo_nu_op \_._] ⇒ [g ⊢ rs]))
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ rs] = step*_from_nu [g ⊢ S1*] in step*_from_nu [g ⊢ S2*]
 ;
 
@@ -307,12 +307,12 @@ fn s ⇒ case s of
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
        | [g ⊢ sc (fwc (fc_nu \a.F))] ⇒ [g,a:names ⊢ st_s* (sc (fwc F))]
        | [g ⊢ so (fwo F)] ⇒ (case [g ⊢ F] of
-            | [g ⊢ fo_nu_closed (\_._) (\_._) (\a.F')] ⇒ [g,a:names ⊢ st_s* (sc (fwc F'))]
-            | [g ⊢ fo_nu_open \a.F'] ⇒ [g,a:names ⊢ st_s* (so (fwo F'))])
+            | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F')] ⇒ [g,a:names ⊢ st_s* (sc (fwc F'))]
+            | [g ⊢ fo_nu_op \a.F'] ⇒ [g,a:names ⊢ st_s* (so (fwo F'))])
        | [g ⊢ sc (bwc (bc_nu \a.B))] ⇒ [g,a:names ⊢ st_s* (sc (bwc B))]
        | [g ⊢ so (bwo B)] ⇒ (case [g ⊢ B] of
-            | [g ⊢ bo_nu_closed (\_._) (\_._) (\a.B')] ⇒ [g,a:names ⊢ st_s* (sc (bwc B'))]
-            | [g ⊢ bo_nu_open \a.B'] ⇒ [g,a:names ⊢ st_s* (so (bwo B'))]))
+            | [g ⊢ bo_nu_cl (\_._) (\_._) (\a.B')] ⇒ [g,a:names ⊢ st_s* (sc (bwc B'))]
+            | [g ⊢ bo_nu_op \a.B'] ⇒ [g,a:names ⊢ st_s* (so (bwo B'))]))
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ rs] = step*_from_nu [g ⊢ S1*] in
        let [g,a:names ⊢ S1*'] = step*_betw_nus [g ⊢ S1*] in
        let [g,a:names ⊢ S2*'] = step*_betw_nus [g ⊢ S2*] in [g,a:names ⊢ tr_s* S1*' S2*']

@@ -51,14 +51,14 @@ fn f ⇒ case f of
 rec open_loop_lemma_one: (g:ctx) [g ⊢ fstep_op X T X'] → [g ⊢ bstep_op X' T X] =
 / total f (open_loop_lemma_one _ _ _ _ f) /
 fn f ⇒ case f of
-  | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)] ⇒
-    let [g,a:names ⊢ B] = closed_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B)]
+  | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)] ⇒
+    let [g,a:names ⊢ B] = closed_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_cl (\a.O) (\a.L) (\a.B)]
   | [g ⊢ fo_kpref F (\a.H) I] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_kpref B (\a.H) I]
   | [g ⊢ fo_suml F D] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_suml B D]
   | [g ⊢ fo_sumr F D] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_sumr B D]
   | [g ⊢ fo_parl F (\a.H) N] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_parl B (\a.H) N]
   | [g ⊢ fo_parr F (\a.H) N] ⇒ let [g ⊢ B] = open_loop_lemma_one [g ⊢ F] in [g ⊢ bo_parr B (\a.H) N]
-  | [g ⊢ fo_nu_open \a.F] ⇒ let [g,a:names ⊢ B] = open_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_open \a.B]
+  | [g ⊢ fo_nu_op \a.F] ⇒ let [g,a:names ⊢ B] = open_loop_lemma_one [g,a:names ⊢ F] in [g ⊢ bo_nu_op \a.B]
 ;
 
 % Loop lemma - first implication
@@ -90,14 +90,14 @@ fn b ⇒ case b of
 rec open_loop_lemma_two: (g:ctx) [g ⊢ bstep_op X' T X] → [g ⊢ fstep_op X T X'] =
 / total b (open_loop_lemma_two _ _ _ _ b) /
 fn b ⇒ case b of
-  | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B)] ⇒
-    let [g,a:names ⊢ F] = closed_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)]
+  | [g ⊢ bo_nu_cl (\a.O) (\a.L) (\a.B)] ⇒
+    let [g,a:names ⊢ F] = closed_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)]
   | [g ⊢ bo_kpref B (\a.H) I] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_kpref F (\a.H) I]
   | [g ⊢ bo_suml B D] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_suml F D]
   | [g ⊢ bo_sumr B D] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_sumr F D]
   | [g ⊢ bo_parl B (\a.H) N] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_parl F (\a.H) N]
   | [g ⊢ bo_parr B (\a.H) N] ⇒ let [g ⊢ F] = open_loop_lemma_two [g ⊢ B] in [g ⊢ fo_parr F (\a.H) N]
-  | [g ⊢ bo_nu_open \a.B] ⇒ let [g,a:names ⊢ F] = open_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_open \a.F]
+  | [g ⊢ bo_nu_op \a.B] ⇒ let [g,a:names ⊢ F] = open_loop_lemma_two [g,a:names ⊢ B] in [g ⊢ fo_nu_op \a.F]
 ;
 
 % Loop lemma - second implication

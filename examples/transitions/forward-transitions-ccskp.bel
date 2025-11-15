@@ -61,22 +61,22 @@ fstep_cl (nu \b.(pref (inp a) X)) (pr_base (inp a) k) (nu \b.(kpref (inp a) k X)
 let f12:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep_op (nu \a.(par (pref (inp a) X) (pref (out a) Y)))
 (open \a.(pr_sync (pr_base (inp a) k) (pr_base (out a) k))) (nu \a.(par (kpref (inp a) k X) (kpref (out a) k Y)))]
 = [k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢
-fo_nu_closed (\a.(occ_sync occ_basel)) (\a.lab_sync) (\a.(fc_synl (fc_pref DX) lab_base key_base (fc_pref DY) lab_base key_base))];
+fo_nu_cl (\a.(occ_sync occ_basel)) (\a.lab_sync) (\a.(fc_synl (fc_pref DX) lab_base key_base (fc_pref DY) lab_base key_base))];
 
 % (a.X | 'a.Y)\a + Z  -[ +_L <|_L a[k],|_R 'a[k]> ]->  (a[k].X | 'a[k].Y)\a + Z, if X, Y and Z are standard
 let f13:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y,Z:proc,DZ:std Z ⊢ fstep_op (sum (nu \a.(par (pref (inp a) X) (pref (out a) Y))) Z)
 (open \a.(pr_suml (pr_sync (pr_base (inp a) k) (pr_base (out a) k)))) (sum (nu \a.(par (kpref (inp a) k X) (kpref (out a) k Y))) Z)]
 = [k:keys,X:proc,DX:std X,Y:proc,DY:std Y,Z:proc,DZ:std Z ⊢
-fo_suml (fo_nu_closed (\a.(occ_sync occ_basel)) (\a.lab_sync) (\a.(fc_synl (fc_pref DX) lab_base key_base (fc_pref DY) lab_base key_base))) DZ];
+fo_suml (fo_nu_cl (\a.(occ_sync occ_basel)) (\a.lab_sync) (\a.(fc_synl (fc_pref DX) lab_base key_base (fc_pref DY) lab_base key_base))) DZ];
 
 % ((a.X | 'a.Y)\a)\b  -[ <|_L a[k],|_R 'a[k]> ]->  ((a[k].X | 'a[k].Y)\a)\b, if X and Y are standard
 let f14:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep_op (nu \b.(nu \a.(par (pref (inp a) X) (pref (out a) Y))))
 (open \a.(pr_sync (pr_base (inp a) k) (pr_base (out a) k))) (nu \b.(nu \a.(par (kpref (inp a) k X) (kpref (out a) k Y))))]
 = [k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢
-fo_nu_open (\b.fo_nu_closed (\a.(occ_sync occ_basel)) (\a.lab_sync) (\a.(fc_synl (fc_pref DX) lab_base key_base (fc_pref DY) lab_base key_base)))];
+fo_nu_op (\b.fo_nu_cl (\a.(occ_sync occ_basel)) (\a.lab_sync) (\a.(fc_synl (fc_pref DX) lab_base key_base (fc_pref DY) lab_base key_base)))];
 
 % ((a.X | 'a.Y)\b)\a  -[ <|_L a[k],|_R 'a[k]> ]->  ((a[k].X | 'a[k].Y)\b)\a, if X and Y are standard
 let f15:[k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢ fstep_op (nu \a.(nu \b.(par (pref (inp a) X) (pref (out a) Y))))
 (open \a.(pr_sync (pr_base (inp a) k) (pr_base (out a) k))) (nu \a.(nu \b.(par (kpref (inp a) k X) (kpref (out a) k Y))))]
 = [k:keys,X:proc,DX:std X,Y:proc,DY:std Y ⊢
-fo_nu_closed (\a.(occ_sync occ_basel)) (\a.lab_sync) (\a.(fc_nu \b.(fc_synl (fc_pref DX) lab_base key_base (fc_pref DY) lab_base key_base)))];
+fo_nu_cl (\a.(occ_sync occ_basel)) (\a.lab_sync) (\a.(fc_nu \b.(fc_synl (fc_pref DX) lab_base key_base (fc_pref DY) lab_base key_base)))];

@@ -12,8 +12,8 @@ fn f ⇒ let [g ⊢ fc_nu \a.F] = f in impossible [g,a:names ⊢ F]
 rec stuck_p1_open: (g:ctx) [g ⊢ fstep_op (nu \a.(pref (inp a) null)) T X'] → [⊢ false] =
 / total 1 /
 fn f ⇒ case f of
-  | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)] ⇒ let [g,a:names ⊢ fc_pref D] = [g,a:names ⊢ F] in impossible [g,a:names ⊢ L]
-  | [g ⊢ fo_nu_open \a.F] ⇒ impossible [g,a:names ⊢ F]
+  | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)] ⇒ let [g,a:names ⊢ fc_pref D] = [g,a:names ⊢ F] in impossible [g,a:names ⊢ L]
+  | [g ⊢ fo_nu_op \a.F] ⇒ impossible [g,a:names ⊢ F]
 ;
 
 
@@ -27,8 +27,8 @@ fn f ⇒ let [g ⊢ fc_nu \a.F] = f in impossible [g,a:names ⊢ F]
 rec stuck_p2_open: (g:ctx) [g ⊢ fstep_op (nu \a.(pref (out a) null)) T X'] → [⊢ false] =
 / total 1 /
 fn f ⇒ case f of
-  | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)] ⇒ let [g,a:names ⊢ fc_pref D] = [g,a:names ⊢ F] in impossible [g,a:names ⊢ L]
-  | [g ⊢ fo_nu_open \a.F] ⇒ impossible [g,a:names ⊢ F]
+  | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)] ⇒ let [g,a:names ⊢ fc_pref D] = [g,a:names ⊢ F] in impossible [g,a:names ⊢ L]
+  | [g ⊢ fo_nu_op \a.F] ⇒ impossible [g,a:names ⊢ F]
 ;
 
 
@@ -46,17 +46,17 @@ case [g,b:names,a:names ⊢ F1] of
 rec stuck_p3_open: (g:ctx) [g ⊢ fstep_op (nu \b.(nu \a.(par (pref (inp a) (pref (inp b) null)))(pref (out b) (pref (out a) null)))) T X'] → [⊢ false] =
 / total 1 /
 fn f ⇒ case f of
-  | [g ⊢ fo_nu_closed (\b.O) (\b.L) (\b.F)] ⇒ 
+  | [g ⊢ fo_nu_cl (\b.O) (\b.L) (\b.F)] ⇒ 
     let [g,b:names ⊢ fc_nu \a.F1] = [g,b:names ⊢ F] in
     let [g,b:names,a:names ⊢ fc_parr F2 _ _] = [g,b:names,a:names ⊢ F1] in
     let [g,b:names,a:names ⊢ fc_pref D] = [g,b:names,a:names ⊢ F2] in
     let [g,b:names ⊢ lab_parr L1] = [g,b:names ⊢ L] in impossible [g,b:names ⊢ L1]
-  | [g ⊢ fo_nu_open \b.F] ⇒ (case [g,b:names ⊢ F] of
-       | [g,b:names ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F1)] ⇒
+  | [g ⊢ fo_nu_op \b.F] ⇒ (case [g,b:names ⊢ F] of
+       | [g,b:names ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F1)] ⇒
          let [g,b:names,a:names ⊢ fc_parl F2 _ _] = [g,b:names,a:names ⊢ F1] in
          let [g,b:names,a:names ⊢ fc_pref D] = [g,b:names,a:names ⊢ F2] in
          let [g,b:names,a:names ⊢ lab_parl L1] = [g,b:names,a:names ⊢ L] in impossible [g,b:names,a:names ⊢ L1]
-       | [g,b:names ⊢ fo_nu_open \a.F1] ⇒ (case [g,b:names,a:names ⊢ F1] of
+       | [g,b:names ⊢ fo_nu_op \a.F1] ⇒ (case [g,b:names,a:names ⊢ F1] of
             | [g,b:names,a:names ⊢ fo_parl F2 (\_._) _] ⇒ impossible [g,b:names,a:names ⊢ F2]
             | [g,b:names,a:names ⊢ fo_parr F2 (\_._) _] ⇒ impossible [g,b:names,a:names ⊢ F2]))
 ;

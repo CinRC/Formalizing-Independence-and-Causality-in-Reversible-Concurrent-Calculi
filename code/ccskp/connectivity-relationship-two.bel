@@ -585,7 +585,7 @@ fn v1,v2,c ⇒ case c of
 
 % Type family encoding the existence of two connected transitions involving reachable processes
 LF ex_conn_tr: pr_lab_cl → pr_lab_cl → type =
-  | ex_c: {S1: step X (gp T1) X'} {S2: step Y (gp T2) Y'} reachable X → conn_tr S1 S2 → ex_conn_tr T1 T2
+  | ex_c: {S1: step X (p_cl T1) X'} {S2: step Y (p_cl T2) Y'} reachable X → conn_tr S1 S2 → ex_conn_tr T1 T2
 ;
 
 % Proof of Theorem 2.1(ii):

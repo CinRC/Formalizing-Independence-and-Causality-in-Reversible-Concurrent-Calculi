@@ -110,12 +110,12 @@ fn v ⇒ case v of
 rec str_open_val: (g:ctx) [g,a:names ⊢ valid_op T[..]] → [g ⊢ valid_op T] =
 / total v (str_open_val _ _ v) /
 fn v ⇒ case v of
-  | [g,a:names ⊢ ov_base (\b.O[..,b,a]) (\b.L[..,b,a]) (\b.V[..,b,a])] ⇒ 
+  | [g,a:names ⊢ vo_base (\b.O[..,b,a]) (\b.L[..,b,a]) (\b.V[..,b,a])] ⇒ 
     let [g,a:names ⊢ O'] = str_occr [g,a:names,b:names ⊢ O] in
     let ex_sll [g,a:names,b:names ⊢ _] [g,b:names ⊢ L'] e = str_labl [g,a:names,b:names ⊢ L] in
     let [g,a:names,b:names ⊢ refl] = e in
     let [g,a:names ⊢ V'] = str_val [g,a:names,b:names ⊢ V] in
-    [g ⊢ ov_base (\b.O') (\b.L') (\b.V')]
+    [g ⊢ vo_base (\b.O') (\b.L') (\b.V')]
 ;
 
 % The proof label of a closed forward transition is valid
@@ -145,23 +145,23 @@ fn b ⇒ let f = closed_loop_lemma_two b in valid_pr_lab_in_fstep_closed f
 rec valid_pr_lab_in_fstep_open: (g:ctx) [g ⊢ fstep_op X T X'] → [g ⊢ valid_op T] =
 / total f (valid_pr_lab_in_fstep_open _ _ _ _ f) /
 fn f ⇒ case f of
-  | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F)] ⇒ 
+  | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)] ⇒ 
     let [g,a:names ⊢ V]:[g,a:names ⊢ valid_cl T] = valid_pr_lab_in_fstep_closed [g,a:names ⊢ F] in
-    [g ⊢ ov_base (\a.O) (\a.L) (\a.V)]
+    [g ⊢ vo_base (\a.O) (\a.L) (\a.V)]
   | [g ⊢ fo_kpref F (\_._) _] ⇒ valid_pr_lab_in_fstep_open [g ⊢ F]
   | [g ⊢ fo_suml F _] ⇒
-    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
-    [g ⊢ ov_base (\a.(occ_suml O)) (\a.(lab_suml L)) (\a.(v_suml V))]
+    let [g ⊢ vo_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
+    [g ⊢ vo_base (\a.(occ_suml O)) (\a.(lab_suml L)) (\a.(v_suml V))]
   | [g ⊢ fo_sumr F _] ⇒
-    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
-    [g ⊢ ov_base (\a.(occ_sumr O)) (\a.(lab_sumr L)) (\a.(v_sumr V))]
+    let [g ⊢ vo_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
+    [g ⊢ vo_base (\a.(occ_sumr O)) (\a.(lab_sumr L)) (\a.(v_sumr V))]
   | [g ⊢ fo_parl F (\_._) _] ⇒
-    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
-    [g ⊢ ov_base (\a.(occ_parl O)) (\a.(lab_parl L)) (\a.(v_parl V))]
+    let [g ⊢ vo_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
+    [g ⊢ vo_base (\a.(occ_parl O)) (\a.(lab_parl L)) (\a.(v_parl V))]
   | [g ⊢ fo_parr F (\_._) _] ⇒
-    let [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
-    [g ⊢ ov_base (\a.(occ_parr O)) (\a.(lab_parr L)) (\a.(v_parr V))]
-  | [g ⊢ fo_nu_open \a.F] ⇒
+    let [g ⊢ vo_base (\a.O) (\a.L) (\a.V)] = valid_pr_lab_in_fstep_open [g ⊢ F] in
+    [g ⊢ vo_base (\a.(occ_parr O)) (\a.(lab_parr L)) (\a.(v_parr V))]
+  | [g ⊢ fo_nu_op \a.F] ⇒
     let [g,a:names ⊢ V] = valid_pr_lab_in_fstep_open [g,a:names ⊢ F] in
     str_open_val [g,a:names ⊢ V]
 ;
@@ -176,10 +176,10 @@ fn b ⇒ let f = open_loop_lemma_two b in valid_pr_lab_in_fstep_open f
 rec valid_pr_lab_in_step: (g:ctx) [g ⊢ step X T X'] → [g ⊢ valid T] =
 / total s (valid_pr_lab_in_step _ _ _ _ s) /
 fn s ⇒ case s of
-  | [g ⊢ sc (fwc F)] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ gpv V]
-  | [g ⊢ so (fwo F)] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_open [g ⊢ F] in [g ⊢ gov V]
-  | [g ⊢ sc (bwc B)] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_closed [g ⊢ B] in [g ⊢ gpv V]
-  | [g ⊢ so (bwo B)] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_open [g ⊢ B] in [g ⊢ gov V]
+  | [g ⊢ sc (fwc F)] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_closed [g ⊢ F] in [g ⊢ v_cl V]
+  | [g ⊢ so (fwo F)] ⇒ let [g ⊢ V] = valid_pr_lab_in_fstep_open [g ⊢ F] in [g ⊢ v_op V]
+  | [g ⊢ sc (bwc B)] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_closed [g ⊢ B] in [g ⊢ v_cl V]
+  | [g ⊢ so (bwo B)] ⇒ let [g ⊢ V] = valid_pr_lab_in_bstep_open [g ⊢ B] in [g ⊢ v_op V]
 ;
 
 % If "a" occurs in T, but not in the label of T, then such label is tau
@@ -203,26 +203,26 @@ fn o,l ⇒ case o of
 rec lab_of_fstep_open: (g:ctx) {F:[g ⊢ fstep_op X (open \a.T) X']} [g,a:names ⊢ lab T[..,a] tau] =
 / total f (lab_of_fstep_open _ _ _ _ f) /
 mlam F ⇒ case [_ ⊢ F] of
-  | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\_._)] ⇒ occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L]
+  | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\_._)] ⇒ occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L]
   | [g ⊢ fo_kpref F' (\_._) _] ⇒ lab_of_fstep_open [g ⊢ F']
   | [g ⊢ fo_suml F' _] ⇒ let [g,a:names ⊢ L] = lab_of_fstep_open [g ⊢ F'] in [g,a:names ⊢ lab_suml L]
   | [g ⊢ fo_sumr F' _] ⇒ let [g,a:names ⊢ L] = lab_of_fstep_open [g ⊢ F'] in [g,a:names ⊢ lab_sumr L]
   | [g ⊢ fo_parl F' (\_._) _] ⇒ let [g,a:names ⊢ L] = lab_of_fstep_open [g ⊢ F'] in [g,a:names ⊢ lab_parl L]
   | [g ⊢ fo_parr F' (\_._) _] ⇒ let [g,a:names ⊢ L] = lab_of_fstep_open [g ⊢ F'] in [g,a:names ⊢ lab_parr L]
-  | [g ⊢ fo_nu_open \a.F'] ⇒ let [g,a:names,b:names ⊢ L] = lab_of_fstep_open [g,a:names ⊢ F'] in [g,a:names ⊢ L[..,a]]
+  | [g ⊢ fo_nu_op \a.F'] ⇒ let [g,a:names,b:names ⊢ L] = lab_of_fstep_open [g,a:names ⊢ F'] in [g,a:names ⊢ L[..,a]]
 ;
 
 % Given an open backward transition labelled by T, the label of T is tau
 rec lab_of_bstep_open: (g:ctx) {B:[g ⊢ bstep_op X' (open \a.T) X]} [g,a:names ⊢ lab T[..,a] tau] =
 / total b (lab_of_bstep_open _ _ _ _ b) /
 mlam B ⇒ case [_ ⊢ B] of
-  | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\_._)] ⇒ occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L]
+  | [g ⊢ bo_nu_cl (\a.O) (\a.L) (\_._)] ⇒ occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L]
   | [g ⊢ bo_kpref B' (\_._) _] ⇒ lab_of_bstep_open [g ⊢ B']
   | [g ⊢ bo_suml B' _] ⇒ let [g,a:names ⊢ L] = lab_of_bstep_open [g ⊢ B'] in [g,a:names ⊢ lab_suml L]
   | [g ⊢ bo_sumr B' _] ⇒ let [g,a:names ⊢ L] = lab_of_bstep_open [g ⊢ B'] in [g,a:names ⊢ lab_sumr L]
   | [g ⊢ bo_parl B' (\_._) _] ⇒ let [g,a:names ⊢ L] = lab_of_bstep_open [g ⊢ B'] in [g,a:names ⊢ lab_parl L]
   | [g ⊢ bo_parr B' (\_._) _] ⇒ let [g,a:names ⊢ L] = lab_of_bstep_open [g ⊢ B'] in [g,a:names ⊢ lab_parr L]
-  | [g ⊢ bo_nu_open \a.B'] ⇒ let [g,a:names,b:names ⊢ L] = lab_of_bstep_open [g,a:names ⊢ B'] in [g,a:names ⊢ L[..,a]]
+  | [g ⊢ bo_nu_op \a.B'] ⇒ let [g,a:names,b:names ⊢ L] = lab_of_bstep_open [g,a:names ⊢ B'] in [g,a:names ⊢ L[..,a]]
 ;
 
 % If "a" occurs in T, and the label of T is "inp A" for some A, then A=a
@@ -281,7 +281,7 @@ fn l ⇒ case l of
 
 % Occurrence or not occurrence of a name in a proof label
 inductive occurs_or_not: (g:ctx) [g,a:names ⊢ pr_lab_cl] → ctype =
-  | oc: {T:[g,a:names ⊢ pr_lab_cl]} [g,a:names ⊢ occurs a T] → occurs_or_not [g,a:names ⊢ T]
+  | occ: {T:[g,a:names ⊢ pr_lab_cl]} [g,a:names ⊢ occurs a T] → occurs_or_not [g,a:names ⊢ T]
   | noc: {T:[g,a:names ⊢ pr_lab_cl]} [g,a:names ⊢ eqpl T T'[..]] → occurs_or_not [g,a:names ⊢ T]
 ;
 
@@ -292,42 +292,42 @@ fn v ⇒ case v of
   | [g,a:names ⊢ v_base]:[g,a:names ⊢ valid_cl (pr_base A K[])] ⇒ (case [g,a:names ⊢ A] of
        | [g,a:names ⊢ inp B] ⇒ (case [g,a:names ⊢ B] of
             | [g,a:names ⊢ #p[..]] ⇒ noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]
-            | [g,a:names ⊢ a] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_basel])
+            | [g,a:names ⊢ a] ⇒ occ [g,a:names ⊢ _] [g,a:names ⊢ occ_basel])
        | [g,a:names ⊢ out B] ⇒ (case [g,a:names ⊢ B] of
             | [g,a:names ⊢ #p[..]] ⇒ noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]
-            | [g,a:names ⊢ a] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_baser])
+            | [g,a:names ⊢ a] ⇒ occ [g,a:names ⊢ _] [g,a:names ⊢ occ_baser])
        | [g,a:names ⊢ tau] ⇒ noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
   | [g,a:names ⊢ v_suml V] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
-       | oc [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_suml O] 
+       | occ [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ occ [g,a:names ⊢ _] [g,a:names ⊢ occ_suml O] 
        | noc [g,a:names ⊢ _] [g,a:names ⊢ E] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
          noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
   | [g,a:names ⊢ v_sumr V] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
-       | oc [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_sumr O] 
+       | occ [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ occ [g,a:names ⊢ _] [g,a:names ⊢ occ_sumr O] 
        | noc [g,a:names ⊢ _] [g,a:names ⊢ E] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
          noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
   | [g,a:names ⊢ v_parl V] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
-       | oc [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_parl O] 
+       | occ [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ occ [g,a:names ⊢ _] [g,a:names ⊢ occ_parl O] 
        | noc [g,a:names ⊢ _] [g,a:names ⊢ E] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
          noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
   | [g,a:names ⊢ v_parr V] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
-       | oc [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_parr O] 
+       | occ [g,a:names ⊢ _] [g,a:names ⊢ O] ⇒ occ [g,a:names ⊢ _] [g,a:names ⊢ occ_parr O] 
        | noc [g,a:names ⊢ _] [g,a:names ⊢ E] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
          noc [g,a:names ⊢ _] [g,a:names ⊢ refpl])
   | [g,a:names ⊢ v_synl V1 V2 L1 _ L2 _] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V1] of
-       | oc [g,a:names ⊢ T1] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_sync O] 
+       | occ [g,a:names ⊢ T1] [g,a:names ⊢ O] ⇒ occ [g,a:names ⊢ _] [g,a:names ⊢ occ_sync O] 
        | noc [g,a:names ⊢ T1] [g,a:names ⊢ E1] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E1] in
          (case occur_in_valid_pr_lab [g,a:names ⊢ V2] of
-            | oc [g,a:names ⊢ T2] [g,a:names ⊢ O] ⇒
+            | occ [g,a:names ⊢ T2] [g,a:names ⊢ O] ⇒
               let [g,a:names ⊢ L2'] = occurs_in_out [g,a:names ⊢ O] [g,a:names ⊢ L2] in
               let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L2] [g,a:names ⊢ L2'] in
               impossible occurs_not_in_inp [g,a:names ⊢ L1]
             | noc [g,a:names ⊢ T2] [g,a:names ⊢ E2] ⇒
               let [g,a:names ⊢ refpl] = [g,a:names ⊢ E2] in noc [g,a:names ⊢ _] [g,a:names ⊢ refpl]))
   | [g,a:names ⊢ v_synr V1 V2 L1 _ L2 _] ⇒ (case occur_in_valid_pr_lab [g,a:names ⊢ V1] of
-       | oc [g,a:names ⊢ T1] [g,a:names ⊢ O] ⇒ oc [g,a:names ⊢ _] [g,a:names ⊢ occ_sync O] 
+       | occ [g,a:names ⊢ T1] [g,a:names ⊢ O] ⇒ occ [g,a:names ⊢ _] [g,a:names ⊢ occ_sync O] 
        | noc [g,a:names ⊢ T1] [g,a:names ⊢ E1] ⇒ let [g,a:names ⊢ refpl] = [g,a:names ⊢ E1] in
          (case occur_in_valid_pr_lab [g,a:names ⊢ V2] of
-            | oc [g,a:names ⊢ T2] [g,a:names ⊢ O] ⇒
+            | occ [g,a:names ⊢ T2] [g,a:names ⊢ O] ⇒
               let [g,a:names ⊢ L2'] = occurs_in_inp [g,a:names ⊢ O] [g,a:names ⊢ L2] in
               let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L2] [g,a:names ⊢ L2'] in
               impossible occurs_not_in_out [g,a:names ⊢ L1]
@@ -455,13 +455,13 @@ inductive ex_str_fstep_open: (g:ctx) [g,b:names ⊢ fstep_op X T X'] → ctype =
 rec str_fstep_open: (g:ctx) {F:[g,b:names ⊢ fstep_op X (open \a.T) X']} ex_str_fstep_open [g,b:names ⊢ F] =
 / total f (str_fstep_open _ _ _ _ f) /
 mlam F ⇒ case [_ ⊢ F] of
-  | [g,b:names ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F')] ⇒
+  | [g,b:names ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F')] ⇒
     let [g,b:names,a:names ⊢ V]:[g,b:names,a:names ⊢ valid_cl T] = valid_pr_lab_in_fstep_closed [_ ⊢ F'] in
     let ex_sol [g,b:names,a:names ⊢ _] [g,b:names,a:names ⊢ O'] e1 = str_occl [_ ⊢ O] [_ ⊢ V] in
     let [g,b:names,a:names ⊢ refpl] = e1 in
     let ex_sll [g,a:names,b:names ⊢ _] [g,a:names ⊢ L'] e2 = str_labl [g,a:names,b:names ⊢ L[..,b,a]] in
     let [g,b:names,a:names ⊢ refl] = e2 in
-    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_nu_closed (\a.O') (\a.L'[..,a]) (\a.F')] [g,a:names,b:names ⊢ refpl]
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_nu_cl (\a.O') (\a.L'[..,a]) (\a.F')] [g,a:names,b:names ⊢ refpl]
   | [g,b:names ⊢ fo_kpref F1 (\a.H) I] ⇒ let ex_sfo [g,b:names ⊢ F1] [g,b:names ⊢ F1'] e = str_fstep_open [g,b:names ⊢ F1] in
     let [g,a:names,b:names ⊢ refpl] = e in
     ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_kpref F1' (\a.H) I] [g,a:names,b:names ⊢ refpl]
@@ -477,10 +477,10 @@ mlam F ⇒ case [_ ⊢ F] of
   | [g,b:names ⊢ fo_parr F1 (\a.H) N] ⇒ let ex_sfo [g,b:names ⊢ F1] [g,b:names ⊢ F1'] e = str_fstep_open [g,b:names ⊢ F1] in
     let [g,a:names,b:names ⊢ refpl] = e in
     ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_parr F1' (\a.H) N] [g,a:names,b:names ⊢ refpl]
-  | [g,b:names ⊢ fo_nu_open \a.F1[..,a,b]] ⇒
+  | [g,b:names ⊢ fo_nu_op \a.F1[..,a,b]] ⇒
     let ex_sfo [g,b:names,a:names ⊢ F1] [g,b:names,a:names ⊢ F1'[..,a,b]] e = str_fstep_open [g,b:names,a:names ⊢ F1] in
     let [g,c:names,b:names,a:names ⊢ refpl] = e in
-    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_nu_open \a.F1'] [g,a:names,b:names ⊢ refpl]
+    ex_sfo [g,b:names ⊢ _] [g,b:names ⊢ fo_nu_op \a.F1'] [g,a:names,b:names ⊢ refpl]
 ;
 
 % Given an open backward transition in a context [g,b:names], b does not occur in T.

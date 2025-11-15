@@ -95,7 +95,7 @@ mlam F ⇒ case [_ ⊢ F] of
 rec total_fo_forget: (g:ctx) {F:[g ⊢ ccskp.fstep_op X T X']} [g ⊢ ex_fo_forget F] =
 / total f (total_fo_forget _ _ _ _ f) /
 mlam F ⇒ case [_ ⊢ F] of
-  | [g ⊢ ccskp.fo_nu_closed (\a.O) (\a.L) (\a.F1)] ⇒
+  | [g ⊢ ccskp.fo_nu_cl (\a.O) (\a.L) (\a.F1)] ⇒
     let [g,a:names ⊢ L'] = lab_of_fstep_open [g ⊢ F] in
     let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
     let [g,a:names ⊢ ex_fcfg (fc_fg F1 F1' L'' H)] = total_fc_forget [g,a:names ⊢ F1] in
@@ -119,7 +119,7 @@ mlam F ⇒ case [_ ⊢ F] of
     let [g ⊢ ex_fofg (fo_fg F1 F1' \a.H')] = total_fo_forget [g ⊢ F1] in
     let [g,a:names ⊢ refk] = functional_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
     [g ⊢ ex_fofg (fo_fg F (ccsk.fs_parr F1' N) (\a.ccskp.key_parr H'))]
-  | [g ⊢ ccskp.fo_nu_open \a.F1] ⇒
+  | [g ⊢ ccskp.fo_nu_op \a.F1] ⇒
     let [g,a:names ⊢ ex_fofg (fo_fg F1 F1'[..,a] \b.H[..,b,a])] = total_fo_forget [g,a:names ⊢ F1] in
     [g ⊢ ex_fofg (fo_fg F (ccsk.fs_nu \a.F1') \a.H[..,a])]
 ;
@@ -178,7 +178,7 @@ mlam B ⇒ case [_ ⊢ B] of
 rec total_bo_forget: (g:ctx) {B:[g ⊢ ccskp.bstep_op X' T X]} [g ⊢ ex_bo_forget B] =
 / total b (total_bo_forget _ _ _ _ b) /
 mlam B ⇒ case [_ ⊢ B] of
-  | [g ⊢ ccskp.bo_nu_closed (\a.O) (\a.L) (\a.B1)] ⇒
+  | [g ⊢ ccskp.bo_nu_cl (\a.O) (\a.L) (\a.B1)] ⇒
     let [g,a:names ⊢ L'] = lab_of_bstep_open [g ⊢ B] in
     let [g,a:names ⊢ refl] = functional_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
     let [g,a:names ⊢ ex_bcfg (bc_fg B1 B1' L'' H)] = total_bc_forget [g,a:names ⊢ B1] in
@@ -202,7 +202,7 @@ mlam B ⇒ case [_ ⊢ B] of
     let [g ⊢ ex_bofg (bo_fg B1 B1' \a.H')] = total_bo_forget [g ⊢ B1] in
     let [g,a:names ⊢ refk] = functional_key [g,a:names ⊢ H] [g,a:names ⊢ H'] in
     [g ⊢ ex_bofg (bo_fg B (ccsk.bs_parr B1' N) (\a.ccskp.key_parr H'))]
-  | [g ⊢ ccskp.bo_nu_open \a.B1] ⇒
+  | [g ⊢ ccskp.bo_nu_op \a.B1] ⇒
     let [g,a:names ⊢ ex_bofg (bo_fg B1 B1'[..,a] \b.H[..,b,a])] = total_bo_forget [g,a:names ⊢ B1] in
     [g ⊢ ex_bofg (bo_fg B (ccsk.bs_nu \a.B1') \a.H[..,a])]
 ;
@@ -260,10 +260,10 @@ mlam F ⇒ case [_ ⊢ F] of
        | [g,a:names ⊢ ex_fcen (fc_en F1 F1' L H)] ⇒
          let [g,a:names ⊢ V] = valid_pr_lab_in_fstep_closed [g,a:names ⊢ F1'] in
          (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
-            | oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
+            | occ [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
               let [g,a:names ⊢ L'] = occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
               let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
-              [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_closed (\a.O) (\a.L) (\a.F1')) (\a.H))]
+              [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_cl (\a.O) (\a.L) (\a.F1')) (\a.H))]
             | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
               let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
               let [g ⊢ L'] = str_labr [g,a:names ⊢ L] in
@@ -272,7 +272,7 @@ mlam F ⇒ case [_ ⊢ F] of
        | [g,a:names ⊢ ex_foen (fo_en F1 F1' \b.H[..,b,a])] ⇒
          let ex_sfo [g,b:names ⊢ F1'] [g,b:names ⊢ F1''] e = str_fstep_open [g,b:names ⊢ F1'] in
          let [g,a:names,b:names ⊢ refpl] = e in
-         [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_open \a.F1'') \a.H[..,a])])
+         [g ⊢ ex_foen (fo_en F (ccskp.fo_nu_op \a.F1'') \a.H[..,a])])
 ;
 
 
@@ -315,10 +315,10 @@ mlam B ⇒ case [_ ⊢ B] of
        | [g,a:names ⊢ ex_bcen (bc_en B1 B1' L H)] ⇒
          let [g,a:names ⊢ V] = valid_pr_lab_in_bstep_closed [g,a:names ⊢ B1'] in
          (case occur_in_valid_pr_lab [g,a:names ⊢ V] of
-            | oc [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
+            | occ [g,a:names ⊢ T] [g,a:names ⊢ O] ⇒
               let [g,a:names ⊢ L'] = occurs_in_pr_lab [g,a:names ⊢ O] [g,a:names ⊢ L] in
               let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
-              [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_closed (\a.O) (\a.L) (\a.B1')) (\a.H))]
+              [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_cl (\a.O) (\a.L) (\a.B1')) (\a.H))]
             | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
               let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
               let [g ⊢ L'] = str_labr [g,a:names ⊢ L] in
@@ -327,7 +327,7 @@ mlam B ⇒ case [_ ⊢ B] of
        | [g,a:names ⊢ ex_boen (bo_en B1 B1' \b.H[..,b,a])] ⇒
          let ex_sbo [g,b:names ⊢ B1'] [g,b:names ⊢ B1''] e = str_bstep_open [g,b:names ⊢ B1'] in
          let [g,a:names,b:names ⊢ refpl] = e in
-         [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_open \a.B1'') \a.H[..,a])])
+         [g ⊢ ex_boen (bo_en B (ccskp.bo_nu_op \a.B1'') \a.H[..,a])])
 ;
 
 

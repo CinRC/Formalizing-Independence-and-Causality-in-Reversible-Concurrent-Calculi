@@ -4,9 +4,9 @@ module ccskp = struct
 
 % Recall that, unlike in the paper, restriction of names in processes is considered as
 % a binding operator and processes are identified up to alpha-renaming of bound names.
-% The LTS rules involving restrictions (res, \bar{res} in Fig.4 ) are not closed under
+% The LTS rules involving restrictions (res, \bar{res} in Fig.4) are not closed under
 % alpha-equivalence. In fact, the name "a" bound by the restrictions may occur free in 
-% the used proof label \theta.
+% the used proof label theta.
 % Our solution consists in considering such occurrence of "a" in theta as bound, and
 % identifying proof labels up to alpha-renaming of bound names.
 % Thus, the encoding distinguishes between proof labels where occurrences of names are
@@ -30,8 +30,8 @@ LF pr_lab_op: type =
 
 % Type for the union of closed and open proof labels
 LF pr_lab: type =
-  | gp: pr_lab_cl → pr_lab
-  | go: pr_lab_op → pr_lab 
+  | p_cl: pr_lab_cl → pr_lab
+  | p_op: pr_lab_op → pr_lab 
 ;
 
 % Label of a proof keyed label
@@ -80,14 +80,14 @@ LF valid_cl: pr_lab_cl → type =
 
 % Valid open proof labels
 LF valid_op: pr_lab_op → type =
-  | ov_base: ({a:names} occurs a (T a)) → ({a:names} lab (T a) A)
+  | vo_base: ({a:names} occurs a (T a)) → ({a:names} lab (T a) A)
            → ({a:names} valid_cl (T a)) → valid_op (open T)
 ;
 
 % Valid proof labels
 LF valid: pr_lab → type =
-  | gpv: valid_cl T → valid (gp T)
-  | gov: valid_op T → valid (go T)
+  | v_cl: valid_cl T → valid (p_cl T)
+  | v_op: valid_op T → valid (p_op T)
 ;
 
 
@@ -113,9 +113,9 @@ LF fstep_cl: proc → pr_lab_cl → proc → type =
 
 % Open forward transitions
 LF fstep_op: proc → pr_lab_op → proc → type =
-  | fo_nu_closed: ({a:names} occurs a (T a)) → ({a:names} lab (T a) A)
-                → ({a:names} fstep_cl (X a) (T a) (X' a))
-                → fstep_op (nu X) (open T) (nu X')
+  | fo_nu_cl: ({a:names} occurs a (T a)) → ({a:names} lab (T a) A)
+            → ({a:names} fstep_cl (X a) (T a) (X' a))
+            → fstep_op (nu X) (open T) (nu X')
   | fo_kpref: fstep_op X (open T) X' → ({a:names} key (T a) M) → neq K M
             → fstep_op (kpref A K X) (open T) (kpref A K X')
   | fo_suml: fstep_op X (open \a.(T a)) X' → std Y
@@ -126,14 +126,14 @@ LF fstep_op: proc → pr_lab_op → proc → type =
            → fstep_op (par X Y) (open \a.(pr_parl (T a))) (par X' Y)
   | fo_parr: fstep_op Y (open \a.(T a)) Y' → ({a:names} key (T a) K) → notin K X
            → fstep_op (par X Y) (open \a.(pr_parr (T a))) (par X Y')
-  | fo_nu_open: ({a:names} fstep_op (X a) T (X' a))
-              → fstep_op (nu X) T (nu X')
+  | fo_nu_op: ({a:names} fstep_op (X a) T (X' a))
+            → fstep_op (nu X) T (nu X')
 ;
 
 % Forward transitions
 LF fstep: proc → pr_lab → proc → type =
-  | fc: fstep_cl X T X' → fstep X (gp T) X'
-  | fo: fstep_op X T X' → fstep X (go T) X'
+  | fc: fstep_cl X T X' → fstep X (p_cl T) X'
+  | fo: fstep_op X T X' → fstep X (p_op T) X'
 ;
 
 % Closed backward transitions
@@ -158,10 +158,10 @@ LF bstep_cl: proc → pr_lab_cl → proc → type =
 
 % Open backward transitions
 LF bstep_op: proc → pr_lab_op → proc → type =
-  | bo_nu_closed: ({a:names} occurs a (T a))
-                → ({a:names} lab (T a) A)
-                → ({a:names} bstep_cl (X' a) (T a) (X a))
-                → bstep_op (nu X') (open T) (nu X)
+  | bo_nu_cl: ({a:names} occurs a (T a))
+            → ({a:names} lab (T a) A)
+            → ({a:names} bstep_cl (X' a) (T a) (X a))
+            → bstep_op (nu X') (open T) (nu X)
   | bo_kpref: bstep_op X' (open T) X → ({a:names} key (T a) M) → neq K M
             → bstep_op (kpref A K X') (open T) (kpref A K X)
   | bo_suml: bstep_op X' (open \a.(T a)) X → std Y
@@ -172,14 +172,14 @@ LF bstep_op: proc → pr_lab_op → proc → type =
            → bstep_op (par X' Y) (open \a.(pr_parl (T a))) (par X Y)
   | bo_parr: bstep_op Y' (open \a.(T a)) Y → ({a:names} key (T a) K) → notin K X
            → bstep_op (par X Y') (open \a.(pr_parr (T a))) (par X Y)
-  | bo_nu_open: ({a:names} bstep_op (X' a) T (X a))
-              → bstep_op (nu X') T (nu X)
+  | bo_nu_op: ({a:names} bstep_op (X' a) T (X a))
+            → bstep_op (nu X') T (nu X)
 ;
 
 % Backward transitions
 LF bstep: proc → pr_lab → proc → type =
-  | bc: bstep_cl X T X' → bstep X (gp T) X'
-  | bo: bstep_op X T X' → bstep X (go T) X'
+  | bc: bstep_cl X T X' → bstep X (p_cl T) X'
+  | bo: bstep_op X T X' → bstep X (p_op T) X'
 ;
 
 % Closed combined transitions
@@ -196,8 +196,8 @@ LF step_op: proc → pr_lab_op → proc → type =
 
 % Combined transitions
 LF step: proc → pr_lab → proc → type =
-  | sc: step_cl X T X' → step X (gp T) X'
-  | so: step_op X T X' → step X (go T) X'
+  | sc: step_cl X T X' → step X (p_cl T) X'
+  | so: step_op X T X' → step X (p_op T) X'
 ;
 
 % Paths
@@ -272,12 +272,12 @@ LF indep_cl: pr_lab_cl → pr_lab_cl → type =
   | i_s3: indep_cl T1 T1' → indep_cl T2 T2' → indep_cl (pr_sync T1 T2) (pr_sync T1' T2')
 ;
 
-% Connectivity of "generalized" proof labels
+% Connectivity of proof labels
 LF conn: pr_lab → pr_lab → type =
-  | pp: conn_cl T1 T2 → conn (gp T1) (gp T2)
-  | op: ({a:names} conn_cl (T1 a) T2) → conn (go (open T1)) (gp T2)
-  | po: ({a:names} conn_cl T1 (T2 a)) → conn (gp T1) (go (open T2))
-  | oo: ({a:names} conn_cl (T1 a) (T2 a)) → conn (go (open T1)) (go (open T2))
+  | c_cc: conn_cl T1 T2 → conn (p_cl T1) (p_cl T2)
+  | c_oc: ({a:names} conn_cl (T1 a) T2) → conn (p_op (open T1)) (p_cl T2)
+  | c_co: ({a:names} conn_cl T1 (T2 a)) → conn (p_cl T1) (p_op (open T2))
+  | c_oo: ({a:names} conn_cl (T1 a) (T2 a)) → conn (p_op (open T1)) (p_op (open T2))
 ;
 
 end;

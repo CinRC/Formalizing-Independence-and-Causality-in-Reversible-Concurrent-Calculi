@@ -28,7 +28,7 @@ fn f,d ⇒ case f of
 rec target_is_not_std_fo: (g:ctx) [g ⊢ fstep_op X T X'] → [g ⊢ std X'] → [g ⊢ false] =
 / total f (target_is_not_std_fo _ _ _ _ f _) /
 fn f,d ⇒ case f of
-  | [g ⊢ fo_nu_closed (\_._) (\_._) (\a.F)] ⇒ let [g ⊢ std_nu \a.D] = d in
+  | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F)] ⇒ let [g ⊢ std_nu \a.D] = d in
 	let [g,a:names ⊢ E[..]] = target_is_not_std_fc [g,a:names ⊢ F] [g,a:names ⊢ D] in [g ⊢ E]
   | [g ⊢ fo_kpref _ (\_._) _] ⇒ impossible d
   | [g ⊢ fo_suml F _] ⇒ let [g ⊢ std_sum D _] = d in
@@ -39,7 +39,7 @@ fn f,d ⇒ case f of
     target_is_not_std_fo [g ⊢ F] [g ⊢ D]
   | [g ⊢ fo_parr F (\_._) _] ⇒ let [g ⊢ std_par _ D] = d in
     target_is_not_std_fo [g ⊢ F] [g ⊢ D]
-  | [g ⊢ fo_nu_open \a.F] ⇒ let [g ⊢ std_nu \a.D] = d in
+  | [g ⊢ fo_nu_op \a.F] ⇒ let [g ⊢ std_nu \a.D] = d in
     let [g,a:names ⊢ E[..]] = target_is_not_std_fo [g,a:names ⊢ F] [g,a:names ⊢ D] in [g ⊢ E]
 ;
 
@@ -69,7 +69,7 @@ fn b,d ⇒ case b of
 rec source_is_not_std_bo: (g:ctx) [g ⊢ bstep_op X' T X] → [g ⊢ std X'] → [g ⊢ false] =
 / total b (source_is_not_std_bo _ _ _ _ b _) /
 fn b,d ⇒ case b of
-  | [g ⊢ bo_nu_closed (\_._) (\_._) (\a.B)] ⇒ let [g ⊢ std_nu \a.D] = d in
+  | [g ⊢ bo_nu_cl (\_._) (\_._) (\a.B)] ⇒ let [g ⊢ std_nu \a.D] = d in
 	let [g,a:names ⊢ E[..]] = source_is_not_std_bc [g,a:names ⊢ B] [g,a:names ⊢ D] in [g ⊢ E]
   | [g ⊢ bo_kpref _ (\_._) _] ⇒ impossible d
   | [g ⊢ bo_suml B _] ⇒ let [g ⊢ std_sum D _] = d in
@@ -80,7 +80,7 @@ fn b,d ⇒ case b of
     source_is_not_std_bo [g ⊢ B] [g ⊢ D]
   | [g ⊢ bo_parr B (\_._) _] ⇒ let [g ⊢ std_par _ D] = d in
     source_is_not_std_bo [g ⊢ B] [g ⊢ D]
-  | [g ⊢ bo_nu_open \a.B] ⇒ let [g ⊢ std_nu \a.D] = d in
+  | [g ⊢ bo_nu_op \a.B] ⇒ let [g ⊢ std_nu \a.D] = d in
     let [g,a:names ⊢ E[..]] = source_is_not_std_bo [g,a:names ⊢ B] [g,a:names ⊢ D] in [g ⊢ E]
 ;
 
@@ -102,14 +102,14 @@ fn f ⇒ case f of
 rec target_is_not_source_fo: (g:ctx) [g ⊢ fstep_op X T X] → [g ⊢ false] =
 / total f (target_is_not_source_fo _ _ _ f) /
 fn f ⇒ case f of
-  | [g ⊢ fo_nu_closed (\_._) (\_._) (\a.F')] ⇒
+  | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F')] ⇒
     let [g,a:names ⊢ E[..]] = target_is_not_source_fc [g,a:names ⊢ F'] in [g ⊢ E]
   | [g ⊢ fo_kpref F' (\_._) _] ⇒ impossible target_is_not_source_fo [g ⊢ F']
   | [g ⊢ fo_suml F' _] ⇒ impossible target_is_not_source_fo [g ⊢ F']
   | [g ⊢ fo_sumr F' _] ⇒ impossible target_is_not_source_fo [g ⊢ F']
   | [g ⊢ fo_parl F' (\_._) _] ⇒ impossible target_is_not_source_fo [g ⊢ F']
   | [g ⊢ fo_parr F' (\_._) _] ⇒ impossible target_is_not_source_fo [g ⊢ F']
-  | [g ⊢ fo_nu_open \a.F'] ⇒ let [g,a:names ⊢ E[..]] = target_is_not_source_fo [g,a:names ⊢ F'] in [g ⊢ E]
+  | [g ⊢ fo_nu_op \a.F'] ⇒ let [g,a:names ⊢ E[..]] = target_is_not_source_fo [g,a:names ⊢ F'] in [g ⊢ E]
 ;
 
 % Source and target of a closed backward transition are not equal
@@ -130,14 +130,14 @@ fn b ⇒ case b of
 rec target_is_not_source_bo: (g:ctx) [g ⊢ bstep_op X T X] → [g ⊢ false] =
 / total b (target_is_not_source_bo _ _ _ b) /
 fn b ⇒ case b of
-  | [g ⊢ bo_nu_closed (\_._) (\_._) (\a.B')] ⇒
+  | [g ⊢ bo_nu_cl (\_._) (\_._) (\a.B')] ⇒
     let [g,a:names ⊢ E[..]] = target_is_not_source_bc [g,a:names ⊢ B'] in [g ⊢ E]
   | [g ⊢ bo_kpref B' (\_._) _] ⇒ impossible target_is_not_source_bo [g ⊢ B']
   | [g ⊢ bo_suml B' _] ⇒ impossible target_is_not_source_bo [g ⊢ B']
   | [g ⊢ bo_sumr B' _] ⇒ impossible target_is_not_source_bo [g ⊢ B']
   | [g ⊢ bo_parl B' (\_._) _] ⇒ impossible target_is_not_source_bo [g ⊢ B']
   | [g ⊢ bo_parr B' (\_._) _] ⇒ impossible target_is_not_source_bo [g ⊢ B']
-  | [g ⊢ bo_nu_open \a.B'] ⇒ let [g,a:names ⊢ E[..]] = target_is_not_source_bo [g,a:names ⊢ B'] in [g ⊢ E]
+  | [g ⊢ bo_nu_op \a.B'] ⇒ let [g,a:names ⊢ E[..]] = target_is_not_source_bo [g,a:names ⊢ B'] in [g ⊢ E]
 ;
 
 
@@ -309,9 +309,9 @@ fn f1,f2 ⇒ case f1 of
        | [g ⊢ fo_parl F2 (\_._) _] ⇒ impossible target_is_not_source_fc [g ⊢ FR1]
        | [g ⊢ fo_parr F2 (\_._) _] ⇒ impossible target_is_not_source_fc [g ⊢ FL1])
   | [g ⊢ fc_nu \a.F1] ⇒ (case f2 of
-       | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F2)] ⇒
+       | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F2)] ⇒
          let [g,a:names ⊢ reffc] = unique_fstep_closed [g,a:names ⊢ F1] [g,a:names ⊢ F2] in impossible occur_clash [g,a:names ⊢ O]
-       | [g ⊢ fo_nu_open \a.F2] ⇒ let [g,a:names ⊢ E[..]] = no_fstep_closed_and_open [g,a:names ⊢ F1] [g,a:names ⊢ F2] in [g ⊢ E])
+       | [g ⊢ fo_nu_op \a.F2] ⇒ let [g,a:names ⊢ E[..]] = no_fstep_closed_and_open [g,a:names ⊢ F1] [g,a:names ⊢ F2] in [g ⊢ E])
 ;
 
 % Given two processes X and X', there cannot be both a closed and an open backward transition between them
@@ -340,9 +340,9 @@ fn b1,b2 ⇒ case b1 of
        | [g ⊢ bo_parl B2 (\_._) _] ⇒ impossible target_is_not_source_bc [g ⊢ BR1]
        | [g ⊢ bo_parr B2 (\_._) _] ⇒ impossible target_is_not_source_bc [g ⊢ BL1])
   | [g ⊢ bc_nu \a.B1] ⇒ (case b2 of
-       | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B2)] ⇒
+       | [g ⊢ bo_nu_cl (\a.O) (\a.L) (\a.B2)] ⇒
          let [g,a:names ⊢ refbc] = unique_bstep_closed [g,a:names ⊢ B1] [g,a:names ⊢ B2] in impossible occur_clash [g,a:names ⊢ O]
-       | [g ⊢ bo_nu_open \a.B2] ⇒ let [g,a:names ⊢ E[..]] = no_bstep_closed_and_open [g,a:names ⊢ B1] [g,a:names ⊢ B2] in [g ⊢ E])
+       | [g ⊢ bo_nu_op \a.B2] ⇒ let [g,a:names ⊢ E[..]] = no_bstep_closed_and_open [g,a:names ⊢ B1] [g,a:names ⊢ B2] in [g ⊢ E])
 ;
 
 
@@ -357,12 +357,12 @@ LF eqfo: fstep_op X1 T1 X1' → fstep_op X2 T2 X2' → type =
 rec unique_fstep_open: (g:ctx) {F1:[g ⊢ fstep_op X T1 X']} {F2:[g ⊢ fstep_op X T2 X']} [g ⊢ eqfo F1 F2] =
 / total f1 (unique_fstep_open _ _ _ _ _ f1 _) /
 mlam F1 F2 ⇒ case [_ ⊢ F1] of
-  | [g ⊢ fo_nu_closed (\a.O1) (\a.L1) (\a.F1')] ⇒ (case [g ⊢ F2] of
-       | [g ⊢ fo_nu_closed (\a.O2) (\a.L2) (\a.F2')] ⇒
+  | [g ⊢ fo_nu_cl (\a.O1) (\a.L1) (\a.F1')] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fo_nu_cl (\a.O2) (\a.L2) (\a.F2')] ⇒
          let [g,a:names ⊢ reffc] = unique_fstep_closed [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in
          let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L1] [g,a:names ⊢ L2] in
          let [g,a:names ⊢ refoc] = unique_occ [g,a:names ⊢ O1] [g,a:names ⊢ O2] in [g ⊢ reffo]
-       | [g ⊢ fo_nu_open \a.F2'] ⇒ impossible no_fstep_closed_and_open [g,a:names ⊢ F1'] [g,a:names ⊢ F2'])
+       | [g ⊢ fo_nu_op \a.F2'] ⇒ impossible no_fstep_closed_and_open [g,a:names ⊢ F1'] [g,a:names ⊢ F2'])
   | [g ⊢ fo_kpref F1' (\a.H1) I1] ⇒ let [g ⊢ fo_kpref F2' (\a.H2) I2] = [g ⊢ F2] in
     let [g ⊢ reffo] = unique_fstep_open [g ⊢ F1'] [g ⊢ F2'] in
     let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
@@ -385,9 +385,9 @@ mlam F1 F2 ⇒ case [_ ⊢ F1] of
        | [g ⊢ fo_parr F2' (\a.H2) N2] ⇒ let [g ⊢ reffo] = unique_fstep_open [g ⊢ F1'] [g ⊢ F2'] in
          let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
          let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ reffo])
-  | [g ⊢ fo_nu_open \a.F1'] ⇒ (case [g ⊢ F2] of
-       | [g ⊢ fo_nu_closed (\a.O) (\a.L) (\a.F2')] ⇒ impossible no_fstep_closed_and_open [g,a:names ⊢ F2'] [g,a:names ⊢ F1']
-       | [g ⊢ fo_nu_open \a.F2'] ⇒ let [g,a:names ⊢ reffo] = unique_fstep_open [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffo])
+  | [g ⊢ fo_nu_op \a.F1'] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F2')] ⇒ impossible no_fstep_closed_and_open [g,a:names ⊢ F2'] [g,a:names ⊢ F1']
+       | [g ⊢ fo_nu_op \a.F2'] ⇒ let [g,a:names ⊢ reffo] = unique_fstep_open [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffo])
 ;
 
 % Equality of derivations of bstep_op X' T X
@@ -399,12 +399,12 @@ LF eqbo: bstep_op X1' T1 X1 → bstep_op X2' T2 X2 → type =
 rec unique_bstep_open: (g:ctx) {B1:[g ⊢ bstep_op X' T1 X]} {B2:[g ⊢ bstep_op X' T2 X]} [g ⊢ eqbo B1 B2] =
 / total b1 (unique_bstep_open _ _ _ _ _ b1 _) /
 mlam B1 B2 ⇒ case [_ ⊢ B1] of
-  | [g ⊢ bo_nu_closed (\a.O1) (\a.L1) (\a.B1')] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bo_nu_closed (\a.O2) (\a.L2) (\a.B2')] ⇒
+  | [g ⊢ bo_nu_cl (\a.O1) (\a.L1) (\a.B1')] ⇒ (case [g ⊢ B2] of
+       | [g ⊢ bo_nu_cl (\a.O2) (\a.L2) (\a.B2')] ⇒
          let [g,a:names ⊢ refbc] = unique_bstep_closed [g,a:names ⊢ B1'] [g,a:names ⊢ B2'] in
          let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L1] [g,a:names ⊢ L2] in
          let [g,a:names ⊢ refoc] = unique_occ [g,a:names ⊢ O1] [g,a:names ⊢ O2] in [g ⊢ refbo]
-       | [g ⊢ bo_nu_open \a.B2'] ⇒ impossible no_bstep_closed_and_open [g,a:names ⊢ B1'] [g,a:names ⊢ B2'])
+       | [g ⊢ bo_nu_op \a.B2'] ⇒ impossible no_bstep_closed_and_open [g,a:names ⊢ B1'] [g,a:names ⊢ B2'])
   | [g ⊢ bo_kpref B1' (\a.H1) I1] ⇒ let [g ⊢ bo_kpref B2' (\a.H2) I2] = [g ⊢ B2] in
     let [g ⊢ refbo] = unique_bstep_open [g ⊢ B1'] [g ⊢ B2'] in
     let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
@@ -427,9 +427,9 @@ mlam B1 B2 ⇒ case [_ ⊢ B1] of
        | [g ⊢ bo_parr B2' (\a.H2) N2] ⇒ let [g ⊢ refbo] = unique_bstep_open [g ⊢ B1'] [g ⊢ B2'] in
          let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
          let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ refbo])
-  | [g ⊢ bo_nu_open \a.B1'] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bo_nu_closed (\a.O) (\a.L) (\a.B2')] ⇒ impossible no_bstep_closed_and_open [g,a:names ⊢ B2'] [g,a:names ⊢ B1']
-       | [g ⊢ bo_nu_open \a.B2'] ⇒ let [g,a:names ⊢ refbo] = unique_bstep_open [g,a:names ⊢ B1'] [g,a:names ⊢ B2'] in [g ⊢ refbo])
+  | [g ⊢ bo_nu_op \a.B1'] ⇒ (case [g ⊢ B2] of
+       | [g ⊢ bo_nu_cl (\a.O) (\a.L) (\a.B2')] ⇒ impossible no_bstep_closed_and_open [g,a:names ⊢ B2'] [g,a:names ⊢ B1']
+       | [g ⊢ bo_nu_op \a.B2'] ⇒ let [g,a:names ⊢ refbo] = unique_bstep_open [g,a:names ⊢ B1'] [g,a:names ⊢ B2'] in [g ⊢ refbo])
 ;
 
 % Equality of derivations of step X T X'

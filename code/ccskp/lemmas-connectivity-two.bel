@@ -46,15 +46,15 @@ fn v ⇒ case v of
 rec op_pr_lab_is_realised: (g:ctx) [g ⊢ valid_op T] → [g ⊢ realised_op T] =
 / total v (op_pr_lab_is_realised _ _ v) /
 fn v ⇒ case v of
-  | [g ⊢ ov_base (\a.O) (\a.L) (\a.V)] ⇒ let [g,a:names ⊢ crl D F] = cl_pr_lab_is_realised [g,a:names ⊢ V] in
-    [g ⊢ orl (std_nu \a.D) (fo_nu_closed (\a.O) (\a.L) (\a.F))]
+  | [g ⊢ vo_base (\a.O) (\a.L) (\a.V)] ⇒ let [g,a:names ⊢ crl D F] = cl_pr_lab_is_realised [g,a:names ⊢ V] in
+    [g ⊢ orl (std_nu \a.D) (fo_nu_cl (\a.O) (\a.L) (\a.F))]
 ;
 % Lemma 2.5 for generalized proof labels
 rec pr_lab_is_realised: (g:ctx) [g ⊢ valid T] → [g ⊢ realised T] =
 / total v (pr_lab_is_realised _ _ v) /
 fn v ⇒ case v of
-  | [g ⊢ gpv V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fc F)]
-  | [g ⊢ gov V] ⇒ let [g ⊢ orl D F] = op_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fo F)]
+  | [g ⊢ v_cl V] ⇒ let [g ⊢ crl D F] = cl_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fc F)]
+  | [g ⊢ v_op V] ⇒ let [g ⊢ orl D F] = op_pr_lab_is_realised [g ⊢ V] in [g ⊢ rl D (fo F)]
 ;
 
 
@@ -67,9 +67,9 @@ fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
        | [g ⊢ sc (fwc F)] ⇒ [g ⊢ st_s* (sc (fwc (fc_suml F std_null)))]
-       | [g ⊢ so (fwo F)]:[g ⊢ step _ (go (open \_._)) _] ⇒ [g ⊢ st_s* (so (fwo (fo_suml F std_null)))]
+       | [g ⊢ so (fwo F)]:[g ⊢ step _ (p_op (open \_._)) _] ⇒ [g ⊢ st_s* (so (fwo (fo_suml F std_null)))]
        | [g ⊢ sc (bwc B)] ⇒ [g ⊢ st_s* (sc (bwc (bc_suml B std_null)))]
-       | [g ⊢ so (bwo B)]:[g ⊢ step _ (go (open \_._)) _]  ⇒ [g ⊢ st_s* (so (bwo (bo_suml B std_null)))])
+       | [g ⊢ so (bwo B)]:[g ⊢ step _ (p_op (open \_._)) _]  ⇒ [g ⊢ st_s* (so (bwo (bo_suml B std_null)))])
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ S1*'] = step*_sumleft_null [g ⊢ S1*] in
     let [g ⊢ S2*'] = step*_sumleft_null [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
 ;
@@ -81,9 +81,9 @@ fn s ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
        | [g ⊢ sc (fwc F)] ⇒ [g ⊢ st_s* (sc (fwc (fc_sumr F std_null)))]
-       | [g ⊢ so (fwo F)]:[g ⊢ step _ (go (open \_._)) _] ⇒ [g ⊢ st_s* (so (fwo (fo_sumr F std_null)))]
+       | [g ⊢ so (fwo F)]:[g ⊢ step _ (p_op (open \_._)) _] ⇒ [g ⊢ st_s* (so (fwo (fo_sumr F std_null)))]
        | [g ⊢ sc (bwc B)] ⇒ [g ⊢ st_s* (sc (bwc (bc_sumr B std_null)))]
-       | [g ⊢ so (bwo B)]:[g ⊢ step _ (go (open \_._)) _]  ⇒ [g ⊢ st_s* (so (bwo (bo_sumr B std_null)))])
+       | [g ⊢ so (bwo B)]:[g ⊢ step _ (p_op (open \_._)) _]  ⇒ [g ⊢ st_s* (so (bwo (bo_sumr B std_null)))])
   | [g ⊢ tr_s* S1* S2*] ⇒ let [g ⊢ S1*'] = step*_sumright_null [g ⊢ S1*] in
     let [g ⊢ S2*'] = step*_sumright_null [g ⊢ S2*] in [g ⊢ tr_s* S1*' S2*']
 ;
@@ -94,15 +94,15 @@ rec step*_parleft_std: (g:ctx) [g ⊢ step* X X'] → [g ⊢ std Y] → [g ⊢ s
 fn s,d ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ sc (fwc F)]:[g ⊢ step _ (gp T) _] ⇒ let [g ⊢ D] = d in
+       | [g ⊢ sc (fwc F)]:[g ⊢ step _ (p_cl T) _] ⇒ let [g ⊢ D] = d in
          let [g ⊢ ex_kn _ H N] = no_key_of_prlab_in_std [g ⊢ T] [g ⊢ D] in [g ⊢ st_s* (sc (fwc (fc_parl F H N)))]
-       | [g ⊢ so (fwo F)]:[g ⊢ step _ (go (open \a.T)) _] ⇒ let [g ⊢ D] = d in
+       | [g ⊢ so (fwo F)]:[g ⊢ step _ (p_op (open \a.T)) _] ⇒ let [g ⊢ D] = d in
          let [g,a:names ⊢ ex_k H] = total_key [g,a:names ⊢ T] in
          let [g,a:names ⊢ H]:[g,a:names ⊢ key _ K[]] = [g,a:names ⊢ H] in
          let [g ⊢ N] = no_key_in_std [⊢ K] [g ⊢ D] in [g ⊢ st_s* (so (fwo (fo_parl F (\a.H) N)))]
-       | [g ⊢ sc (bwc B)]:[g ⊢ step _ (gp T) _] ⇒ let [g ⊢ D] = d in
+       | [g ⊢ sc (bwc B)]:[g ⊢ step _ (p_cl T) _] ⇒ let [g ⊢ D] = d in
          let [g ⊢ ex_kn _ H N] = no_key_of_prlab_in_std [g ⊢ T] [g ⊢ D] in [g ⊢ st_s* (sc (bwc (bc_parl B H N)))]
-       | [g ⊢ so (bwo B)]:[g ⊢ step _ (go (open \a.T)) _] ⇒ let [g ⊢ D] = d in
+       | [g ⊢ so (bwo B)]:[g ⊢ step _ (p_op (open \a.T)) _] ⇒ let [g ⊢ D] = d in
          let [g,a:names ⊢ ex_k H] = total_key [g,a:names ⊢ T] in
          let [g,a:names ⊢ H]:[g,a:names ⊢ key _ K[]] = [g,a:names ⊢ H] in
          let [g ⊢ N] = no_key_in_std [⊢ K] [g ⊢ D] in [g ⊢ st_s* (so (bwo (bo_parl B (\a.H) N)))])
@@ -116,15 +116,15 @@ rec step*_parright_std: (g:ctx) [g ⊢ step* X X'] → [g ⊢ std Y] → [g ⊢ 
 fn s,d ⇒ case s of
   | [g ⊢ id_s*] ⇒ [g ⊢ id_s*]
   | [g ⊢ st_s* S] ⇒ (case [g ⊢ S] of
-       | [g ⊢ sc (fwc F)]:[g ⊢ step _ (gp T) _] ⇒ let [g ⊢ D] = d in
+       | [g ⊢ sc (fwc F)]:[g ⊢ step _ (p_cl T) _] ⇒ let [g ⊢ D] = d in
          let [g ⊢ ex_kn _ H N] = no_key_of_prlab_in_std [g ⊢ T] [g ⊢ D] in [g ⊢ st_s* (sc (fwc (fc_parr F H N)))]
-       | [g ⊢ so (fwo F)]:[g ⊢ step _ (go (open \a.T)) _] ⇒ let [g ⊢ D] = d in
+       | [g ⊢ so (fwo F)]:[g ⊢ step _ (p_op (open \a.T)) _] ⇒ let [g ⊢ D] = d in
          let [g,a:names ⊢ ex_k H] = total_key [g,a:names ⊢ T] in
          let [g,a:names ⊢ H]:[g,a:names ⊢ key _ K[]] = [g,a:names ⊢ H] in
          let [g ⊢ N] = no_key_in_std [⊢ K] [g ⊢ D] in [g ⊢ st_s* (so (fwo (fo_parr F (\a.H) N)))]
-       | [g ⊢ sc (bwc B)]:[g ⊢ step _ (gp T) _] ⇒ let [g ⊢ D] = d in
+       | [g ⊢ sc (bwc B)]:[g ⊢ step _ (p_cl T) _] ⇒ let [g ⊢ D] = d in
          let [g ⊢ ex_kn _ H N] = no_key_of_prlab_in_std [g ⊢ T] [g ⊢ D] in [g ⊢ st_s* (sc (bwc (bc_parr B H N)))]
-       | [g ⊢ so (bwo B)]:[g ⊢ step _ (go (open \a.T)) _] ⇒ let [g ⊢ D] = d in
+       | [g ⊢ so (bwo B)]:[g ⊢ step _ (p_op (open \a.T)) _] ⇒ let [g ⊢ D] = d in
          let [g,a:names ⊢ ex_k H] = total_key [g,a:names ⊢ T] in
          let [g,a:names ⊢ H]:[g,a:names ⊢ key _ K[]] = [g,a:names ⊢ H] in
          let [g ⊢ N] = no_key_in_std [⊢ K] [g ⊢ D] in [g ⊢ st_s* (so (bwo (bo_parr B (\a.H) N)))])
