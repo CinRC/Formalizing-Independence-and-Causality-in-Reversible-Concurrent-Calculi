@@ -1,6 +1,6 @@
 %%% Auxiliary lemmas for Theorem 2.1(ii)
 
-% Type families encoding realisation of a closed/open/generalized proof keyed label.
+% We define type families encoding realisation of a (closed/open) proof label.
 % With respect to the informal definition of realisation in the paper (Def. 2.4), these type
 % families are slightly stronger, so that a stronger result can be later proved and applied.
 
@@ -14,13 +14,16 @@ LF realised_cl: pr_lab_cl → type =
 LF realised_op: pr_lab_op → type =
   | orl: std X → fstep_op X T X' → realised_op T
 ;
-% A generalized proof label T is realised if there is a forward transition
+% A proof label T is realised if there is a forward transition
 % whose source is a standard process and whose proof label is T.
 LF realised: pr_lab → type =
   | rl: std X → fstep X T X' → realised T
 ;
 
-% Lemma 2.5: every valid proof label is realised
+% Lemma 2.5: every valid proof label is realised.
+% The validity hypothesis is necessary in our encoding: a non-valid proof label
+% is an ill-formed term, that does not correspond to any actual proof label in the
+% informal development. It follows that such a term cannot be realised.
 
 % Lemma 2.5 for closed proof labels
 rec pr_lab_is_realised_cl: (g:ctx) [g ⊢ valid_cl T] → [g ⊢ realised_cl T] =
@@ -49,7 +52,7 @@ fn v ⇒ case v of
   | [g ⊢ vo_base (\a.O) (\a.L) (\a.V)] ⇒ let [g,a:names ⊢ crl D F] = pr_lab_is_realised_cl [g,a:names ⊢ V] in
     [g ⊢ orl (std_nu \a.D) (fo_nu_cl (\a.O) (\a.L) (\a.F))]
 ;
-% Lemma 2.5 for generalized proof labels
+% Lemma 2.5 for proof labels
 rec pr_lab_is_realised: (g:ctx) [g ⊢ valid T] → [g ⊢ realised T] =
 / total v (pr_lab_is_realised _ _ v) /
 fn v ⇒ case v of
@@ -134,7 +137,7 @@ fn s,d ⇒ case s of
 
 
 % If a standard process makes a closed forward transition F indexed by the key K,
-% then any key different than K does not occur in the target of F
+% then any key different than K does not occur in the target of F.
 rec lemma_fstep_cl_std: (g:ctx) [g ⊢ std X] → [g ⊢ fstep_cl X T Y] →
   [g ⊢ key T M[]] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] Y] =
 / total d (lemma_fstep_cl_std _ _ _ _ _ _ d _ _ _) /

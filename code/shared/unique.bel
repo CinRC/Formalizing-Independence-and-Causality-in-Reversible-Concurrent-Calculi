@@ -1,6 +1,6 @@
 %%% Uniqueness of the derivation of predicates shared by CCSK and CCSKP %%%
 
-% Equality of derivations of [g ⊢ less K[] M[]]
+% Equality of derivations of N < M
 inductive eqls: (g:ctx) [g ⊢ less K[] M[]] → [g ⊢ less K[] M[]] → ctype =
   | refls: {L:[g ⊢ less K[] M[]]} eqls [g ⊢ L] [g ⊢ L]
 ;
@@ -15,7 +15,7 @@ case [_ ⊢ L1] of
                        let refls [g ⊢ L1'] = unique_less [g ⊢ L1'] [g ⊢ L2'] in refls [g ⊢ L1]
 ;
 
-% Equality of derivations of [g ⊢ neq K[] M[]]
+% Equality of derivations of N != M
 inductive eqnq: (g:ctx) [g ⊢ neq K[] M[]] → [g ⊢ neq K[] M[]] → ctype =
   | refnq: {I:[g ⊢ neq K[] M[]]} eqnq [g ⊢ I] [g ⊢ I]
 ;

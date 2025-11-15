@@ -4,14 +4,15 @@ module ccskp = struct
 
 % Recall that, unlike in the paper, restriction of names in processes is considered as
 % a binding operator and processes are identified up to alpha-renaming of bound names.
-% The LTS rules involving restrictions (res, \bar{res} in Fig.4) are not closed under
-% alpha-equivalence. In fact, the name "a" bound by the restrictions may occur free in 
-% the used proof label theta.
+% However, the LTS rules for restrictions (res, \bar{res} in Fig.4) are not closed
+% under alpha-equivalence. In fact, the name "a" bound by the restrictions may occur
+% free in the used proof label theta.
 % Our solution consists in considering such occurrence of "a" in theta as bound, and
 % identifying proof labels up to alpha-renaming of bound names.
 % Thus, the encoding distinguishes between proof labels where occurrences of names are
-% free ("closed proof labels") and proof labels in which we abstract over the particular
-% choice of a bound name ("open proof labels").
+% free ("closed proof labels") and proof labels where we abstract over the particular
+% choice of a bound name ("open proof labels"). We adopt HOAS to represent the bound
+% name of an open proof label as the argument of a function from names to pr_lab_cl.
 
 % Closed proof keyed labels 
 LF pr_lab_cl: type =
@@ -28,13 +29,13 @@ LF pr_lab_op: type =
   | open: (names → pr_lab_cl) → pr_lab_op
 ;
 
-% Type for the union of closed and open proof labels
+% Proof keyed labels as the union of closed and open proof labels
 LF pr_lab: type =
   | p_cl: pr_lab_cl → pr_lab
   | p_op: pr_lab_op → pr_lab 
 ;
 
-% Label of a proof keyed label
+% Label of a closed proof label
 LF lab: pr_lab_cl → labels → type =
   | lab_base: lab (pr_base A K) A
   | lab_suml: lab T A → lab (pr_suml T) A
@@ -44,7 +45,7 @@ LF lab: pr_lab_cl → labels → type =
   | lab_sync: lab (pr_sync T1 T2) tau
 ;
 
-% Key of a proof keyed label
+% Key of a closed proof label
 LF key: pr_lab_cl → keys → type =
   | key_base: key (pr_base A K) K
   | key_suml: key T K → key (pr_suml T) K
@@ -54,7 +55,7 @@ LF key: pr_lab_cl → keys → type =
   | key_sync: key T1 K → key (pr_sync T1 T2) K
 ;
 
-% Occurrence of names in closed proof keyed labels
+% Occurrence of names in closed proof labels
 LF occurs: names → pr_lab_cl → type =
   | occ_basel: occurs A (pr_base (inp A) K)
   | occ_baser: occurs A (pr_base (out A) K)
@@ -64,6 +65,11 @@ LF occurs: names → pr_lab_cl → type =
   | occ_parr: occurs A T → occurs A (pr_parr T)
   | occ_sync: occurs A T1 → occurs A (pr_sync T1 T2)
 ;
+
+% The chosen encoding of proof labels is operationally simpler, but pays the price
+% of being over-expressive. To rule out ill-formed proof labels such as
+% ⟨|_L 𝑎[𝑘], |_R 𝑏[𝑘]⟩ and ⟨|_L 𝑎[𝑘], |_R 𝑎[𝑙]⟩, we introduce predicates
+% expressing the validity of (closed/open) proof labels.
 
 % Valid closed proof labels
 LF valid_cl: pr_lab_cl → type =
@@ -90,6 +96,11 @@ LF valid: pr_lab → type =
   | v_op: valid_op T → valid (p_op T)
 ;
 
+
+% The forward LTS rules for CCSKP are given by the type family fstep, which
+% is in practice the union of two type families fstep_cl and fstep_op.
+% The former denotes transitions labelled by closed proof labels, while the
+% latter denotes transitions labelled by open proof labels.
 
 % Closed forward transitions
 LF fstep_cl: proc → pr_lab_cl → proc → type =
@@ -217,9 +228,12 @@ LF conn_tr: step X T1 X' → step Y T2 Y' → type =
   | ct: {S1:step X T1 X'}{S2: step Y T2 Y'} step* X Y' → conn_tr S1 S2
 ;
 
-%%% Connectivity, dependence and independence of proof keyed labels %%%
+%%% Connectivity, dependence and independence of proof labels %%%
 
-% Connectivity
+% Connectivity, dependence and independence of closed proof labels are defined
+% according to the rules in Fig. 7 and 8.
+
+% Connectivity of closed proof labels
 LF conn_cl: pr_lab_cl → pr_lab_cl → type =
   | c_a1: conn_cl (pr_base A K) T
   | c_a2: conn_cl T (pr_base A K)
@@ -237,7 +251,7 @@ LF conn_cl: pr_lab_cl → pr_lab_cl → type =
   | c_s2r: conn_cl TR T → conn_cl (pr_sync TL TR) (pr_parr T)
   | c_s3: conn_cl T1 T1' → conn_cl T2 T2' → conn_cl (pr_sync T1 T2) (pr_sync T1' T2');
 
-% Dependence
+% Dependence of closed proof labels
 LF dep_cl: pr_lab_cl → pr_lab_cl → type =
   | d_a1: dep_cl (pr_base A K) T
   | d_a2: dep_cl T (pr_base A K)
@@ -257,7 +271,7 @@ LF dep_cl: pr_lab_cl → pr_lab_cl → type =
   | d_s3r: conn_cl T1 T1' → dep_cl T2 T2' → dep_cl (pr_sync T1 T2) (pr_sync T1' T2')
 ;
 
-% Independence
+% Independence of closed proof labels
 LF indep_cl: pr_lab_cl → pr_lab_cl → type =
   | i_c1l: indep_cl T1 T2 → indep_cl (pr_suml T1) (pr_suml T2)
   | i_c1r: indep_cl T1 T2 → indep_cl (pr_sumr T1) (pr_sumr T2)
@@ -271,6 +285,10 @@ LF indep_cl: pr_lab_cl → pr_lab_cl → type =
   | i_s2r: indep_cl TR T → indep_cl (pr_sync TL TR) (pr_parr T)
   | i_s3: indep_cl T1 T1' → indep_cl T2 T2' → indep_cl (pr_sync T1 T2) (pr_sync T1' T2')
 ;
+
+% We extend the connectivity relation to open proof labels by universally quantifying
+% over names and applying such name to the open proof label. This corresponds to
+% the choice of an arbitrary name for the proof label.
 
 % Connectivity of proof labels
 LF conn: pr_lab → pr_lab → type =

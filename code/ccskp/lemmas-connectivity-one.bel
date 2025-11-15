@@ -320,8 +320,8 @@ fn s ⇒ case s of
 
 
 % In a subcase of Thm. 2.1(i) there are derivations of connectivity "conn_cl T1 T2" in a context
-% [g,a:names], without T1 and T2 depending on a: in such cases we need a technical lemma
-% (strengthening lemma) to get rid of the spurious dependence from the name a.
+% context [g,a:names], without T1 and T2 depending on a: in such cases we need a technical lemma
+% (strengthening lemma) to get rid of the spurious dependence on the name a.
 rec str_conn: (g:ctx) [g,a:names ⊢ conn_cl T1[..] T2[..]] → [g ⊢ conn_cl T1 T2] =
 / total c (str_conn _ _ _ c) /
 fn c ⇒ case c of

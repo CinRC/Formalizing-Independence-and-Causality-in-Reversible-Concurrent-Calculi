@@ -1,4 +1,4 @@
-% Proof of totality of forget and enrich
+%%% Totality of forget and enrich %%%
 
 % Auxiliary existential types for the totality statements
 

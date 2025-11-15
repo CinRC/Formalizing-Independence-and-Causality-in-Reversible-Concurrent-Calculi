@@ -1,6 +1,11 @@
 %%% Proof of Proposition 4.4 (1) %%%
 
-% If two transitions between reachable processes are connected, then their two proof keyed labels are connected.
+% If two combined (closed/open) transitions between reachable processes are connected,
+% then their two (closed/open) proof labels are connected.
+
+% It can also be proved that the two (closed/open) proof labels are valid: the proof
+% can be found in the file lemmas-bijection.bel.
+
 rec conn_rel_one: (g:ctx) (S1:[g ⊢ step X T1 X']) (S2:[g ⊢ step Y T2 Y']) [g ⊢ reachable X] → [g ⊢ conn_tr S1 S2] → [g ⊢ conn T1 T2] =
 / total d (conn_rel_one d _ _ _ _ _ _ _ _ _ _) /
 fn r,c ⇒ let [g ⊢ ct S1 S2 S*] = c in

@@ -1,6 +1,6 @@
 %%% Non occurrence of keys in standard processes %%%
 
-% For all keys K, K does not occur in a standard process
+% For all keys K, K does not occur in a standard process X.
 rec no_key_in_std: (g:ctx) {K:[⊢ keys]} [g ⊢ std X] → [g ⊢ notin K[] X] =
 / total d (no_key_in_std _ _ _ d) /
 mlam K ⇒ fn d ⇒ case d of
@@ -13,13 +13,13 @@ mlam K ⇒ fn d ⇒ case d of
   | [g ⊢ std_nu \a.D] ⇒ let [g,a:names ⊢ N] = no_key_in_std [⊢ K] [g,a:names ⊢ D] in [g ⊢ not_nu \a.N]
 ;
 
-% Given a proof keyed label T and a standard process X, the key of T does not occur in X.
+% Given a closed proof label T and a standard process X, the key of T does not occur in X.
 % We need an auxiliary type family to encode the conclusion of this lemma.
 LF ex_key_notin: pr_lab_cl → std _ → type =
   | ex_kn: {D:std X} key T K → notin K X → ex_key_notin T D
 ;
 
-% The key of a proof keyed label does not occur in a standard process:
+% The key of a closed proof label does not occur in a standard process X.
 rec no_key_of_prlab_in_std: (g:ctx) {T:[g ⊢ pr_lab_cl]} {D:[g ⊢ std X]} [g ⊢ ex_key_notin T D] =
 / total t (no_key_of_prlab_in_std _ t _ _) /
 mlam T,D ⇒ let [g ⊢ ex_k H] = total_key [_ ⊢ T] in

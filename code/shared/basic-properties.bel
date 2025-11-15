@@ -45,7 +45,7 @@ fn i ⇒ case i of
   | [g ⊢ ngreat L] ⇒ [g ⊢ nless L]
 ;
 
-% Type family encoding the existence of a different key
+% Type family encoding the existence of a key different from a given one
 LF ex_neq: keys → type =
   | ex_n: neq M K → ex_neq K
 ;
