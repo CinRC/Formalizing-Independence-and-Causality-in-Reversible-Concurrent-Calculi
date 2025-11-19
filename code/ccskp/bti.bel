@@ -46,8 +46,16 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
             | [g ⊢ id_cc refbc] ⇒ let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
               let refnq [g ⊢ _] = unique_neq [g ⊢ I1] [g ⊢ I2] in [g ⊢ id_cc refbc]
             | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ I]))
-  | [g ⊢ bc_suml B1' D1] ⇒ ?
-  | [g ⊢ bc_sumr B1' D1] ⇒ ?
+  | [g ⊢ bc_suml B1' D1] ⇒ (case [g ⊢ B2] of
+       | [g ⊢ bc_suml B2' D2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ id_cc refbc]
+            | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_c1l I)])
+       | [g ⊢ bc_sumr B2' D2] ⇒ impossible source_is_not_std_bc [g ⊢ B2'] [g ⊢ D1])
+  | [g ⊢ bc_sumr B1' D1] ⇒ (case [g ⊢ B2] of
+       | [g ⊢ bc_suml B2' D2] ⇒ impossible source_is_not_std_bc [g ⊢ B2'] [g ⊢ D1]
+       | [g ⊢ bc_sumr B2' D2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ id_cc refbc]
+            | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_c1r I)]))
   | [g ⊢ bc_parl B1' H1 N1] ⇒ ?
   | [g ⊢ bc_parr B1' H1 N1] ⇒ ?
   | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LL2 HL2] ⇒ ?
