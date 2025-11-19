@@ -1,4 +1,23 @@
 
+rec str_indep: (g:ctx) [g,a:names ⊢ indep_cl T1[..] T2[..]] → [g ⊢ indep_cl T1 T2] =
+/ total i (str_indep _ _ _ i) /
+fn i ⇒ case i of
+  | [g,a:names ⊢ i_c1l I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_c1l I']
+  | [g,a:names ⊢ i_c1r I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_c1r I']
+  | [g,a:names ⊢ i_p1l I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_p1l I']
+  | [g,a:names ⊢ i_p1r I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_p1r I']
+  | [g,a:names ⊢ i_p2l H1 H2 N[..]] ⇒ let [g ⊢ H1'] = str_key [_ ⊢ H1] in
+     let [g ⊢ H2'] = str_key [_ ⊢ H2] in [g ⊢ i_p2l H1' H2' N]
+  | [g,a:names ⊢ i_p2r H1 H2 N[..]] ⇒ let [g ⊢ H1'] = str_key [_ ⊢ H1] in
+     let [g ⊢ H2'] = str_key [_ ⊢ H2] in [g ⊢ i_p2r H1' H2' N]
+  | [g,a:names ⊢ i_s1l I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_s1l I']
+  | [g,a:names ⊢ i_s1r I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_s1r I']
+  | [g,a:names ⊢ i_s2l I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_s2l I']
+  | [g,a:names ⊢ i_s2r I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_s2r I']
+  | [g,a:names ⊢ i_s3 I1 I2] ⇒ let [g ⊢ I1'] = str_indep [_ ⊢ I1] in
+    let [g ⊢ I2'] = str_indep [_ ⊢ I2] in [g ⊢ i_s3 I1' I2']
+;
+
 
 % Given two backward closed transitions B1 and B2, id_or_bti B1 B2 holds iff
 % either B1=B2, or their proof labels are independent. 
@@ -33,7 +52,11 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
   | [g ⊢ bc_parr B1' H1 N1] ⇒ ?
   | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LL2 HL2] ⇒ ?
   | [g ⊢ bc_synr BL1 LL1 HL1 BR1 LL2 HL2] ⇒ ?
-  | [g ⊢ bc_nu \a.B1'] ⇒ ?
+  | [g ⊢ bc_nu \a.B1'] ⇒ let [g ⊢ bc_nu \a.B2'] = [g ⊢ B2] in 
+    (case bti_cc [_ ⊢ B1'] [_ ⊢ B2'] of
+            | [g,a:names ⊢ id_cc refbc] ⇒ [g ⊢ id_cc refbc]
+            | [g,a:names ⊢ ind_cc _ _ I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in
+                                            [g ⊢ ind_cc _ _ I'])
 ;
 
 
