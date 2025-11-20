@@ -7,8 +7,8 @@ LF eqfs: fstep X1 T1 X1' → fstep X2 T2 X2' → type =
   | reffs: eqfs F F
 ;
 
-% Equality of derivations of bstep X T X'
-LF eqbs: bstep X1 T1 X1' → bstep X2 T2 X2' → type =
+% Equality of derivations of bstep X' T X
+LF eqbs: bstep X1' T1 X1 → bstep X2' T2 X2 → type =
   | refbs: eqbs B B
 ;
 

@@ -286,9 +286,9 @@ LF indep_cl: pr_lab_cl → pr_lab_cl → type =
   | i_s3: indep_cl T1 T1' → indep_cl T2 T2' → indep_cl (pr_sync T1 T2) (pr_sync T1' T2')
 ;
 
-% We extend the connectivity relation to open proof labels by universally quantifying
-% over names and applying such name to the open proof label. This corresponds to
-% the choice of an arbitrary name for the proof label.
+% We extend the connectivity and independence relations to open proof labels by 
+% universally quantifying over names and applying such name to the open proof label.
+% This corresponds to the choice of an arbitrary name for the proof label.
 
 % Connectivity of proof labels
 LF conn: pr_lab → pr_lab → type =
@@ -296,6 +296,14 @@ LF conn: pr_lab → pr_lab → type =
   | c_oc: ({a:names} conn_cl (T1 a) T2) → conn (p_op (open T1)) (p_cl T2)
   | c_co: ({a:names} conn_cl T1 (T2 a)) → conn (p_cl T1) (p_op (open T2))
   | c_oo: ({a:names} conn_cl (T1 a) (T2 a)) → conn (p_op (open T1)) (p_op (open T2))
+;
+
+% Independence of proof labels
+LF indep: pr_lab → pr_lab → type =
+  | i_cc: indep_cl T1 T2 → indep (p_cl T1) (p_cl T2)
+  | i_oc: ({a:names} indep_cl (T1 a) T2) → indep (p_op (open T1)) (p_cl T2)
+  | i_co: ({a:names} indep_cl T1 (T2 a)) → indep (p_cl T1) (p_op (open T2))
+  | i_oo: ({a:names} indep_cl (T1 a) (T2 a)) → indep (p_op (open T1)) (p_op (open T2))
 ;
 
 end;
