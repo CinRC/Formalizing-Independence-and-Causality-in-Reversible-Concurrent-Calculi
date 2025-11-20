@@ -1,4 +1,30 @@
 
+% If a key K does not occur in a process, and such process makes a backward closed transition
+% labelled by T, then K is different from key(T).
+rec key_in_bstep_cl: (g:ctx) [g ⊢ notin K[] X] → [g ⊢ bstep_cl X T Y] → [g ⊢ key T M[]] → [g ⊢ neq K[] M[]] =
+/ total n (key_in_bstep_cl _ _ _ _ _ _ n _ _) /
+fn n,b,h ⇒ case n of
+  | [g ⊢ not_null] ⇒ impossible b
+  | [g ⊢ not_pref N] ⇒ impossible b
+  | [g ⊢ not_kpref I N] ⇒ (case b of
+       | [g ⊢ bc_pref _] ⇒ let [g ⊢ key_base] = h in [g ⊢ I]
+       | [g ⊢ bc_kpref B H _] ⇒ let [g ⊢ H'] = h in
+         let [g ⊢ refky] = unique_key [g ⊢ H] [g ⊢ H'] in 
+         key_in_bstep_cl [g ⊢ N] [g ⊢ B] [g ⊢ H])
+  | [g ⊢ not_sum N1 N2] ⇒ (case b of
+       | [g ⊢ bc_suml B _] ⇒ let [g ⊢ key_suml H] = h in key_in_bstep_cl [g ⊢ N1] [g ⊢ B] [g ⊢ H]
+       | [g ⊢ bc_sumr B _] ⇒ let [g ⊢ key_sumr H] = h in key_in_bstep_cl [g ⊢ N2] [g ⊢ B] [g ⊢ H])
+  | [g ⊢ not_par N1 N2] ⇒ (case b of
+       | [g ⊢ bc_parl B _ _] ⇒ let [g ⊢ key_parl H] = h in key_in_bstep_cl [g ⊢ N1] [g ⊢ B] [g ⊢ H]
+       | [g ⊢ bc_parr B _ _] ⇒ let [g ⊢ key_parr H] = h in key_in_bstep_cl [g ⊢ N2] [g ⊢ B] [g ⊢ H]
+       | [g ⊢ bc_synl B _ _ _ _ _] ⇒ let [g ⊢ key_sync H] = h in key_in_bstep_cl [g ⊢ N1] [g ⊢ B] [g ⊢ H]
+       | [g ⊢ bc_synr B _ _ _ _ _] ⇒ let [g ⊢ key_sync H] = h in key_in_bstep_cl [g ⊢ N1] [g ⊢ B] [g ⊢ H])
+  | [g ⊢ not_nu \a.N] ⇒ let [g ⊢ bc_nu \a.B] = b in
+    let [g ⊢ H] = h in 
+    let [g,a:names ⊢ I[..]] = key_in_bstep_cl [_ ⊢ N] [_ ⊢ B] [_ ⊢ H[..]] in [g ⊢ I]
+;
+
+% Strengthening lemma for indep_cl 
 rec str_indep: (g:ctx) [g,a:names ⊢ indep_cl T1[..] T2[..]] → [g ⊢ indep_cl T1 T2] =
 / total i (str_indep _ _ _ i) /
 fn i ⇒ case i of
@@ -58,16 +84,34 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
             | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_c1r I)]))
   | [g ⊢ bc_parl B1' H1 N1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_parl B2' H2 N2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
-            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in 
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
               let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ id_cc refbc]
             | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_p1l I)])
-       | [g ⊢ bc_parr B2' H2 N2] ⇒ ?%impossible source_is_not_std_bc [g ⊢ B2'] [g ⊢ D1])
+       | [g ⊢ bc_parr B2' H2 N2] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ B2'] [g ⊢ H2] in
+              [g ⊢ ind_cc _ _ (i_p2l H1 H2 N)]
        | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ BL2] of
-            | [g ⊢ id_cc refbc] ⇒ ?%let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in 
-              %let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ id_cc refbc]
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BR2] [g ⊢ HR2] in
+              let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HL2] in impossible irreflexive_neq [g ⊢ N]
             | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_s1l I)])
-       | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ ?)
-  | [g ⊢ bc_parr B1' H1 N1] ⇒ ?
+       | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ BL2] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BR2] [g ⊢ HR2] in
+              let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HL2] in impossible irreflexive_neq [g ⊢ N]
+            | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_s1l I)]))
+  | [g ⊢ bc_parr B1' H1 N1] ⇒ (case [g ⊢ B2] of
+       | [g ⊢ bc_parl B2' H2 N2] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ B2'] [g ⊢ H2] in
+              [g ⊢ ind_cc _ _ (i_p2r H1 H2 N)]
+       | [g ⊢ bc_parr B2' H2 N2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
+              let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ id_cc refbc]
+            | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_p1r I)])
+       | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ BR2] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BL2] [g ⊢ HL2] in
+              let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HR2] in impossible irreflexive_neq [g ⊢ N]
+            | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_s1r I)])
+       | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ BR2] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BL2] [g ⊢ HL2] in
+              let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HR2] in impossible irreflexive_neq [g ⊢ N]
+            | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_s1r I)]))
   | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LR1 HR1] ⇒ ?
   | [g ⊢ bc_synr BL1 LL1 HL1 BR1 LR1 HR1] ⇒ ?
   | [g ⊢ bc_nu \a.B1'] ⇒ let [g ⊢ bc_nu \a.B2'] = [g ⊢ B2] in 
