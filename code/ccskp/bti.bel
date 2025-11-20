@@ -24,6 +24,10 @@ fn n,b,h ⇒ case n of
     let [g,a:names ⊢ I[..]] = key_in_bstep_cl [_ ⊢ N] [_ ⊢ B] [_ ⊢ H[..]] in [g ⊢ I]
 ;
 
+rec indep_impl_diff_keys: (g:ctx) [g ⊢ indep_cl T1 T2] → [g ⊢ key T1 K1[]] → [g ⊢ key T2 K2[]] → [g ⊢ neq K1[] K2[]] =
+?
+;
+
 % Strengthening lemma for indep_cl 
 rec str_indep: (g:ctx) [g,a:names ⊢ indep_cl T1[..] T2[..]] → [g ⊢ indep_cl T1 T2] =
 / total i (str_indep _ _ _ i) /
@@ -112,7 +116,35 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
             | [g ⊢ id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BL2] [g ⊢ HL2] in
               let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HR2] in impossible irreflexive_neq [g ⊢ N]
             | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_s1r I)]))
-  | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LR1 HR1] ⇒ ?
+  | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LR1 HR1] ⇒ (case [g ⊢ B2] of
+       | [g ⊢ bc_parl B2' H2 N2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ B2'] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N2] [g ⊢ BR1] [g ⊢ HR1] in
+              let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HL1] in impossible irreflexive_neq [g ⊢ N]
+            | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_s2l I)])
+       | [g ⊢ bc_parr B2' H2 N2] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ B2'] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N2] [g ⊢ BL1] [g ⊢ HL1] in
+              let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR1] in impossible irreflexive_neq [g ⊢ N]
+            | [g ⊢ ind_cc _ _ I] ⇒ [g ⊢ ind_cc _ _ (i_s2r I)])
+       | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ BL2] of
+            | [g ⊢ id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LL1] [g ⊢ LL2] in
+              let [g ⊢ refky] = unique_key [g ⊢ HL1] [g ⊢ HL2] in
+              (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
+                 | [g ⊢ id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LR1] [g ⊢ LR2] in
+                   let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in
+                   [g ⊢ id_cc refbc]
+                 | [g ⊢ ind_cc _ _ I2] ⇒ let [g ⊢ N] = indep_impl_diff_keys [g ⊢ I2] [g ⊢ HR1] [g ⊢ HR2] in
+                   impossible irreflexive_neq [g ⊢ N])
+            | [g ⊢ ind_cc _ _ I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
+                 | [g ⊢ id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LR1] [g ⊢ LR2] in
+                   let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in
+                   let [g ⊢ N] = indep_impl_diff_keys [g ⊢ I1] [g ⊢ HL1] [g ⊢ HL2] in
+                   impossible irreflexive_neq [g ⊢ N]
+                 | [g ⊢ ind_cc _ _ I2] ⇒ [g ⊢ ind_cc _ _ (i_s3 I1 I2)]))
+       | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ BL2] of
+            | [g ⊢ id_cc refbc] ⇒ impossible unique_lab [g ⊢ LL1] [g ⊢ LL2]
+            | [g ⊢ ind_cc _ _ I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
+                 | [g ⊢ id_cc refbc] ⇒ impossible unique_lab [g ⊢ LR1] [g ⊢ LR2]
+                 | [g ⊢ ind_cc _ _ I2] ⇒ [g ⊢ ind_cc _ _ (i_s3 I1 I2)])))
   | [g ⊢ bc_synr BL1 LL1 HL1 BR1 LR1 HR1] ⇒ ?
   | [g ⊢ bc_nu \a.B1'] ⇒ let [g ⊢ bc_nu \a.B2'] = [g ⊢ B2] in 
     (case bti_cc [_ ⊢ B1'] [_ ⊢ B2'] of
