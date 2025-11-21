@@ -301,109 +301,98 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
 
 
 
-% Given two backward transitions B1 and B2, respectively closed and open,
-% ind_co B1 B2 holds iff their proof labels are independent. 
-LF ind_co: bstep_cl X T1 X1 → bstep_op X T2 X2 → type =
-  | bt_ind_co: {B1:bstep_cl X T1 X1} {B2:bstep_op X T2 X2} indep (p_cl T1) (p_op T2) 
-             → ind_co B1 B2
-;
-
 % BTI, closed-open case:
 % Given a closed and an open backward transition sharing the same source process,
 % their proof labels are independent.
+% Observe that, unlike the closed-closed case, the two transitions cannot be identical:
+% this is because closed and open transitions belong to distinct types.
 rec bti_co: (g:ctx) {B1:[g ⊢ bstep_cl X T1 X1]} {B2:[g ⊢ bstep_op X T2 X2]}
-  [g ⊢ ind_co B1 B2] =
+  [g ⊢ indep (p_cl T1) (p_op T2)] =
 / total b2 (bti_co _ _ _ _ _ _ _ b2) /
 mlam B1,B2 ⇒ case [_ ⊢ B2] of
   | [g ⊢ bo_nu_cl (\a.O2) (\a.L2) (\a.B2')] ⇒ let [g ⊢ bc_nu \a.B1'] = [g ⊢ B1] in
     (case bti_cc [_ ⊢ B1'] [_ ⊢ B2'] of
       | [g,a:names ⊢ bt_id_cc refbc] ⇒ impossible occur_imp [_ ⊢ O2]
-      | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_co _ _ (i_co \a.I)])
+      | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ i_co \a.I])
   | [g ⊢ bo_kpref B2' (\a.H2) I2] ⇒ (case [g ⊢ B1] of
        | [g ⊢ bc_pref D1] ⇒ impossible source_is_not_std_bo [_ ⊢ B2'] [_ ⊢ D1]
-       | [g ⊢ bc_kpref B1' H1 I1] ⇒ let [g ⊢ bt_ind_co _ _ I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind_co _ _ I])
+       | [g ⊢ bc_kpref B1' H1 I1] ⇒ bti_co [g ⊢ B1'] [g ⊢ B2'])
   | [g ⊢ bo_suml B2' D2] ⇒ (case [g ⊢ B1] of
-       | [g ⊢ bc_suml B1' D1] ⇒ let [g ⊢ bt_ind_co _ _ (i_co \a.I)] = bti_co [g ⊢ B1'] [g ⊢ B2'] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_c1l I))]
+       | [g ⊢ bc_suml B1' D1] ⇒ let [g ⊢ i_co \a.I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in
+         [g ⊢ i_co \a.(i_c1l I)]
        | [g ⊢ bc_sumr B1' D1] ⇒ impossible source_is_not_std_bo [g ⊢ B2'] [g ⊢ D1])
   | [g ⊢ bo_sumr B2' D2] ⇒ (case [g ⊢ B1] of
        | [g ⊢ bc_suml B1' D1] ⇒ impossible source_is_not_std_bo [g ⊢ B2'] [g ⊢ D1]
-       | [g ⊢ bc_sumr B1' D1] ⇒ let [g ⊢ bt_ind_co _ _ (i_co \a.I)] = bti_co [g ⊢ B1'] [g ⊢ B2'] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_c1r I))])
+       | [g ⊢ bc_sumr B1' D1] ⇒ let [g ⊢ i_co \a.I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in
+         [g ⊢ i_co \a.(i_c1r I)])
   | [g ⊢ bo_parl B2' (\a.H2) N2] ⇒ (case [g ⊢ B1] of
-       | [g ⊢ bc_parl B1' H1 N1] ⇒ let [g ⊢ bt_ind_co _ _ (i_co \a.I)] = bti_co [g ⊢ B1'] [g ⊢ B2'] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_p1l I))]
+       | [g ⊢ bc_parl B1' H1 N1] ⇒ let [g ⊢ i_co \a.I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in
+         [g ⊢ i_co \a.(i_p1l I)]
        | [g ⊢ bc_parr B1' H1 N1] ⇒ let [g ⊢ N] = key_in_bstep_op [g ⊢ N1] [g ⊢ B2'] [_ ⊢ H2] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_p2r H1[..] H2 N[..]))]
-       | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LR1 HR1] ⇒ let [g ⊢ bt_ind_co _ _ (i_co \a.I)] = bti_co [g ⊢ BL1] [g ⊢ B2'] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_s2l I))]
-       | [g ⊢ bc_synr BL1 LL1 HL1 BR1 LR1 HR1] ⇒ let [g ⊢ bt_ind_co _ _ (i_co \a.I)] = bti_co [g ⊢ BL1] [g ⊢ B2'] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_s2l I))])
+         [g ⊢ i_co \a.(i_p2r H1[..] H2 N[..])]
+       | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LR1 HR1] ⇒ let [g ⊢ i_co \a.I] = bti_co [g ⊢ BL1] [g ⊢ B2'] in
+         [g ⊢ i_co \a.(i_s2l I)]
+       | [g ⊢ bc_synr BL1 LL1 HL1 BR1 LR1 HR1] ⇒ let [g ⊢ i_co \a.I] = bti_co [g ⊢ BL1] [g ⊢ B2'] in
+         [g ⊢ i_co \a.(i_s2l I)])
   | [g ⊢ bo_parr B2' (\a.H2) N2] ⇒ (case [g ⊢ B1] of
        | [g ⊢ bc_parl B1' H1 N1] ⇒ let [g ⊢ N] = key_in_bstep_op [g ⊢ N1] [g ⊢ B2'] [_ ⊢ H2] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_p2l H1[..] H2 N[..]))]
-       | [g ⊢ bc_parr B1' H1 N1] ⇒ let [g ⊢ bt_ind_co _ _ (i_co \a.I)] = bti_co [g ⊢ B1'] [g ⊢ B2'] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_p1r I))]
-       | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LR1 HR1] ⇒ let [g ⊢ bt_ind_co _ _ (i_co \a.I)] = bti_co [g ⊢ BR1] [g ⊢ B2'] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_s2r I))]
-       | [g ⊢ bc_synr BL1 LL1 HL1 BR1 LR1 HR1] ⇒ let [g ⊢ bt_ind_co _ _ (i_co \a.I)] = bti_co [g ⊢ BR1] [g ⊢ B2'] in
-         [g ⊢ bt_ind_co _ _ (i_co \a.(i_s2r I))])
+         [g ⊢ i_co \a.(i_p2l H1[..] H2 N[..])]
+       | [g ⊢ bc_parr B1' H1 N1] ⇒ let [g ⊢ i_co \a.I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in
+         [g ⊢ i_co \a.(i_p1r I)]
+       | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LR1 HR1] ⇒ let [g ⊢ i_co \a.I] = bti_co [g ⊢ BR1] [g ⊢ B2'] in
+         [g ⊢ i_co \a.(i_s2r I)]
+       | [g ⊢ bc_synr BL1 LL1 HL1 BR1 LR1 HR1] ⇒ let [g ⊢ i_co \a.I] = bti_co [g ⊢ BR1] [g ⊢ B2'] in
+         [g ⊢ i_co \a.(i_s2r I)])
   | [g ⊢ bo_nu_op \a.B2'] ⇒ let [g ⊢ bc_nu \a.B1'] = [g ⊢ B1] in 
-    let [g,a:names ⊢ bt_ind_co _ _ (i_co \b.I[..,b,a])] = bti_co [_ ⊢ B1'] [_ ⊢ B2'] in
-    [g ⊢ bt_ind_co _ _ (i_co \b.I[..,b])]
+    let [g,a:names ⊢ i_co \b.I[..,b,a]] = bti_co [_ ⊢ B1'] [_ ⊢ B2'] in
+    [g ⊢ i_co \b.I[..,b]]
 ;
 
 
-% Given two backward transitions B1 and B2, respectively open and closed,
-% ind_oc B1 B2 holds iff their proof labels are independent. 
-LF ind_oc: bstep_op X T1 X1 → bstep_cl X T2 X2 → type =
-  | bt_ind_oc: {B1:bstep_op X T1 X1} {B2:bstep_cl X T2 X2} indep (p_op T1) (p_cl T2) 
-             → ind_oc B1 B2
-;
 
 % BTI, open-closed case:
 % Given an open and a closed backward transition sharing the same source process,
 % their proof labels are independent.
 rec bti_oc: (g:ctx) {B1:[g ⊢ bstep_op X T1 X1]} {B2:[g ⊢ bstep_cl X T2 X2]}
-  [g ⊢ ind_oc B1 B2] =
+  [g ⊢ indep (p_op T1) (p_cl T2)] =
 / total b1 (bti_oc _ _ _ _ _ _ b1 _) /
 mlam B1,B2 ⇒ case [_ ⊢ B1] of
   | [g ⊢ bo_nu_cl (\a.O1) (\a.L1) (\a.B1')] ⇒ let [g ⊢ bc_nu \a.B2'] = [g ⊢ B2] in
     (case bti_cc [_ ⊢ B1'] [_ ⊢ B2'] of
       | [g,a:names ⊢ bt_id_cc refbc] ⇒ impossible occur_imp [_ ⊢ O1]
-      | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_oc _ _ (i_oc \a.I)])
+      | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ i_oc \a.I])
   | [g ⊢ bo_kpref B1' (\a.H1) I1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_pref D2] ⇒ impossible source_is_not_std_bo [g ⊢ B1'] [g ⊢ D2]
-       | [g ⊢ bc_kpref B2' H2 I2] ⇒ let [g ⊢ bt_ind_oc _ _ I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind_oc _ _ I])
+       | [g ⊢ bc_kpref B2' H2 I2] ⇒ bti_oc [g ⊢ B1'] [g ⊢ B2'])
   | [g ⊢ bo_suml B1' D1] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bc_suml B2' D2] ⇒ let [g ⊢ bt_ind_oc _ _ (i_oc \a.I)] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_c1l I))]
+       | [g ⊢ bc_suml B2' D2] ⇒ let [g ⊢ i_oc \a.I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in
+         [g ⊢ i_oc \a.(i_c1l I)]
        | [g ⊢ bc_sumr B2' D2] ⇒ impossible source_is_not_std_bo [g ⊢ B1'] [g ⊢ D2])
   | [g ⊢ bo_sumr B1' D1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_suml B2' D2] ⇒ impossible source_is_not_std_bo [g ⊢ B1'] [g ⊢ D2]
-       | [g ⊢ bc_sumr B2' D2] ⇒ let [g ⊢ bt_ind_oc _ _ (i_oc \a.I)] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_c1r I))])
+       | [g ⊢ bc_sumr B2' D2] ⇒ let [g ⊢ i_oc \a.I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in
+         [g ⊢ i_oc \a.(i_c1r I)])
   | [g ⊢ bo_parl B1' (\a.H1) N1] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bc_parl B2' H2 N2] ⇒ let [g ⊢ bt_ind_oc _ _ (i_oc \a.I)] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_p1l I))]
+       | [g ⊢ bc_parl B2' H2 N2] ⇒ let [g ⊢ i_oc \a.I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in
+         [g ⊢ i_oc \a.(i_p1l I)]
        | [g ⊢ bc_parr B2' H2 N2] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ B2'] [g ⊢ H2] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_p2l H1 H2[..] N[..]))]
-       | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ let [g ⊢ bt_ind_oc _ _ (i_oc \a.I)] = bti_oc [g ⊢ B1'] [g ⊢ BL2] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_s1l I))]
-       | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ let [g ⊢ bt_ind_oc _ _ (i_oc \a.I)] = bti_oc [g ⊢ B1'] [g ⊢ BL2] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_s1l I))])
+         [g ⊢ i_oc \a.(i_p2l H1 H2[..] N[..])]
+       | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ let [g ⊢ i_oc \a.I] = bti_oc [g ⊢ B1'] [g ⊢ BL2] in
+         [g ⊢ i_oc \a.(i_s1l I)]
+       | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ let [g ⊢ i_oc \a.I] = bti_oc [g ⊢ B1'] [g ⊢ BL2] in
+         [g ⊢ i_oc \a.(i_s1l I)])
   | [g ⊢ bo_parr B1' (\a.H1) N1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_parl B2' H2 N2] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ B2'] [g ⊢ H2] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_p2r H1 H2[..] N[..]))]
-       | [g ⊢ bc_parr B2' H2 N2] ⇒ let [g ⊢ bt_ind_oc _ _ (i_oc \a.I)] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_p1r I))]
-       | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ let [g ⊢ bt_ind_oc _ _ (i_oc \a.I)] = bti_oc [g ⊢ B1'] [g ⊢ BR2] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_s1r I))]
-       | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ let [g ⊢ bt_ind_oc _ _ (i_oc \a.I)] = bti_oc [g ⊢ B1'] [g ⊢ BR2] in
-         [g ⊢ bt_ind_oc _ _ (i_oc \a.(i_s1r I))])
+         [g ⊢ i_oc \a.(i_p2r H1 H2[..] N[..])]
+       | [g ⊢ bc_parr B2' H2 N2] ⇒ let [g ⊢ i_oc \a.I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in
+         [g ⊢ i_oc \a.(i_p1r I)]
+       | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ let [g ⊢ i_oc \a.I] = bti_oc [g ⊢ B1'] [g ⊢ BR2] in
+         [g ⊢ i_oc \a.(i_s1r I)]
+       | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ let [g ⊢ i_oc \a.I] = bti_oc [g ⊢ B1'] [g ⊢ BR2] in
+         [g ⊢ i_oc \a.(i_s1r I)])
   | [g ⊢ bo_nu_op \a.B1'] ⇒ let [g ⊢ bc_nu \a.B2'] = [g ⊢ B2] in 
-    let [g,a:names ⊢ bt_ind_oc _ _ (i_oc \b.I[..,b,a])] = bti_oc [_ ⊢ B1'] [_ ⊢ B2'] in 
-    [g ⊢ bt_ind_oc _ _ (i_oc \b.I[..,b])]
+    let [g,a:names ⊢ i_oc \b.I[..,b,a]] = bti_oc [_ ⊢ B1'] [_ ⊢ B2'] in 
+    [g ⊢ i_oc \b.I[..,b]]
 ;
 
 
@@ -428,7 +417,7 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
             | [g,a:names ⊢ bt_id_cc refbc] ⇒ let [g,a:names ⊢ refoc] = unique_occ [_ ⊢ O1] [_ ⊢ O2] in
               let [g,a:names ⊢ reflb] = unique_lab [_ ⊢ L1] [_ ⊢ L2] in [g ⊢ bt_id_oo refbo]
             | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \a.I)])
-       | [g ⊢ bo_nu_op \a.B2'] ⇒ let [g,a:names ⊢ bt_ind_co _ _ (i_co \b.I)] = bti_co [_ ⊢ B1'] [_ ⊢ B2'] in
+       | [g ⊢ bo_nu_op \a.B2'] ⇒ let [g,a:names ⊢ i_co \b.I] = bti_co [_ ⊢ B1'] [_ ⊢ B2'] in
          [g ⊢ bt_ind_oo _ _ (i_oo \b.I[..,b])])
   | [g ⊢ bo_kpref B1' (\a.H1) I1] ⇒ let [g ⊢ bo_kpref B2' (\a.H2) I2] = [g ⊢ B2] in
     (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
@@ -460,7 +449,7 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
               let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ bt_id_oo refbo]
             | [g ⊢ bt_ind_oo _ _ (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \a.(i_p1r I))]))
   | [g ⊢ bo_nu_op \a.B1'] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bo_nu_cl (\a.O2) (\a.L2) (\a.B2')] ⇒ let [g,a:names ⊢ bt_ind_oc _ _ (i_oc \b.I)] = bti_oc [_ ⊢ B1'] [_ ⊢ B2'] in
+       | [g ⊢ bo_nu_cl (\a.O2) (\a.L2) (\a.B2')] ⇒ let [g,a:names ⊢ i_oc \b.I] = bti_oc [_ ⊢ B1'] [_ ⊢ B2'] in
          [g ⊢ bt_ind_oo _ _ (i_oo \b.I[..,b])]
        | [g ⊢ bo_nu_op \a.B2'] ⇒ (case bti_oo [_ ⊢ B1'] [_ ⊢ B2'] of
             | [g,a:names ⊢ bt_id_oo refbo] ⇒ [g ⊢ bt_id_oo refbo]
@@ -492,9 +481,9 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
        | [g ⊢ bc B2'] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ [g ⊢ bt_id refb]
             | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind _ _ (i_cc I)])
-       | [g ⊢ bo B2'] ⇒ let [g ⊢ bt_ind_co _ _ I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind _ _ I])
+       | [g ⊢ bo B2'] ⇒ let [g ⊢ I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind _ _ I])
   | [g ⊢ bo B1'] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bc B2'] ⇒ let [g ⊢ bt_ind_oc _ _ I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind _ _ I]
+       | [g ⊢ bc B2'] ⇒ let [g ⊢ I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind _ _ I]
        | [g ⊢ bo B2'] ⇒ (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_oo refbo] ⇒ [g ⊢ bt_id refb]
             | [g ⊢ bt_ind_oo _ _ I] ⇒ [g ⊢ bt_ind _ _ I]))
