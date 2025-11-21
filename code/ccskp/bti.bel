@@ -163,8 +163,7 @@ fn i ⇒ case i of
 % either B1=B2, or their proof labels are independent. 
 LF id_or_ind_cc: bstep_cl X T1 X1 → bstep_cl X T2 X2 → type =
   | bt_id_cc: eqbc B1 B2 → id_or_ind_cc B1 B2
-  | bt_ind_cc: {B1:bstep_cl X T1 X1} {B2:bstep_cl X T2 X2} indep_cl T1 T2 
-             → id_or_ind_cc B1 B2
+  | bt_ind_cc: indep_cl T1 T2 → id_or_ind_cc (B1:bstep_cl X T1 X1) (B2:bstep_cl X T2 X2)
 ;
 
 % BTI, closed-closed case:
@@ -185,56 +184,56 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
          (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
               let refnq [g ⊢ _] = unique_neq [g ⊢ I1] [g ⊢ I2] in [g ⊢ bt_id_cc refbc]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ I]))
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc I]))
   | [g ⊢ bc_suml B1' D1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_suml B2' D2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ bt_id_cc refbc]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_c1l I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_c1l I)])
        | [g ⊢ bc_sumr B2' D2] ⇒ impossible source_is_not_std_bc [g ⊢ B2'] [g ⊢ D1])
   | [g ⊢ bc_sumr B1' D1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_suml B2' D2] ⇒ impossible source_is_not_std_bc [g ⊢ B2'] [g ⊢ D1]
        | [g ⊢ bc_sumr B2' D2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ bt_id_cc refbc]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_c1r I)]))
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_c1r I)]))
   | [g ⊢ bc_parl B1' H1 N1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_parl B2' H2 N2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
               let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ bt_id_cc refbc]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_p1l I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_p1l I)])
        | [g ⊢ bc_parr B2' H2 N2] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ B2'] [g ⊢ H2] in
-              [g ⊢ bt_ind_cc _ _ (i_p2l H1 H2 N)]
+              [g ⊢ bt_ind_cc (i_p2l H1 H2 N)]
        | [g ⊢ bc_synl BL2 _ HL2 BR2 _ HR2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ BL2] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BR2] [g ⊢ HR2] in
               let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HL2] in impossible irreflexive_neq [g ⊢ N]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_s1l I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_s1l I)])
        | [g ⊢ bc_synr BL2 _ HL2 BR2 _ HR2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ BL2] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BR2] [g ⊢ HR2] in
               let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HL2] in impossible irreflexive_neq [g ⊢ N]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_s1l I)]))
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_s1l I)]))
   | [g ⊢ bc_parr B1' H1 N1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_parl B2' H2 N2] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ B2'] [g ⊢ H2] in
-              [g ⊢ bt_ind_cc _ _ (i_p2r H1 H2 N)]
+              [g ⊢ bt_ind_cc (i_p2r H1 H2 N)]
        | [g ⊢ bc_parr B2' H2 N2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
               let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ bt_id_cc refbc]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_p1r I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_p1r I)])
        | [g ⊢ bc_synl BL2 _ HL2 BR2 _ HR2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ BR2] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BL2] [g ⊢ HL2] in
               let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HR2] in impossible irreflexive_neq [g ⊢ N]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_s1r I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_s1r I)])
        | [g ⊢ bc_synr BL2 _ HL2 BR2 _ HR2] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ BR2] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N1] [g ⊢ BL2] [g ⊢ HL2] in
               let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HR2] in impossible irreflexive_neq [g ⊢ N]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_s1r I)]))
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_s1r I)]))
   | [g ⊢ bc_synl BL1 LL1 HL1 BR1 LR1 HR1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_parl B2' H2 N2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N2] [g ⊢ BR1] [g ⊢ HR1] in
               let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HL1] in impossible irreflexive_neq [g ⊢ N]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_s2l I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_s2l I)])
        | [g ⊢ bc_parr B2' H2 N2] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N2] [g ⊢ BL1] [g ⊢ HL1] in
               let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR1] in impossible irreflexive_neq [g ⊢ N]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_s2r I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_s2r I)])
        | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ BL2] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LL1] [g ⊢ LL2] in
               let [g ⊢ refky] = unique_key [g ⊢ HL1] [g ⊢ HL2] in
@@ -242,37 +241,37 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
                  | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LR1] [g ⊢ LR2] in
                    let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in
                    [g ⊢ bt_id_cc refbc]
-                 | [g ⊢ bt_ind_cc _ _ I2] ⇒ let [g ⊢ V1] = valid_in_bstep_cl [g ⊢ BR1] in 
+                 | [g ⊢ bt_ind_cc I2] ⇒ let [g ⊢ V1] = valid_in_bstep_cl [g ⊢ BR1] in 
                    let [g ⊢ V2] = valid_in_bstep_cl [g ⊢ BR2] in
                    let [g ⊢ N] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I2] [g ⊢ HR1] [g ⊢ HR2] in
                    impossible irreflexive_neq [g ⊢ N])
-            | [g ⊢ bt_ind_cc _ _ I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
+            | [g ⊢ bt_ind_cc I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
                  | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LR1] [g ⊢ LR2] in
                    let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in
                    let [g ⊢ V1] = valid_in_bstep_cl [g ⊢ BL1] in 
                    let [g ⊢ V2] = valid_in_bstep_cl [g ⊢ BL2] in
                    let [g ⊢ N] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I1] [g ⊢ HL1] [g ⊢ HL2] in
                    impossible irreflexive_neq [g ⊢ N]
-                 | [g ⊢ bt_ind_cc _ _ I2] ⇒ [g ⊢ bt_ind_cc _ _ (i_s3 I1 I2)]))
+                 | [g ⊢ bt_ind_cc I2] ⇒ [g ⊢ bt_ind_cc (i_s3 I1 I2)]))
        | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ BL2] of
             | [g ⊢ bt_id_cc refbc] ⇒ impossible unique_lab [g ⊢ LL1] [g ⊢ LL2]
-            | [g ⊢ bt_ind_cc _ _ I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
+            | [g ⊢ bt_ind_cc I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
                  | [g ⊢ bt_id_cc refbc] ⇒ impossible unique_lab [g ⊢ LR1] [g ⊢ LR2]
-                 | [g ⊢ bt_ind_cc _ _ I2] ⇒ [g ⊢ bt_ind_cc _ _ (i_s3 I1 I2)])))
+                 | [g ⊢ bt_ind_cc I2] ⇒ [g ⊢ bt_ind_cc (i_s3 I1 I2)])))
   | [g ⊢ bc_synr BL1 LL1 HL1 BR1 LR1 HR1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_parl B2' H2 N2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N2] [g ⊢ BR1] [g ⊢ HR1] in
               let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HL1] in impossible irreflexive_neq [g ⊢ N]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_s2l I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_s2l I)])
        | [g ⊢ bc_parr B2' H2 N2] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ N] = key_in_bstep_cl [g ⊢ N2] [g ⊢ BL1] [g ⊢ HL1] in
               let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR1] in impossible irreflexive_neq [g ⊢ N]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_cc _ _ (i_s2r I)])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_cc (i_s2r I)])
        | [g ⊢ bc_synl BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ BL2] of
             | [g ⊢ bt_id_cc refbc] ⇒ impossible unique_lab [g ⊢ LL1] [g ⊢ LL2]
-            | [g ⊢ bt_ind_cc _ _ I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
+            | [g ⊢ bt_ind_cc I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
                  | [g ⊢ bt_id_cc refbc] ⇒ impossible unique_lab [g ⊢ LR1] [g ⊢ LR2]
-                 | [g ⊢ bt_ind_cc _ _ I2] ⇒ [g ⊢ bt_ind_cc _ _ (i_s3 I1 I2)]))
+                 | [g ⊢ bt_ind_cc I2] ⇒ [g ⊢ bt_ind_cc (i_s3 I1 I2)]))
        | [g ⊢ bc_synr BL2 LL2 HL2 BR2 LR2 HR2] ⇒ (case bti_cc [g ⊢ BL1] [g ⊢ BL2] of
             | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LL1] [g ⊢ LL2] in
               let [g ⊢ refky] = unique_key [g ⊢ HL1] [g ⊢ HL2] in
@@ -280,23 +279,23 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
                  | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LR1] [g ⊢ LR2] in
                    let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in
                    [g ⊢ bt_id_cc refbc]
-                 | [g ⊢ bt_ind_cc _ _ I2] ⇒ let [g ⊢ V1] = valid_in_bstep_cl [g ⊢ BR1] in 
+                 | [g ⊢ bt_ind_cc I2] ⇒ let [g ⊢ V1] = valid_in_bstep_cl [g ⊢ BR1] in 
                    let [g ⊢ V2] = valid_in_bstep_cl [g ⊢ BR2] in
                    let [g ⊢ N] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I2] [g ⊢ HR1] [g ⊢ HR2] in
                    impossible irreflexive_neq [g ⊢ N])
-            | [g ⊢ bt_ind_cc _ _ I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
+            | [g ⊢ bt_ind_cc I1] ⇒ (case bti_cc [g ⊢ BR1] [g ⊢ BR2] of
                  | [g ⊢ bt_id_cc refbc] ⇒ let [g ⊢ reflb] = unique_lab [g ⊢ LR1] [g ⊢ LR2] in
                    let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in
                    let [g ⊢ V1] = valid_in_bstep_cl [g ⊢ BL1] in 
                    let [g ⊢ V2] = valid_in_bstep_cl [g ⊢ BL2] in
                    let [g ⊢ N] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I1] [g ⊢ HL1] [g ⊢ HL2] in
                    impossible irreflexive_neq [g ⊢ N]
-                 | [g ⊢ bt_ind_cc _ _ I2] ⇒ [g ⊢ bt_ind_cc _ _ (i_s3 I1 I2)])))
+                 | [g ⊢ bt_ind_cc I2] ⇒ [g ⊢ bt_ind_cc (i_s3 I1 I2)])))
   | [g ⊢ bc_nu \a.B1'] ⇒ let [g ⊢ bc_nu \a.B2'] = [g ⊢ B2] in 
     (case bti_cc [_ ⊢ B1'] [_ ⊢ B2'] of
             | [g,a:names ⊢ bt_id_cc refbc] ⇒ [g ⊢ bt_id_cc refbc]
-            | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in
-                                            [g ⊢ bt_ind_cc _ _ I'])
+            | [g,a:names ⊢ bt_ind_cc I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in
+                                            [g ⊢ bt_ind_cc I'])
 ;
 
 
@@ -313,7 +312,7 @@ mlam B1,B2 ⇒ case [_ ⊢ B2] of
   | [g ⊢ bo_nu_cl (\a.O2) (\a.L2) (\a.B2')] ⇒ let [g ⊢ bc_nu \a.B1'] = [g ⊢ B1] in
     (case bti_cc [_ ⊢ B1'] [_ ⊢ B2'] of
       | [g,a:names ⊢ bt_id_cc refbc] ⇒ impossible occur_imp [_ ⊢ O2]
-      | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ i_co \a.I])
+      | [g,a:names ⊢ bt_ind_cc I] ⇒ [g ⊢ i_co \a.I])
   | [g ⊢ bo_kpref B2' (\a.H2) I2] ⇒ (case [g ⊢ B1] of
        | [g ⊢ bc_pref D1] ⇒ impossible source_is_not_std_bo [_ ⊢ B2'] [_ ⊢ D1]
        | [g ⊢ bc_kpref B1' H1 I1] ⇒ bti_co [g ⊢ B1'] [g ⊢ B2'])
@@ -360,7 +359,7 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
   | [g ⊢ bo_nu_cl (\a.O1) (\a.L1) (\a.B1')] ⇒ let [g ⊢ bc_nu \a.B2'] = [g ⊢ B2] in
     (case bti_cc [_ ⊢ B1'] [_ ⊢ B2'] of
       | [g,a:names ⊢ bt_id_cc refbc] ⇒ impossible occur_imp [_ ⊢ O1]
-      | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ i_oc \a.I])
+      | [g,a:names ⊢ bt_ind_cc I] ⇒ [g ⊢ i_oc \a.I])
   | [g ⊢ bo_kpref B1' (\a.H1) I1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc_pref D2] ⇒ impossible source_is_not_std_bo [g ⊢ B1'] [g ⊢ D2]
        | [g ⊢ bc_kpref B2' H2 I2] ⇒ bti_oc [g ⊢ B1'] [g ⊢ B2'])
@@ -401,8 +400,7 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
 % either B1=B2, or their proof labels are independent. 
 LF id_or_ind_oo: bstep_op X T1 X1 → bstep_op X T2 X2 → type =
   | bt_id_oo: eqbo B1 B2 → id_or_ind_oo B1 B2
-  | bt_ind_oo: {B1:bstep_op X T1 X1} {B2:bstep_op X T2 X2} indep (p_op T1) (p_op T2) 
-             → id_or_ind_oo B1 B2
+  | bt_ind_oo: indep (p_op T1) (p_op T2) → id_or_ind_oo (B1:bstep_op X T1 X1) (B2:bstep_op X T2 X2)
 ;
 
 % BTI, open-open case:
@@ -416,44 +414,44 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
        | [g ⊢ bo_nu_cl (\a.O2) (\a.L2) (\a.B2')] ⇒ (case bti_cc [_ ⊢ B1'] [_ ⊢ B2'] of
             | [g,a:names ⊢ bt_id_cc refbc] ⇒ let [g,a:names ⊢ refoc] = unique_occ [_ ⊢ O1] [_ ⊢ O2] in
               let [g,a:names ⊢ reflb] = unique_lab [_ ⊢ L1] [_ ⊢ L2] in [g ⊢ bt_id_oo refbo]
-            | [g,a:names ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \a.I)])
+            | [g,a:names ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind_oo (i_oo \a.I)])
        | [g ⊢ bo_nu_op \a.B2'] ⇒ let [g,a:names ⊢ i_co \b.I] = bti_co [_ ⊢ B1'] [_ ⊢ B2'] in
-         [g ⊢ bt_ind_oo _ _ (i_oo \b.I[..,b])])
+         [g ⊢ bt_ind_oo (i_oo \b.I[..,b])])
   | [g ⊢ bo_kpref B1' (\a.H1) I1] ⇒ let [g ⊢ bo_kpref B2' (\a.H2) I2] = [g ⊢ B2] in
     (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
        | [g ⊢ bt_id_oo refbo] ⇒ let [g,a:names ⊢ refky] = unique_key [_ ⊢ H1] [_ ⊢ H2] in
          let refnq [g ⊢ _] = unique_neq [g ⊢ I1] [g ⊢ I2] in [g ⊢ bt_id_oo refbo]
-       | [g ⊢ bt_ind_oo _ _ (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \a.I)])
+       | [g ⊢ bt_ind_oo (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo (i_oo \a.I)])
   | [g ⊢ bo_suml B1' D1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_suml B2' D2] ⇒ (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_oo refbo] ⇒ let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ bt_id_oo refbo]
-            | [g ⊢ bt_ind_oo _ _ (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \a.(i_c1l I))])
+            | [g ⊢ bt_ind_oo (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo (i_oo \a.(i_c1l I))])
        | [g ⊢ bo_sumr B2' D2] ⇒ impossible source_is_not_std_bo [g ⊢ B2'] [g ⊢ D1])
   | [g ⊢ bo_sumr B1' D1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_suml B2' D2] ⇒ impossible source_is_not_std_bo [g ⊢ B2'] [g ⊢ D1]
        | [g ⊢ bo_sumr B2' D2] ⇒ (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_oo refbo] ⇒ let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ bt_id_oo refbo]
-            | [g ⊢ bt_ind_oo _ _ (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \a.(i_c1r I))]))
+            | [g ⊢ bt_ind_oo (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo (i_oo \a.(i_c1r I))]))
   | [g ⊢ bo_parl B1' (\a.H1) N1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_parl B2' (\a.H2) N2] ⇒ (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_oo refbo] ⇒ let [g,a:names ⊢ refky] = unique_key [_ ⊢ H1] [_ ⊢ H2] in
               let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ bt_id_oo refbo]
-            | [g ⊢ bt_ind_oo _ _ (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \a.(i_p1l I))])
+            | [g ⊢ bt_ind_oo (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo (i_oo \a.(i_p1l I))])
        | [g ⊢ bo_parr B2' (\a.H2) N2] ⇒ let [g ⊢ N] = key_in_bstep_op [g ⊢ N1] [g ⊢ B2'] [_ ⊢ H2] in
-              [g ⊢ bt_ind_oo _ _ (i_oo \a.(i_p2l H1 H2 N[..]))])
+              [g ⊢ bt_ind_oo (i_oo \a.(i_p2l H1 H2 N[..]))])
   | [g ⊢ bo_parr B1' (\a.H1) N1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_parl B2' (\a.H2) N2] ⇒ let [g ⊢ N] = key_in_bstep_op [g ⊢ N1] [g ⊢ B2'] [_ ⊢ H2] in
-              [g ⊢ bt_ind_oo _ _ (i_oo \a.(i_p2r H1 H2 N[..]))]
+              [g ⊢ bt_ind_oo (i_oo \a.(i_p2r H1 H2 N[..]))]
        | [g ⊢ bo_parr B2' (\a.H2) N2] ⇒ (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_oo refbo] ⇒ let [g,a:names ⊢ refky] = unique_key [_ ⊢ H1] [_ ⊢ H2] in
               let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ bt_id_oo refbo]
-            | [g ⊢ bt_ind_oo _ _ (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \a.(i_p1r I))]))
+            | [g ⊢ bt_ind_oo (i_oo \a.I)] ⇒ [g ⊢ bt_ind_oo (i_oo \a.(i_p1r I))]))
   | [g ⊢ bo_nu_op \a.B1'] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_nu_cl (\a.O2) (\a.L2) (\a.B2')] ⇒ let [g,a:names ⊢ i_oc \b.I] = bti_oc [_ ⊢ B1'] [_ ⊢ B2'] in
-         [g ⊢ bt_ind_oo _ _ (i_oo \b.I[..,b])]
+         [g ⊢ bt_ind_oo (i_oo \b.I[..,b])]
        | [g ⊢ bo_nu_op \a.B2'] ⇒ (case bti_oo [_ ⊢ B1'] [_ ⊢ B2'] of
             | [g,a:names ⊢ bt_id_oo refbo] ⇒ [g ⊢ bt_id_oo refbo]
-            | [g,a:names ⊢ bt_ind_oo _ _ (i_oo \b.I)] ⇒ [g ⊢ bt_ind_oo _ _ (i_oo \b.I[..,b])]))
+            | [g,a:names ⊢ bt_ind_oo (i_oo \b.I)] ⇒ [g ⊢ bt_ind_oo (i_oo \b.I[..,b])]))
 ;
 
 
@@ -466,8 +464,7 @@ LF eqb: bstep X1' T1 X1 → bstep X2' T2 X2 → type =
 % either B1=B2, or their proof labels are independent. 
 LF id_or_ind: bstep X T1 X1 → bstep X T2 X2 → type =
   | bt_id: eqb B1 B2 → id_or_ind B1 B2
-  | bt_ind: {B1:bstep X T1 X1} {B2:bstep X T2 X2} indep T1 T2 
-          → id_or_ind B1 B2
+  | bt_ind: indep T1 T2 → id_or_ind (B1:bstep X T1 X1) (B2:bstep X T2 X2)
 ;
 
 % BTI:
@@ -480,11 +477,11 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
   | [g ⊢ bc B1'] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bc B2'] ⇒ (case bti_cc [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_cc refbc] ⇒ [g ⊢ bt_id refb]
-            | [g ⊢ bt_ind_cc _ _ I] ⇒ [g ⊢ bt_ind _ _ (i_cc I)])
-       | [g ⊢ bo B2'] ⇒ let [g ⊢ I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind _ _ I])
+            | [g ⊢ bt_ind_cc I] ⇒ [g ⊢ bt_ind (i_cc I)])
+       | [g ⊢ bo B2'] ⇒ let [g ⊢ I] = bti_co [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind I])
   | [g ⊢ bo B1'] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bc B2'] ⇒ let [g ⊢ I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind _ _ I]
+       | [g ⊢ bc B2'] ⇒ let [g ⊢ I] = bti_oc [g ⊢ B1'] [g ⊢ B2'] in [g ⊢ bt_ind I]
        | [g ⊢ bo B2'] ⇒ (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_oo refbo] ⇒ [g ⊢ bt_id refb]
-            | [g ⊢ bt_ind_oo _ _ I] ⇒ [g ⊢ bt_ind _ _ I]))
+            | [g ⊢ bt_ind_oo I] ⇒ [g ⊢ bt_ind I]))
 ;
