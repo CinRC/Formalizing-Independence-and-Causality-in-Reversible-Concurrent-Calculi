@@ -48,6 +48,8 @@ to perform the type reconstruction of the formalization. Expected result, after 
 ## Type Reconstruction done:  run/../code/ccskp/unique-step.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/lemmas-bijection.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/lemmas-bijection.bel ##
+## Type Reconstruction begin: run/../code/ccskp/bti.bel ##
+## Type Reconstruction done:  run/../code/ccskp/bti.bel ##
 ## Type Reconstruction begin: run/../code/bijection/definitions.bel ##
 ## Type Reconstruction done:  run/../code/bijection/definitions.bel ##
 ## Type Reconstruction begin: run/../code/bijection/functionality.bel ##
@@ -165,7 +167,7 @@ opam install --deps-only ./beluga.opam
 
 ## Repository structure
 
-- `run\`: Contains the `.cfg` files requires to compile…
+- `run\`: Contains the `.cfg` files requires to compile …
   + `code.cfg`: … the actual formalization (in `code/` folder)
   + `ex-processes.cfg`: … test examples on processes (in `examples` folder)
   + `ex-proof-labels.cfg`: … test examples on proof labels (in `examples` folder)
@@ -189,7 +191,8 @@ opam install --deps-only ./beluga.opam
     * `connectivity-relationship-two.bel`: … Proposition 4.4 (2)
     * `unique-step.bel`: … uniqueness of the derivation of transitions
     * `lemmas-bijection.bel`: … auxiliary lemmas for the CCSK-CCSKP bijection
-  + `bijection\`: the proof of the bijection between CCSK and CCSKP, in particular...
+    * `bti.bel`: … BTI (backward transitions are independent)
+  + `bijection\`: … the proof of the bijection between CCSK and CCSKP, in particular …
     * `definitions.bel`: … definitions of the forget and enrich functions (as relations)
     * `functionality.bel`: … functionality of forget and enrich
     * `totality.bel`: … totality of forget and enrich
