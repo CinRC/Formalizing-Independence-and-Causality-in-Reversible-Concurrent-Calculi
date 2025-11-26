@@ -122,6 +122,24 @@ fn f,h,n,i ⇒ case f of
     let [g,a:names ⊢ N'] = notin_propagates_to_target_fo [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
 ;
 
+% If two closed proof labels depending on a name "a" are independent,
+% they remain independent even if we replace one of the two "a"s with a fresh name "b".
+rec ind_rename: (g:ctx) [g,a:names ⊢ indep_cl T1 T2] → [g,a:names,b:names ⊢ indep_cl T1[..,a] T2[..,b]] =
+/ total i (ind_rename _ _ _ i) /
+fn i ⇒ case i of
+  | [g,a:names ⊢ i_c1l I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_c1l I']
+  | [g,a:names ⊢ i_c1r I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_c1r I']
+  | [g,a:names ⊢ i_p1l I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_p1l I']
+  | [g,a:names ⊢ i_p1r I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_p1r I']
+  | [g,a:names ⊢ i_p2l H1 H2 N[..]] ⇒ [g,a:names,b:names ⊢ i_p2l H1[..,a] H2[..,b] N[..]]
+  | [g,a:names ⊢ i_p2r H1 H2 N[..]] ⇒ [g,a:names,b:names ⊢ i_p2r H1[..,a] H2[..,b] N[..]]
+  | [g,a:names ⊢ i_s1l I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_s1l I']
+  | [g,a:names ⊢ i_s1r I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_s1r I']
+  | [g,a:names ⊢ i_s2l I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_s2l I']
+  | [g,a:names ⊢ i_s2r I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_s2r I']
+  | [g,a:names ⊢ i_s3 I1 I2] ⇒ let [g,a:names,b:names ⊢ I1'] = ind_rename [_ ⊢ I1] in
+    let [g,a:names,b:names ⊢ I2'] = ind_rename [_ ⊢ I2] in [_ ⊢ i_s3 I1' I2']
+;
 
 
 % Existence of transitions closing a square diagram for the 
@@ -402,6 +420,7 @@ LF square_ffoo: fstep_op X T1 X1 → fstep_op X1 T2 Y → type =
   | s_ffoo: fstep_op X T2 X2 → fstep_op X2 T1 Y → square_ffoo (F1:fstep_op X T1 X1) (F2:fstep_op X1 T2 Y)
 ;
 
+
 % First auxiliary lemma for SP, open-open case:
 % Given two composable open forward transitions with independent proof labels,
 % there exist two forward open transitions closing the square diagram.
@@ -414,7 +433,9 @@ case [g ⊢ F1] of
        | [g ⊢ fo_nu_cl (\a.O2) (\a.L2) (\a.F2')] ⇒
          let [g,a:names ⊢ s_ffcc F2'' F1''] = sp_ffcc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ i_cc I] in
          [g ⊢ s_ffoo (fo_nu_cl (\a.O2) (\a.L2) (\a.F2'')) (fo_nu_cl (\a.O1) (\a.L1) (\a.F1''))]
-       | [g ⊢ fo_nu_op \a.F2'] ⇒ ?)
+       | [g ⊢ fo_nu_op \a.F2'] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [g,a:names ⊢ I] in 
+         let [g,a:names ⊢ s_ffco F2'' F1''] = sp_ffco [_ ⊢ F1'] [_ ⊢ F2'] [g,a:names ⊢ i_co \b.I'[..,a,b]] in
+         [g ⊢ s_ffoo (fo_nu_op \a.F2'') (fo_nu_cl (\a.O1) (\a.L1) (\a.F1''))])
   | [g ⊢ fo_kpref F1' (\a.H1) N1] ⇒ let [g ⊢ fo_kpref F2' (\a.H2) N2] = [g ⊢ F2] in
     let [g ⊢ s_ffoo F2'' F1''] = sp_ffoo [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_oo \a.I] in
     [g ⊢ s_ffoo (fo_kpref F2'' (\a.H2) N2) (fo_kpref F1'' (\a.H1) N1)]
@@ -449,7 +470,9 @@ case [g ⊢ F1] of
          let [g ⊢ s_ffoo F2'' F1''] = sp_ffoo [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_oo \a.I'] in
          [g ⊢ s_ffoo (fo_parr F2'' (\a.H2) N2) (fo_parr F1'' (\a.H1) N1)])
   | [g ⊢ fo_nu_op \a.F1'] ⇒ (case [g ⊢ F2] of
-       | [g ⊢ fo_nu_cl (\a.O2) (\a.L2) (\a.F2')] ⇒ ?
+       | [g ⊢ fo_nu_cl (\a.O2) (\a.L2) (\a.F2')] ⇒ let [g,a:names,b:names ⊢ I'[..,b,a]] = ind_rename [g,a:names ⊢ I] in 
+         let [g,a:names ⊢ s_ffoc F2'' F1''] = sp_ffoc [_ ⊢ F1'] [_ ⊢ F2'] [g,a:names ⊢ i_oc \b.I'[..,a,b]] in
+         [g ⊢ s_ffoo (fo_nu_cl (\a.O2) (\a.L2) (\a.F2'')) (fo_nu_op \a.F1'')]
        | [g ⊢ fo_nu_op \a.F2'] ⇒ 
          let [g,a:names ⊢ s_ffoo F2'' F1''] = sp_ffoo [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ i_oo \a.I[..]] in
          [g ⊢ s_ffoo (fo_nu_op \a.F2'') (fo_nu_op \a.F1'')])
