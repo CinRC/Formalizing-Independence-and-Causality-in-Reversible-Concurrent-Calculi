@@ -68,6 +68,39 @@ fn f,h,n,i ⇒ case f of
     let [g,a:names ⊢ N'] = notin_propagates_to_target_fc [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
 ;
 
+% If a process X makes an open forward transition F into the process X',
+% and a key K does not occur in X (i.e., notin K X holds), then
+% then any key different than K does not occur in X' (notin K X').
+rec notin_propagates_to_target_fo: (g:ctx) [g ⊢ fstep_op X (open \a.T) X'] →
+  [g,a:names ⊢ key T M[]] → [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
+/ total f (notin_propagates_to_target_fo _ _ _ _ _ _ f _ _ _) /
+fn f,h,n,i ⇒ case f of
+  | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ H] = h in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ N'] = notin_propagates_to_target_fc [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
+  | [g ⊢ fo_kpref F (\_._) _] ⇒ let [g ⊢ not_kpref I' N] = n in
+    let [g ⊢ N'] = notin_propagates_to_target_fo [g ⊢ F] h [g ⊢ N] i in [g ⊢ not_kpref I' N']
+  | [g ⊢ fo_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g,a:names ⊢ key_suml H1] = h in
+    let [g ⊢ N1'] = notin_propagates_to_target_fo [g ⊢ F1] [_ ⊢ H1] [g ⊢ N1] i in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fo_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g,a:names ⊢ key_sumr H2] = h in
+    let [g ⊢ N2'] = notin_propagates_to_target_fo [g ⊢ F2] [_ ⊢ H2] [g ⊢ N2] i in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fo_parl F1 (\_._) _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g,a:names ⊢ key_parl H1] = h in
+    let [g ⊢ N1'] = notin_propagates_to_target_fo [g ⊢ F1] [_ ⊢ H1] [g ⊢ N1] i in [g ⊢ not_par N1' N2]
+  | [g ⊢ fo_parr F2 (\_._) _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g,a:names ⊢ key_parr H2] = h in
+    let [g ⊢ N2'] = notin_propagates_to_target_fo [g ⊢ F2] [_ ⊢ H2] [g ⊢ N2] i in [g ⊢ not_par N1 N2']
+  | [g ⊢ fo_nu_op \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ H] = h in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ N'] = notin_propagates_to_target_fo [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
+;
+
+
+
 % Existence of transitions closing a square diagram for the 
 % forward-forward, closed-closed case
 LF square_ffcc: fstep_cl X T1 X1 → fstep_cl X1 T2 Y → type =
@@ -83,7 +116,7 @@ rec sp_ffcc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 X1]} {F2:[g ⊢ fstep_cl X1 T2 Y]}
 mlam F1,F2 ⇒ fn i ⇒ let [g ⊢ i_cc I] = i in
 case [g ⊢ F1] of
   | [g ⊢ fc_pref D1] ⇒ impossible [g ⊢ I]
-  | [g ⊢ fc_kpref F1' H1 N1] ⇒ let [g ⊢ fc_kpref F2' H2 N2] = [g ⊢ F2] in 
+  | [g ⊢ fc_kpref F1' H1 N1] ⇒ let [g ⊢ fc_kpref F2' H2 N2] = [g ⊢ F2] in
     let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I] in
     [g ⊢ s_ffcc (fc_kpref F2'' H2 N2) (fc_kpref F1'' H1 N1)]
   | [g ⊢ fc_suml F1' D1] ⇒ (case [g ⊢ F2] of
@@ -181,4 +214,76 @@ case [g ⊢ F1] of
   | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
        let [g,a:names ⊢ s_ffcc F2'' F1''] = sp_ffcc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ i_cc I[..]] in
        [g ⊢ s_ffcc (fc_nu \a.F2'') (fc_nu \a.F1'')]
+;
+
+
+% Existence of transitions closing a square diagram for the 
+% forward-forward, closed-open case
+LF square_ffco: fstep_cl X T1 X1 → fstep_op X1 T2 Y → type =
+  | s_ffco: fstep_op X T2 X2 → fstep_cl X2 T1 Y → square_ffco (F1:fstep_cl X T1 X1) (F2:fstep_op X1 T2 Y)
+;
+
+% First auxiliary lemma for SP, closed-open case:
+% Given two composable forward transitions, respectively closed and open, with independent
+% proof labels, there exist two forward transitions closing the square diagram.
+rec sp_ffco: (g:ctx) {F1:[g ⊢ fstep_cl X T1 X1]} {F2:[g ⊢ fstep_op X1 T2 Y]}
+  [g ⊢ indep (p_cl T1) (p_op T2)] → [g ⊢ square_ffco F1 F2] =
+/ total f2 (sp_ffco _ _ _ _ _ _ _ f2 _) /
+mlam F1,F2 ⇒ fn i ⇒ let [g ⊢ i_co \a.I] = i in
+case [g ⊢ F2] of
+  | [g ⊢ fo_nu_cl (\a.O2) (\a.L2) (\a.F2')] ⇒ let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in
+    let [g,a:names ⊢ s_ffcc F2'' F1''] = sp_ffcc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ i_cc I] in
+    [g ⊢ s_ffco (fo_nu_cl (\a.O2) (\a.L2) (\a.F2'')) (fc_nu \a.F1'')]
+  | [g ⊢ fo_kpref F2' (\a.H2) N2] ⇒ let [g ⊢ fc_kpref F1' H1 N1] = [g ⊢ F1] in
+    let [g ⊢ s_ffco F2'' F1''] = sp_ffco [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_co \a.I] in
+    [g ⊢ s_ffco (fo_kpref F2'' (\a.H2) N2) (fc_kpref F1'' H1 N1)]
+  | [g ⊢ fo_suml F2' D2] ⇒ (case [g ⊢ F1] of
+       | [g ⊢ fc_suml F1' _] ⇒ let [g,a:names ⊢ i_c1l I'] = [_ ⊢ I] in
+         let [g ⊢ s_ffco F2'' F1''] = sp_ffco [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_co \a.I'] in
+         [g ⊢ s_ffco (fo_suml F2'' D2) (fc_suml F1'' D2)]
+       | [g ⊢ fc_sumr F1' _] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
+  | [g ⊢ fo_sumr F2' D2] ⇒ (case [g ⊢ F1] of
+       | [g ⊢ fc_suml F1' _] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
+       | [g ⊢ fc_sumr F1' _] ⇒ let [g,a:names ⊢ i_c1r I'] = [_ ⊢ I] in
+         let [g ⊢ s_ffco F2'' F1''] = sp_ffco [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_co \a.I'] in
+         [g ⊢ s_ffco (fo_sumr F2'' D2) (fc_sumr F1'' D2)])
+  | [g ⊢ fo_parl F2' (\a.H2) N2] ⇒ (case [g ⊢ F1] of
+       | [g ⊢ fc_parl F1' H1 N1] ⇒ let [g,a:names ⊢ i_p1l I'] = [_ ⊢ I] in
+         let [g ⊢ s_ffco F2'' F1''] = sp_ffco [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_co \a.I'] in
+         [g ⊢ s_ffco (fo_parl F2'' (\a.H2) N2) (fc_parl F1'' H1 N1)]
+       | [g ⊢ fc_parr F1' H1 N1] ⇒ let [g,a:names ⊢ i_p2r H1' H2' N[..]] = [_ ⊢ I] in
+         let [g,a:names ⊢ refk] = functional_key [g,a:names ⊢ H1[..]] [_ ⊢ H1'] in
+         let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2] [_ ⊢ H2'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F1'] [g ⊢ N2] in
+         let [g ⊢ N1'] = notin_propagates_to_target_fo [g ⊢ F2'] [_ ⊢ H2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+         [g ⊢ s_ffco (fo_parl F2' (\a.H2) N2') (fc_parr F1' H1 N1')]
+       | [g ⊢ fc_synl FL1 LL1 HL1 FR1 LR1 HR1] ⇒ let [g,a:names ⊢ i_s2l I'] = [_ ⊢ I] in
+         let [g ⊢ s_ffco F2'' FL1'] = sp_ffco [g ⊢ FL1] [g ⊢ F2'] [g ⊢ i_co \a.I'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ N2] in
+         [g ⊢ s_ffco (fo_parl F2'' (\a.H2) N2') (fc_synl FL1' LL1 HL1 FR1 LR1 HR1)]
+       | [g ⊢ fc_synr FL1 LL1 HL1 FR1 LR1 HR1] ⇒ let [g,a:names ⊢ i_s2l I'] = [_ ⊢ I] in
+         let [g ⊢ s_ffco F2'' FL1'] = sp_ffco [g ⊢ FL1] [g ⊢ F2'] [g ⊢ i_co \a.I'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ N2] in
+         [g ⊢ s_ffco (fo_parl F2'' (\a.H2) N2') (fc_synr FL1' LL1 HL1 FR1 LR1 HR1)])
+  | [g ⊢ fo_parr F2' (\a.H2) N2] ⇒ (case [g ⊢ F1] of
+       | [g ⊢ fc_parl F1' H1 N1] ⇒ let [g,a:names ⊢ i_p2l H1' H2' N[..]] = [_ ⊢ I] in
+         let [g,a:names ⊢ refk] = functional_key [g,a:names ⊢ H1[..]] [_ ⊢ H1'] in
+         let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2] [_ ⊢ H2'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F1'] [g ⊢ N2] in
+         let [g ⊢ N1'] = notin_propagates_to_target_fo [g ⊢ F2'] [_ ⊢ H2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+         [g ⊢ s_ffco (fo_parr F2' (\a.H2) N2') (fc_parl F1' H1 N1')]
+       | [g ⊢ fc_parr F1' H1 N1] ⇒ let [g,a:names ⊢ i_p1r I'] = [_ ⊢ I] in
+         let [g ⊢ s_ffco F2'' F1''] = sp_ffco [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_co \a.I'] in
+         [g ⊢ s_ffco (fo_parr F2'' (\a.H2) N2) (fc_parr F1'' H1 N1)]
+       | [g ⊢ fc_synl FL1 LL1 HL1 FR1 LR1 HR1] ⇒ let [g,a:names ⊢ i_s2r I'] = [_ ⊢ I] in
+         let [g ⊢ s_ffco F2'' FR1'] = sp_ffco [g ⊢ FR1] [g ⊢ F2'] [g ⊢ i_co \a.I'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ N2] in
+         [g ⊢ s_ffco (fo_parr F2'' (\a.H2) N2') (fc_synl FL1 LL1 HL1 FR1' LR1 HR1)]
+       | [g ⊢ fc_synr FL1 LL1 HL1 FR1 LR1 HR1] ⇒ let [g,a:names ⊢ i_s2r I'] = [_ ⊢ I] in
+         let [g ⊢ s_ffco F2'' FR1'] = sp_ffco [g ⊢ FR1] [g ⊢ F2'] [g ⊢ i_co \a.I'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ N2] in
+         [g ⊢ s_ffco (fo_parr F2'' (\a.H2) N2') (fc_synr FL1 LL1 HL1 FR1' LR1 HR1)])
+  | [g ⊢ fo_nu_op \a.F2'] ⇒ let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in
+    let [g,a:names ⊢ s_ffco F2'' F1''] = sp_ffco [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ i_co \a.I[..]] in
+    [g ⊢ s_ffco (fo_nu_op \a.F2'') (fc_nu \a.F1'')]
 ;
