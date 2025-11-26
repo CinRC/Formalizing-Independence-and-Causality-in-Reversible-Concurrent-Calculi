@@ -1,6 +1,5 @@
 %%% SP: square property
 
-
 % If a process X makes a closed forward transition F into the process X',
 % and a key K does not occur in X' (i.e., notin K X' holds), then K does
 % not occur in X as well (notin K X).
@@ -82,44 +81,104 @@ rec sp_ffcc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 X1]} {F2:[g ⊢ fstep_cl X1 T2 Y]}
   [g ⊢ indep (p_cl T1) (p_cl T2)] → [g ⊢ square_ffcc F1 F2] =
 / total f1 (sp_ffcc _ _ _ _ _ _ f1 _ _) /
 mlam F1,F2 ⇒ fn i ⇒ let [g ⊢ i_cc I] = i in
-(case [g ⊢ F1] of
+case [g ⊢ F1] of
   | [g ⊢ fc_pref D1] ⇒ impossible [g ⊢ I]
   | [g ⊢ fc_kpref F1' H1 N1] ⇒ let [g ⊢ fc_kpref F2' H2 N2] = [g ⊢ F2] in 
-       let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I] in
-       [g ⊢ s_ffcc (fc_kpref F2'' H2 N2) (fc_kpref F1'' H1 N1)]
+    let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I] in
+    [g ⊢ s_ffcc (fc_kpref F2'' H2 N2) (fc_kpref F1'' H1 N1)]
   | [g ⊢ fc_suml F1' D1] ⇒ (case [g ⊢ F2] of
        | [g ⊢ fc_suml F2' _] ⇒ let [g ⊢ i_c1l I'] = [g ⊢ I] in
-            let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I'] in
-            [g ⊢ s_ffcc (fc_suml F2'' D1) (fc_suml F1'' D1)]
+         let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I'] in
+         [g ⊢ s_ffcc (fc_suml F2'' D1) (fc_suml F1'' D1)]
        | [g ⊢ fc_sumr F2' D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
   | [g ⊢ fc_sumr F1' D1] ⇒ (case [g ⊢ F2] of
        | [g ⊢ fc_suml F2' D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
        | [g ⊢ fc_sumr F2' _] ⇒ let [g ⊢ i_c1r I'] = [g ⊢ I] in
-            let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I'] in
-            [g ⊢ s_ffcc (fc_sumr F2'' D1) (fc_sumr F1'' D1)])
+         let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I'] in
+         [g ⊢ s_ffcc (fc_sumr F2'' D1) (fc_sumr F1'' D1)])
   | [g ⊢ fc_parl F1' H1 N1] ⇒ (case [g ⊢ F2] of
        | [g ⊢ fc_parl F2' H2 N2] ⇒ let [g ⊢ i_p1l I'] = [g ⊢ I] in
-            let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I'] in
-            [g ⊢ s_ffcc (fc_parl F2'' H2 N2) (fc_parl F1'' H1 N1)]
+         let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I'] in
+         [g ⊢ s_ffcc (fc_parl F2'' H2 N2) (fc_parl F1'' H1 N1)]
        | [g ⊢ fc_parr F2' H2 N2] ⇒ let [g ⊢ i_p2l H1' H2' N] = [g ⊢ I] in
-            let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
-            let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ H2'] in
-            let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F1'] [g ⊢ N2] in
-            let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
-            [g ⊢ s_ffcc (fc_parr F2' H2 N2') (fc_parl F1' H1 N1')]
+         let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
+         let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ H2'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F1'] [g ⊢ N2] in
+         let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+         [g ⊢ s_ffcc (fc_parr F2' H2 N2') (fc_parl F1' H1 N1')]
        | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s1l I'] = [g ⊢ I] in
-            let [g ⊢ s_ffcc FL2' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ FL2] [g ⊢ i_cc I'] in
-            ?%[g ⊢ s_ffcc (fc_synl FL2' LL2 HL2 FR2 LR2 HR2) (fc_parl F1'' H1 N1)]
-       | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ ?)
-  | [g ⊢ fc_parr F1' H1 N1] ⇒ ?
+         let [g ⊢ s_ffcc FL2' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ FL2] [g ⊢ i_cc I'] in
+         let [g ⊢ V1] = valid_in_fstep_cl [g ⊢ F1'] in
+         let [g ⊢ V2] = valid_in_fstep_cl [g ⊢ FL2] in
+         let [g ⊢ N] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I'] [g ⊢ H1] [g ⊢ HL2] in
+         let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+         [g ⊢ s_ffcc (fc_synl FL2' LL2 HL2 FR2 LR2 HR2) (fc_parl F1'' H1 N1')]
+       | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s1l I'] = [g ⊢ I] in
+         let [g ⊢ s_ffcc FL2' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ FL2] [g ⊢ i_cc I'] in
+         let [g ⊢ V1] = valid_in_fstep_cl [g ⊢ F1'] in
+         let [g ⊢ V2] = valid_in_fstep_cl [g ⊢ FL2] in
+         let [g ⊢ N] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I'] [g ⊢ H1] [g ⊢ HL2] in
+         let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+         [g ⊢ s_ffcc (fc_synr FL2' LL2 HL2 FR2 LR2 HR2) (fc_parl F1'' H1 N1')])
+  | [g ⊢ fc_parr F1' H1 N1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fc_parl F2' H2 N2] ⇒ let [g ⊢ i_p2r H1' H2' N] = [g ⊢ I] in
+         let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
+         let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ H2'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F1'] [g ⊢ N2] in
+         let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+         [g ⊢ s_ffcc (fc_parl F2' H2 N2') (fc_parr F1' H1 N1')]
+       | [g ⊢ fc_parr F2' H2 N2] ⇒ let [g ⊢ i_p1r I'] = [g ⊢ I] in
+         let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ i_cc I'] in
+         [g ⊢ s_ffcc (fc_parr F2'' H2 N2) (fc_parr F1'' H1 N1)]
+       | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s1r I'] = [g ⊢ I] in
+         let [g ⊢ s_ffcc FR2' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ FR2] [g ⊢ i_cc I'] in
+         let [g ⊢ V1] = valid_in_fstep_cl [g ⊢ F1'] in
+         let [g ⊢ V2] = valid_in_fstep_cl [g ⊢ FR2] in
+         let [g ⊢ N] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I'] [g ⊢ H1] [g ⊢ HR2] in
+         let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+         [g ⊢ s_ffcc (fc_synl FL2 LL2 HL2 FR2' LR2 HR2) (fc_parr F1'' H1 N1')]
+       | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s1r I'] = [g ⊢ I] in
+         let [g ⊢ s_ffcc FR2' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ FR2] [g ⊢ i_cc I'] in
+         let [g ⊢ V1] = valid_in_fstep_cl [g ⊢ F1'] in
+         let [g ⊢ V2] = valid_in_fstep_cl [g ⊢ FR2] in
+         let [g ⊢ N] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I'] [g ⊢ H1] [g ⊢ HR2] in
+         let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+         [g ⊢ s_ffcc (fc_synr FL2 LL2 HL2 FR2' LR2 HR2) (fc_parr F1'' H1 N1')])
   | [g ⊢ fc_synl FL1 LL1 HL1 FR1 LR1 HR1] ⇒ (case [g ⊢ F2] of
-       | [g ⊢ fc_parl F2' H2 N2] ⇒ ?
-       | [g ⊢ fc_parr F2' H2 N2] ⇒ ?
-       | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ ?
-       | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ ?)
-  | [g ⊢ fc_synr FL1 LL1 HL1 FR1 LR1 HR1] ⇒ ?
+       | [g ⊢ fc_parl F2' H2 N2] ⇒ let [g ⊢ i_s2l I'] = [g ⊢ I] in
+         let [g ⊢ s_ffcc F2'' FL1'] = sp_ffcc [g ⊢ FL1] [g ⊢ F2'] [g ⊢ i_cc I'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ N2] in
+         [g ⊢ s_ffcc (fc_parl F2'' H2 N2') (fc_synl FL1' LL1 HL1 FR1 LR1 HR1)]
+       | [g ⊢ fc_parr F2' H2 N2] ⇒ let [g ⊢ i_s2r I'] = [g ⊢ I] in
+         let [g ⊢ s_ffcc F2'' FR1'] = sp_ffcc [g ⊢ FR1] [g ⊢ F2'] [g ⊢ i_cc I'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ N2] in
+         [g ⊢ s_ffcc (fc_parr F2'' H2 N2') (fc_synl FL1 LL1 HL1 FR1' LR1 HR1)]
+       | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s3 IL IR] = [g ⊢ I] in
+         let [g ⊢ s_ffcc FL2' FL1'] = sp_ffcc [g ⊢ FL1] [g ⊢ FL2] [g ⊢ i_cc IL] in
+         let [g ⊢ s_ffcc FR2' FR1'] = sp_ffcc [g ⊢ FR1] [g ⊢ FR2] [g ⊢ i_cc IR] in
+         [g ⊢ s_ffcc (fc_synl FL2' LL2 HL2 FR2' LR2 HR2) (fc_synl FL1' LL1 HL1 FR1' LR1 HR1)]
+       | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s3 IL IR] = [g ⊢ I] in
+         let [g ⊢ s_ffcc FL2' FL1'] = sp_ffcc [g ⊢ FL1] [g ⊢ FL2] [g ⊢ i_cc IL] in
+         let [g ⊢ s_ffcc FR2' FR1'] = sp_ffcc [g ⊢ FR1] [g ⊢ FR2] [g ⊢ i_cc IR] in
+         [g ⊢ s_ffcc (fc_synr FL2' LL2 HL2 FR2' LR2 HR2) (fc_synl FL1' LL1 HL1 FR1' LR1 HR1)])
+  | [g ⊢ fc_synr FL1 LL1 HL1 FR1 LR1 HR1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fc_parl F2' H2 N2] ⇒ let [g ⊢ i_s2l I'] = [g ⊢ I] in
+         let [g ⊢ s_ffcc F2'' FL1'] = sp_ffcc [g ⊢ FL1] [g ⊢ F2'] [g ⊢ i_cc I'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ N2] in
+         [g ⊢ s_ffcc (fc_parl F2'' H2 N2') (fc_synr FL1' LL1 HL1 FR1 LR1 HR1)]
+       | [g ⊢ fc_parr F2' H2 N2] ⇒ let [g ⊢ i_s2r I'] = [g ⊢ I] in
+         let [g ⊢ s_ffcc F2'' FR1'] = sp_ffcc [g ⊢ FR1] [g ⊢ F2'] [g ⊢ i_cc I'] in
+         let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ N2] in
+         [g ⊢ s_ffcc (fc_parr F2'' H2 N2') (fc_synr FL1 LL1 HL1 FR1' LR1 HR1)]
+       | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s3 IL IR] = [g ⊢ I] in
+         let [g ⊢ s_ffcc FL2' FL1'] = sp_ffcc [g ⊢ FL1] [g ⊢ FL2] [g ⊢ i_cc IL] in
+         let [g ⊢ s_ffcc FR2' FR1'] = sp_ffcc [g ⊢ FR1] [g ⊢ FR2] [g ⊢ i_cc IR] in
+         [g ⊢ s_ffcc (fc_synl FL2' LL2 HL2 FR2' LR2 HR2) (fc_synr FL1' LL1 HL1 FR1' LR1 HR1)]
+       | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s3 IL IR] = [g ⊢ I] in
+         let [g ⊢ s_ffcc FL2' FL1'] = sp_ffcc [g ⊢ FL1] [g ⊢ FL2] [g ⊢ i_cc IL] in
+         let [g ⊢ s_ffcc FR2' FR1'] = sp_ffcc [g ⊢ FR1] [g ⊢ FR2] [g ⊢ i_cc IR] in
+         [g ⊢ s_ffcc (fc_synr FL2' LL2 HL2 FR2' LR2 HR2) (fc_synr FL1' LL1 HL1 FR1' LR1 HR1)])
   | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
        let [g,a:names ⊢ s_ffcc F2'' F1''] = sp_ffcc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ i_cc I[..]] in
        [g ⊢ s_ffcc (fc_nu \a.F2'') (fc_nu \a.F1'')]
-)
 ;
