@@ -1,5 +1,74 @@
 %%% SP: square property
 
+
+% If a process X makes a closed forward transition F into the process X',
+% and a key K does not occur in X' (i.e., notin K X' holds), then K does
+% not occur in X as well (notin K X).
+rec notin_propagates_to_source_fc: (g:ctx) [g ⊢ fstep_cl X T X'] →
+   [g ⊢ notin K[] X'] → [g ⊢ notin K[] X] =
+/ total f (notin_propagates_to_source_fc _ _ _ _ _ f _) /
+fn f,n ⇒ case f of
+  | [g ⊢ fc_pref _] ⇒ let [g ⊢ not_kpref _ N] = n in [g ⊢ not_pref N]
+  | [g ⊢ fc_kpref F _ _] ⇒ let [g ⊢ not_kpref I N] = n in
+    let [g ⊢ N'] = notin_propagates_to_source_fc [g ⊢ F] [g ⊢ N] in [g ⊢ not_kpref I N']
+  | [g ⊢ fc_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fc [g ⊢ F1] [g ⊢ N1] in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fc_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fc_parl F1 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fc [g ⊢ F1] [g ⊢ N1] in [g ⊢ not_par N1' N2]
+  | [g ⊢ fc_parr F2 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1 N2']
+  | [g ⊢ fc_synl F1 _ _ F2 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fc [g ⊢ F1] [g ⊢ N1] in
+    let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1' N2']
+  | [g ⊢ fc_synr F1 _ _ F2 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fc [g ⊢ F1] [g ⊢ N1] in
+    let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1' N2']
+  | [g ⊢ fc_nu \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ N'] = notin_propagates_to_source_fc [_ ⊢ F] [_ ⊢ N] in [g ⊢ not_nu \a.N']
+;
+
+% If a process X makes a closed forward transition F into the process X',
+% and a key K does not occur in X (i.e., notin K X holds), then
+% then any key different than K does not occur in X' (notin K X').
+rec notin_propagates_to_target_fc: (g:ctx) [g ⊢ fstep_cl X T X'] →
+  [g ⊢ key T M[]] → [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
+/ total f (notin_propagates_to_target_fc _ _ _ _ _ _ f _ _ _) /
+fn f,h,n,i ⇒ case f of
+  | [g ⊢ fc_pref _] ⇒ let [g ⊢ key_base] = h in
+    let [g ⊢ not_pref N] = n in
+    let [g ⊢ I] = symmetric_neq i in [g ⊢ not_kpref I N]
+  | [g ⊢ fc_kpref F _ _] ⇒ let [g ⊢ not_kpref I' N] = n in
+    let [g ⊢ N'] = notin_propagates_to_target_fc [g ⊢ F] h [g ⊢ N] i in [g ⊢ not_kpref I' N']
+  | [g ⊢ fc_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ key_suml H1] = h in
+    let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F1] [g ⊢ H1] [g ⊢ N1] i in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fc_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ key_sumr H2] = h in
+    let [g ⊢ N2'] = notin_propagates_to_target_fc [g ⊢ F2] [g ⊢ H2] [g ⊢ N2] i in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fc_parl F1 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ key_parl H1] = h in
+    let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F1] [g ⊢ H1] [g ⊢ N1] i in [g ⊢ not_par N1' N2]
+  | [g ⊢ fc_parr F2 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ key_parr H2] = h in
+    let [g ⊢ N2'] = notin_propagates_to_target_fc [g ⊢ F2] [g ⊢ H2] [g ⊢ N2] i in [g ⊢ not_par N1 N2']
+  | [g ⊢ fc_synl F1 _ H1 F2 _ H2] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ key_sync H1'] = h in
+    let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F1] [g ⊢ H1] [g ⊢ N1] i in
+    let [g ⊢ N2'] = notin_propagates_to_target_fc [g ⊢ F2] [g ⊢ H2] [g ⊢ N2] i in [g ⊢ not_par N1' N2']
+  | [g ⊢ fc_synr F1 _ H1 F2 _ H2] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ key_sync H1'] = h in
+    let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F1] [g ⊢ H1] [g ⊢ N1] i in
+    let [g ⊢ N2'] = notin_propagates_to_target_fc [g ⊢ F2] [g ⊢ H2] [g ⊢ N2] i in [g ⊢ not_par N1' N2']
+  | [g ⊢ fc_nu \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g ⊢ H] = h in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ N'] = notin_propagates_to_target_fc [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
+;
+
 % Existence of transitions closing a square diagram for the 
 % forward-forward, closed-closed case
 LF square_ffcc: fstep_cl X T1 X1 → fstep_cl X1 T2 Y → type =
@@ -35,7 +104,9 @@ mlam F1,F2 ⇒ fn i ⇒ let [g ⊢ i_cc I] = i in
        | [g ⊢ fc_parr F2' H2 N2] ⇒ let [g ⊢ i_p2l H1' H2' N] = [g ⊢ I] in
             let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
             let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ H2'] in
-            ?%[g ⊢ s_ffcc (fc_parr F2' H2 _) (fc_parl F1' H1 _)]
+            let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F1'] [g ⊢ N2] in
+            let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] (symmetric_neq [g ⊢ N]) in
+            [g ⊢ s_ffcc (fc_parr F2' H2 N2') (fc_parl F1' H1 N1')]
        | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ i_s1l I'] = [g ⊢ I] in
             let [g ⊢ s_ffcc FL2' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ FL2] [g ⊢ i_cc I'] in
             ?%[g ⊢ s_ffcc (fc_synl FL2' LL2 HL2 FR2 LR2 HR2) (fc_parl F1'' H1 N1)]
