@@ -477,3 +477,29 @@ case [g ⊢ F1] of
          let [g,a:names ⊢ s_ffoo F2'' F1''] = sp_ffoo [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ i_oo \a.I[..]] in
          [g ⊢ s_ffoo (fo_nu_op \a.F2'') (fo_nu_op \a.F1'')])
 ;
+
+
+
+% Existence of transitions closing a square diagram for the forward-forward case
+LF square_ff: fstep X T1 X1 → fstep X1 T2 Y → type =
+  | s_ff: fstep X T2 X2 → fstep X2 T1 Y → square_ff (F1:fstep X T1 X1) (F2:fstep X1 T2 Y)
+;
+
+
+% First auxiliary lemma for SP:
+% Given two composable forward transitions with independent proof labels,
+% there exist two forward transitions closing the square diagram.
+rec sp_ff: (g:ctx) {F1:[g ⊢ fstep X T1 X1]} {F2:[g ⊢ fstep X1 T2 Y]}
+  [g ⊢ indep T1 T2] → [g ⊢ square_ff F1 F2] =
+mlam F1,F2 ⇒ fn i ⇒ case [_ ⊢ F1] of
+  | [g ⊢ fc F1'] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fc F2'] ⇒ let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] i in
+         [g ⊢ s_ff (fc F2'') (fc F1'')]
+       | [g ⊢ fo F2'] ⇒ let [g ⊢ s_ffco F2'' F1''] = sp_ffco [g ⊢ F1'] [g ⊢ F2'] i in
+         [g ⊢ s_ff (fo F2'') (fc F1'')])
+  | [g ⊢ fo F1'] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fc F2'] ⇒ let [g ⊢ s_ffoc F2'' F1''] = sp_ffoc [g ⊢ F1'] [g ⊢ F2'] i in
+         [g ⊢ s_ff (fc F2'') (fo F1'')]
+       | [g ⊢ fo F2'] ⇒ let [g ⊢ s_ffoo F2'' F1''] = sp_ffoo [g ⊢ F1'] [g ⊢ F2'] i in
+         [g ⊢ s_ff (fo F2'') (fo F1'')])
+;
