@@ -521,34 +521,6 @@ case [g ⊢ F1] of
 
 
 
-% Existence of transitions closing a square diagram for the forward-forward case
-LF square_ff: fstep X T1 X1 → fstep X1 T2 Y → type =
-  | s_ff: fstep X T2 X2 → fstep X2 T1 Y → square_ff (F1:fstep X T1 X1) (F2:fstep X1 T2 Y)
-;
-
-
-% First auxiliary lemma for SP:
-% Given two composable forward transitions with independent proof labels,
-% there exist two forward transitions closing the square diagram.
-rec sp_ff: (g:ctx) {F1:[g ⊢ fstep X T1 X1]} {F2:[g ⊢ fstep X1 T2 Y]}
-  [g ⊢ indep T1 T2] → [g ⊢ square_ff F1 F2] =
-/ total f1 (sp_ff _ _ _ _ _ _ f1 _ _) /
-mlam F1,F2 ⇒ fn i ⇒ case [_ ⊢ F1] of
-  | [g ⊢ fc F1'] ⇒ (case [g ⊢ F2] of
-       | [g ⊢ fc F2'] ⇒ let [g ⊢ s_ffcc F2'' F1''] = sp_ffcc [g ⊢ F1'] [g ⊢ F2'] i in
-         [g ⊢ s_ff (fc F2'') (fc F1'')]
-       | [g ⊢ fo F2'] ⇒ let [g ⊢ s_ffco F2'' F1''] = sp_ffco [g ⊢ F1'] [g ⊢ F2'] i in
-         [g ⊢ s_ff (fo F2'') (fc F1'')])
-  | [g ⊢ fo F1'] ⇒ (case [g ⊢ F2] of
-       | [g ⊢ fc F2'] ⇒ let [g ⊢ s_ffoc F2'' F1''] = sp_ffoc [g ⊢ F1'] [g ⊢ F2'] i in
-         [g ⊢ s_ff (fc F2'') (fo F1'')]
-       | [g ⊢ fo F2'] ⇒ let [g ⊢ s_ffoo F2'' F1''] = sp_ffoo [g ⊢ F1'] [g ⊢ F2'] i in
-         [g ⊢ s_ff (fo F2'') (fo F1'')])
-;
-
-
-
-
 
 % Existence of transitions closing a square diagram for the 
 % forward-backward, closed-closed case
@@ -868,27 +840,139 @@ case [g ⊢ F1] of
 ;
 
 
-% Existence of transitions closing a square diagram for the forward-backward case
-LF square_fb: fstep X T1 X1 → bstep X1 T2 Y → type =
-  | s_fb: bstep X T2 X2 → fstep X2 T1 Y → square_fb (F1:fstep X T1 X1) (B2:bstep X1 T2 Y)
+
+% Existence of transitions closing a square diagram for the 
+% backward-forward, closed-closed case
+LF square_bfcc: bstep_cl X T1 X1 → fstep_cl X1 T2 Y → type =
+  | s_bfcc: fstep_cl X T2 X2 → bstep_cl X2 T1 Y → square_bfcc (B1:bstep_cl X T1 X1) (F2:fstep_cl X1 T2 Y)
+;
+
+% Third auxiliary lemma for SP, closed-closed case:
+% Given two composable transitions, where the former is backward closed and the latter is
+% forward closed, and with independent proof labels, there exist a forward
+% and a backward transition closing the square diagram.
+rec sp_bfcc: (g:ctx) {B1:[g ⊢ bstep_cl X T1 X1]} {F2:[g ⊢ fstep_cl X1 T2 Y]}
+  [g ⊢ indep (p_cl T1) (p_cl T2)] → [g ⊢ square_bfcc B1 F2] =
+/ total b1 (sp_bfcc _ _ _ _ _ _ b1 _ _) /
+?
+;
+
+% Existence of transitions closing a square diagram for the 
+% backward-forward, closed-open case
+LF square_bfco: bstep_cl X T1 X1 → fstep_op X1 T2 Y → type =
+  | s_bfco: fstep_op X T2 X2 → bstep_cl X2 T1 Y → square_bfco (B1:bstep_cl X T1 X1) (F2:fstep_op X1 T2 Y)
+;
+
+% Third auxiliary lemma for SP, closed-open case:
+% Given two composable transitions, where the former is backward closed and the latter is
+% forward open, and with independent proof labels, there exist a forward
+% and a backward transition closing the square diagram.
+rec sp_bfco: (g:ctx) {B1:[g ⊢ bstep_cl X T1 X1]} {F2:[g ⊢ fstep_op X1 T2 Y]}
+  [g ⊢ indep (p_cl T1) (p_op T2)] → [g ⊢ square_bfco B1 F2] =
+/ total f2 (sp_bfco _ _ _ _ _ _ _ f2 _) /
+?
+;
+
+% Existence of transitions closing a square diagram for the 
+% backward-forward, open-closed case
+LF square_bfoc: bstep_op X T1 X1 → fstep_cl X1 T2 Y → type =
+  | s_bfoc: fstep_cl X T2 X2 → bstep_op X2 T1 Y → square_bfoc (B1:bstep_op X T1 X1) (F2:fstep_cl X1 T2 Y)
+;
+
+% Third auxiliary lemma for SP, open-closed case:
+% Given two composable transitions, where the former is backward open and the latter is
+% forward closed, and with independent proof labels, there exist a forward
+% and a backward transition closing the square diagram.
+rec sp_bfoc: (g:ctx) {B1:[g ⊢ bstep_op X T1 X1]} {F2:[g ⊢ fstep_cl X1 T2 Y]}
+  [g ⊢ indep (p_op T1) (p_cl T2)] → [g ⊢ square_bfoc B1 F2] =
+/ total b1 (sp_bfoc _ _ _ _ _ _ b1 _ _) /
+?
+;
+
+% Existence of transitions closing a square diagram for the 
+% backward-forward, open-open case
+LF square_bfoo: bstep_op X T1 X1 → fstep_op X1 T2 Y → type =
+  | s_bfoo: fstep_op X T2 X2 → bstep_op X2 T1 Y → square_bfoo (B1:bstep_op X T1 X1) (F2:fstep_op X1 T2 Y)
 ;
 
 
-% Second auxiliary lemma for SP:
-% Given two composable transitions, respectively forward and backward, with independent proof labels,
-% there exist a forward and a backward transition closing the square diagram.
-rec sp_fb: (g:ctx) {F1:[g ⊢ fstep X T1 X1]} {B2:[g ⊢ bstep X1 T2 Y]}
-  [g ⊢ indep T1 T2] → [g ⊢ square_fb F1 B2] =
-/ total f1 (sp_fb _ _ _ _ _ _ f1 _ _) /
-mlam F1,B2 ⇒ fn i ⇒ case [_ ⊢ F1] of
-  | [g ⊢ fc F1'] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bc B2'] ⇒ let [g ⊢ s_fbcc B2'' F1''] = sp_fbcc [g ⊢ F1'] [g ⊢ B2'] i in
-         [g ⊢ s_fb (bc B2'') (fc F1'')]
-       | [g ⊢ bo B2'] ⇒ let [g ⊢ s_fbco B2'' F1''] = sp_fbco [g ⊢ F1'] [g ⊢ B2'] i in
-         [g ⊢ s_fb (bo B2'') (fc F1'')])
-  | [g ⊢ fo F1'] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bc B2'] ⇒ let [g ⊢ s_fboc B2'' F1''] = sp_fboc [g ⊢ F1'] [g ⊢ B2'] i in
-         [g ⊢ s_fb (bc B2'') (fo F1'')]
-       | [g ⊢ bo B2'] ⇒ let [g ⊢ s_fboo B2'' F1''] = sp_fboo [g ⊢ F1'] [g ⊢ B2'] i in
-         [g ⊢ s_fb (bo B2'') (fo F1'')])
+% Third auxiliary lemma for SP, open-open case:
+% Given two composable transitions, where the former is backward open and the latter is
+% forward open, and with independent proof labels, there exist a forward
+% and a backward transition closing the square diagram.
+rec sp_bfoo: (g:ctx) {B1:[g ⊢ bstep_op X T1 X1]} {F2:[g ⊢ fstep_op X1 T2 Y]}
+  [g ⊢ indep (p_op T1) (p_op T2)] → [g ⊢ square_bfoo B1 F2] =
+/ total b1 (sp_bfoo _ _ _ _ _ _ b1 _ _) /
+?
+;
+
+
+
+% Existence of combined transitions closing a square diagram
+LF square: step X T1 X1 → step X T2 X2 → type =
+  | sq: step X1 T2 Y → step X2 T1 Y → square (S1:step X T1 X1) (S2:step X T2 X2)
+;
+
+
+% Square Property:
+% Given two coinitial combined transitions with independent proof labels,
+% there exist two cofinal combined transition closing the square diagram.
+rec sp: (g:ctx) {S1:[g ⊢ step X T1 X1]} {S2:[g ⊢ step X T2 X2]}
+  [g ⊢ indep T1 T2] → [g ⊢ square S1 S2] =
+/ total s1 (sp _ _ _ _ _ _ s1 _ _) /
+mlam S1,S2 ⇒ fn i ⇒ case [_ ⊢ S1] of
+  | [g ⊢ sc (fwc F1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ B1] = loop_lemma_one_cl [g ⊢ F1] in
+         let [g ⊢ s_bfcc F2' B1'] = sp_bfcc [g ⊢ B1] [g ⊢ F2] i in
+         let [g ⊢ F1'] = loop_lemma_two_cl [g ⊢ B1'] in [g ⊢ sq (sc (fwc F2')) (sc (fwc F1'))]
+       | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ B1] = loop_lemma_one_cl [g ⊢ F1] in
+         let [g ⊢ s_bfco F2' B1'] = sp_bfco [g ⊢ B1] [g ⊢ F2] i in
+         let [g ⊢ F1'] = loop_lemma_two_cl [g ⊢ B1'] in [g ⊢ sq (so (fwo F2')) (sc (fwc F1'))]
+       | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
+         let [g ⊢ i_cc I] = i in
+         let [g ⊢ I'] = symmetric_indep [g ⊢ I] in
+         let [g ⊢ s_ffcc F1' F2'] = sp_ffcc [g ⊢ F2] [g ⊢ F1] [g ⊢ i_cc I'] in
+         let [g ⊢ B2'] = loop_lemma_one_cl [g ⊢ F2'] in [g ⊢ sq (sc (bwc B2')) (sc (fwc F1'))]
+       | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
+         let [g ⊢ i_co \a.I] = i in
+         let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in
+         let [g ⊢ s_ffoc F1' F2'] = sp_ffoc [g ⊢ F2] [g ⊢ F1] [g ⊢ i_oc \a.I'] in
+         let [g ⊢ B2'] = loop_lemma_one_op [g ⊢ F2'] in [g ⊢ sq (so (bwo B2')) (sc (fwc F1'))])
+  | [g ⊢ so (fwo F1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ B1] = loop_lemma_one_op [g ⊢ F1] in
+         let [g ⊢ s_bfoc F2' B1'] = sp_bfoc [g ⊢ B1] [g ⊢ F2] i in
+         let [g ⊢ F1'] = loop_lemma_two_op [g ⊢ B1'] in [g ⊢ sq (sc (fwc F2')) (so (fwo F1'))]
+       | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ B1] = loop_lemma_one_op [g ⊢ F1] in
+         let [g ⊢ s_bfoo F2' B1'] = sp_bfoo [g ⊢ B1] [g ⊢ F2] i in
+         let [g ⊢ F1'] = loop_lemma_two_op [g ⊢ B1'] in [g ⊢ sq (so (fwo F2')) (so (fwo F1'))]
+       | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
+         let [g ⊢ i_oc \a.I] = i in
+         let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in
+         let [g ⊢ s_ffco F1' F2'] = sp_ffco [g ⊢ F2] [g ⊢ F1] [g ⊢ i_co \a.I'] in
+         let [g ⊢ B2'] = loop_lemma_one_cl [g ⊢ F2'] in [g ⊢ sq (sc (bwc B2')) (so (fwo F1'))]
+       | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
+         let [g ⊢ i_oo \a.I] = i in
+         let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in
+         let [g ⊢ s_ffoo F1' F2'] = sp_ffoo [g ⊢ F2] [g ⊢ F1] [g ⊢ i_oo \a.I'] in
+         let [g ⊢ B2'] = loop_lemma_one_op [g ⊢ F2'] in [g ⊢ sq (so (bwo B2')) (so (fwo F1'))])
+  | [g ⊢ sc (bwc B1)] ⇒ let [g ⊢ F1] = loop_lemma_two_cl [g ⊢ B1] in
+    (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ s_ffcc F2' F1'] = sp_ffcc [g ⊢ F1] [g ⊢ F2] i in
+         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (sc (fwc F2')) (sc (bwc B1'))]
+       | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ s_ffco F2' F1'] = sp_ffco [g ⊢ F1] [g ⊢ F2] i in
+         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (so (fwo F2')) (sc (bwc B1'))]
+       | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ s_fbcc B2' F1'] = sp_fbcc [g ⊢ F1] [g ⊢ B2] i in
+         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (sc (bwc B2')) (sc (bwc B1'))]
+       | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ s_fbco B2' F1'] = sp_fbco [g ⊢ F1] [g ⊢ B2] i in
+         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (so (bwo B2')) (sc (bwc B1'))])
+  | [g ⊢ so (bwo B1)] ⇒ let [g ⊢ F1] = loop_lemma_two_op [g ⊢ B1] in
+    (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ s_ffoc F2' F1'] = sp_ffoc [g ⊢ F1] [g ⊢ F2] i in
+         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (sc (fwc F2')) (so (bwo B1'))]
+       | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ s_ffoo F2' F1'] = sp_ffoo [g ⊢ F1] [g ⊢ F2] i in
+         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (so (fwo F2')) (so (bwo B1'))]
+       | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ s_fboc B2' F1'] = sp_fboc [g ⊢ F1] [g ⊢ B2] i in
+         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (sc (bwc B2')) (so (bwo B1'))]
+       | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ s_fboo B2' F1'] = sp_fboo [g ⊢ F1] [g ⊢ B2] i in
+         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (so (bwo B2')) (so (bwo B1'))])
 ;
