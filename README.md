@@ -44,12 +44,16 @@ to perform the type reconstruction of the formalization. Expected result, after 
 ## Type Reconstruction done:  run/../code/ccskp/lemmas-connectivity-two.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/connectivity-relationship-two.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/connectivity-relationship-two.bel ##
+## Type Reconstruction begin: run/../code/ccskp/complementarity.bel ##
+## Type Reconstruction done:  run/../code/ccskp/complementarity.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/unique-step.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/unique-step.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/lemmas-bijection.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/lemmas-bijection.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/bti.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/bti.bel ##
+## Type Reconstruction begin: run/../code/ccskp/sp.bel ##
+## Type Reconstruction done:  run/../code/ccskp/sp.bel ##
 ## Type Reconstruction begin: run/../code/bijection/definitions.bel ##
 ## Type Reconstruction done:  run/../code/bijection/definitions.bel ##
 ## Type Reconstruction begin: run/../code/bijection/functionality.bel ##
@@ -189,9 +193,11 @@ opam install --deps-only ./beluga.opam
     * `connectivity-relationship-one.bel`: … Proposition 4.4 (1)
     * `lemmas-connectivity-two.bel`: … auxiliary lemmas for Proposition 4.4 (2)
     * `connectivity-relationship-two.bel`: … Proposition 4.4 (2)
+    * `complementarity.bel`: … complementarity of dependence and independence
     * `unique-step.bel`: … uniqueness of the derivation of transitions
     * `lemmas-bijection.bel`: … auxiliary lemmas for the CCSK-CCSKP bijection
     * `bti.bel`: … BTI (backward transitions are independent)
+    * `sp.bel`: … SP (square property)
   + `bijection\`: … the proof of the bijection between CCSK and CCSKP, in particular …
     * `definitions.bel`: … definitions of the forget and enrich functions (as relations)
     * `functionality.bel`: … functionality of forget and enrich
