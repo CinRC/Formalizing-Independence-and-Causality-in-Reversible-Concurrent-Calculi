@@ -1,0 +1,76 @@
+%%% WF: well-foundedness
+
+% Test: accessibility of natural numbers (keys)
+
+% Less or equal
+LF leq: keys → keys → type =
+  | l_eq: leq M M
+  | l_ls: less M N → leq M N
+;
+
+% Auxiliary lemma: if M < s(N), then M <= N
+rec less_impl_leq: [⊢ less M (s N)] → [⊢ leq M N] =
+/ total l (less_impl_leq _ _ l) /
+fn l ⇒ case l of
+  | [⊢ lzero N] ⇒ (case dec_eq_keys [] [⊢ z] [⊢ N] of
+       | [⊢ c_eq] ⇒ [⊢ l_eq]
+       | [⊢ c_neq (nless L)] ⇒ [⊢ l_ls L]
+       | [⊢ c_neq (ngreat L)] ⇒ impossible [⊢ L])
+  | [⊢ lsucc L]:[⊢ less (s M) (s N)] ⇒ (case [⊢ N] of
+       | [⊢ z] ⇒ impossible [⊢ L]
+       | [⊢ s N'] ⇒ (case less_impl_leq [⊢ L] of
+            | [⊢ l_eq] ⇒ [⊢ l_eq]
+            | [⊢ l_ls L'] ⇒ [⊢ l_ls (lsucc L')]))
+;
+
+% Accessibility of natural numbers
+inductive acc_nat: [⊢ keys] → ctype =
+  | acc_intro_nat: {N:[⊢ keys]} ({M:[⊢ keys]} [⊢ less M N] → acc_nat [⊢ M]) → acc_nat [⊢ N]
+;
+
+% Well-foundedness of natural numbers: all numbers are accessible
+rec wf_nat: {N:[⊢ keys]} acc_nat [⊢ N] =
+/ total n (wf_nat n) /
+mlam N ⇒ case [⊢ N] of
+  | [⊢ z] ⇒ acc_intro_nat [⊢ z] (mlam M ⇒ fn l ⇒ impossible l)
+  | [⊢ s N'] ⇒ acc_intro_nat [⊢ s N'] (mlam M ⇒ fn l ⇒
+    (case less_impl_leq l of
+       | [⊢ l_eq] ⇒ wf_nat [⊢ N']
+       | [⊢ l_ls L'] ⇒ let acc_intro_nat [⊢ N'] a = wf_nat [⊢ N'] in a [⊢ M] [⊢ L']))
+;
+
+
+% Accessibility of CCSKP processes
+inductive acc: (g:ctx) [g ⊢ proc] → ctype =
+  | acc_intro: {g:ctx} {X':[g ⊢ proc]}
+    ({X:[g ⊢ proc]} {T:[g ⊢ pr_lab]} [g ⊢ fstep X T X'] → acc [g ⊢ X]) → acc [g ⊢ X']
+;
+
+% If X is accessible, then A[K].X is accessible
+rec wf_kpref: (g:ctx) {A:[g ⊢ labels]} {K:[⊢ keys]} acc [g ⊢ X] → acc [g ⊢ kpref A K[] X] =
+/ total x (wf_kpref _ _ _ x _) /
+mlam A,K ⇒ fn a ⇒ let acc_intro [g] [g ⊢ X] h = a in
+acc_intro [g] [g ⊢ kpref A K[] X] (mlam Y,T ⇒ fn f ⇒ (case f of 
+       | [g ⊢ fc (fc_pref _)] ⇒ acc_intro [g] [_ ⊢ pref A X] (mlam _,_ ⇒ fn f' ⇒
+         (case f' of
+            | [g ⊢ fc F'] ⇒ impossible [g ⊢ F']
+            | [g ⊢ fo F'] ⇒ impossible [g ⊢ F']))
+       | [g ⊢ fc (fc_kpref F _ _)] ⇒ wf_kpref [_ ⊢ _] [_ ⊢ _] (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
+       | [g ⊢ fo (fo_kpref F (\_._) _)] ⇒ wf_kpref [_ ⊢ _] [_ ⊢ _] (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
+;
+
+% Well-foundedness of processes: all processes are accessible
+rec wf_proc: (g:ctx) {X:[g ⊢ proc]} acc [g ⊢ X] =
+/ total x (wf_proc _ x) /
+mlam X ⇒ case [_ ⊢ X] of
+  | [g ⊢ null] ⇒ acc_intro [g] [_ ⊢ null] (mlam _,_ ⇒ fn f ⇒ (case f of 
+       | [g ⊢ fc F] ⇒ impossible [g ⊢ F]
+       | [g ⊢ fo F] ⇒ impossible [g ⊢ F]))
+  | [g ⊢ pref A X1] ⇒ acc_intro [g] [_ ⊢ pref A X1] (mlam _,_ ⇒ fn f ⇒ (case f of 
+       | [g ⊢ fc F] ⇒ impossible [g ⊢ F]
+       | [g ⊢ fo F] ⇒ impossible [g ⊢ F]))
+  | [g ⊢ kpref A K[] X1] ⇒ wf_kpref [_ ⊢ _] [_ ⊢ _] (wf_proc [g ⊢ X1])
+  | [g ⊢ sum X1 X2] ⇒ ?
+  | [g ⊢ par X1 X2] ⇒ ?
+  | [g ⊢ nu \a.X1] ⇒ ?
+;
