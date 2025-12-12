@@ -125,8 +125,54 @@ acc_impl_no_seq_nat (h1 [⊢ F[s z]] (h2 [⊢ z])) (snd_intro [⊢ \x. F[s x]] (
 % There is no infinite descending sequence of natural numbers.
 % Proved using the fact that each natural number is accessible, and
 % there is no infinite descending sequence starting from an accessible number
-rec no_seq_nat_up: {N:[⊢ keys]} seq_nat_dn [⊢ N] → [⊢ false] =
-/ total (no_seq_nat_up) /
+rec no_seq_nat_dn: {N:[⊢ keys]} seq_nat_dn [⊢ N] → [⊢ false] =
+/ total (no_seq_nat_dn) /
 mlam N ⇒ fn sq ⇒ let a = wf_nat [⊢ N] in 
 acc_impl_no_seq_nat a sq
+;
+
+
+%{
+inductive acc: (g:ctx) [g ⊢ proc] → ctype =
+  | acc_intro: {g:ctx} {X':[g ⊢ proc]}
+    ({X:[g ⊢ proc]} {T:[g ⊢ pr_lab]} [g ⊢ fstep X T X'] → acc [g ⊢ X]) → acc [g ⊢ X']
+;
+}%
+
+% Infinite descending sequence of forward transitions:
+% A sequence ... → Xn+1 → Xn → ... → X1 → X0, where "→" denotes a forward CCSKP transition,
+% is given by a function F: keys → proc, denoting an enumeration of CCSKP processes,
+% with the property that Xn+1=F(n+1) → F(n)=Xn for all n in keys.
+% seq_dn X0 holds iff there is an infinite descending sequence starting from X0
+
+% We need an existential type denoting the existence of a transition between two processes,
+% to avoid imposing the use of a single proof label T for all transitions in a sequence
+inductive ex_fstep: (g:ctx) [g ⊢ proc] → [g ⊢ proc] → ctype =
+  | exf: {T:[g ⊢ pr_lab]} [g ⊢ fstep X T X'] → ex_fstep [g ⊢ X] [g ⊢ X']
+;
+
+inductive seq_dn: (g:ctx) [g ⊢ proc] → ctype =
+  | seq_intro: {F:[g ⊢ keys → proc]}
+    ({N:[⊢ keys]} ex_fstep [g ⊢ (F (s N[]))] [g ⊢ (F N[])]) → seq_dn [g ⊢ F z]
+;
+
+
+% If X is accessible and there is an infinite descending sequence starting from X,
+% then we have a contradiction
+rec acc_impl_no_seq: (g:ctx) acc [g ⊢ X] → seq_dn [g ⊢ X] → [⊢ false] =
+/ total a (acc_impl_no_seq _ _ a _) /
+fn a,sq ⇒ let seq_intro [g ⊢ \x.F] h2 = sq in
+let acc_intro [_] [_ ⊢ _] h1 = a in 
+let exf [g ⊢ T] [g ⊢ F'] = h2 [⊢ z] in
+acc_impl_no_seq (h1 [g ⊢ F[..,(s z)]] [g ⊢ T] [g ⊢ F']) (seq_intro [g ⊢ \x. F[..,(s x)]] (mlam N ⇒ h2 [⊢ s N]))
+;
+
+
+% There is no infinite descending sequence of forward transitions.
+% Proved using the fact that each process is accessible, and
+% there is no infinite descending sequence starting from an accessible process
+rec no_seq_dn: (g:ctx) {X:[g ⊢ proc]} seq_dn [g ⊢ X] → [⊢ false] =
+/ total (no_seq_dn) /
+mlam X ⇒ fn sq ⇒ let a = wf_proc [_ ⊢ X] in 
+acc_impl_no_seq a sq
 ;
