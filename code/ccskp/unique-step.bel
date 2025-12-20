@@ -436,3 +436,21 @@ mlam B1 B2 ⇒ case [_ ⊢ B1] of
 LF eqst: step X1 T1 X1' → step X2 T2 X2' → type =
   | refst: eqst S S
 ;
+
+rec no_fstep_and_bstep: (g:ctx) [g ⊢ fstep X T1 X'] → [g ⊢ bstep X T2 X'] → [g ⊢ false] =
+/ total f (no_fstep_and_bstep _ _ _ _ _ f _) /
+fn f,b ⇒ ?
+;
+
+rec unique_step: (g:ctx) {S1:[g ⊢ step X T1 X']} {S2:[g ⊢ step X T2 X']} [g ⊢ eqst S1 S2] =
+/ total s1 (unique_step _ _ _ _ _ s1 _) /
+mlam S1 S2 ⇒ case [_ ⊢ S1] of
+  | [g ⊢ sc (fwc F1)] ⇒ (case [g ⊢ S2] of
+        | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F1] [g ⊢ F2] in [g ⊢ refst]
+        | [g ⊢ so (fwo F2)] ⇒ impossible no_fstep_cl_and_op [g ⊢ F1] [g ⊢ F2]
+        | [g ⊢ sc (bwc B2)] ⇒ impossible no_fstep_and_bstep [g ⊢ fc F1] [g ⊢ bc B2]
+        | [g ⊢ so (bwo B2)] ⇒ impossible no_fstep_and_bstep [g ⊢ fc F1] [g ⊢ bo B2])
+  | [g ⊢ so (fwo F1)] ⇒ ?
+  | [g ⊢ sc (bwc B1)] ⇒ ?
+  | [g ⊢ so (bwo B1)] ⇒ ?
+;
