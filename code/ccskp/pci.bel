@@ -32,5 +32,5 @@ rec functional_rev: (g:ctx) (S:[g ⊢ step X T X']) (S1:[g ⊢ step Y1 T1 Y1']) 
   [g ⊢ rev_tr S S1] → [g ⊢ rev_tr S S2] → [g ⊢ eqst S1 S2] =
 / total r1 (functional_rev _ _ _ _ r1 _) /
 fn r1,r2 ⇒ let [g ⊢ rt _ S1] = r1 in
-let [g ⊢ rt _ S2] = r2 in ?
+let [g ⊢ rt _ S2] = r2 in unique_step [g ⊢ S1] [g ⊢ S2]
 ;

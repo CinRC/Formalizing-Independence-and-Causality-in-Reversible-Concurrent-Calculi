@@ -65,7 +65,7 @@ rec inverse_bo_one: (g:ctx) (B1:[g ⊢ ccskp.bstep_op X T1 X']) (B2:[g ⊢ ccsk.
 / total b1 (inverse_bo_one _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fg_bo B1 B2 \_._] = d1 in
 let [g ⊢ en_bo B2 B3 \_._] = d2 in
-unique_bstep_open [g ⊢ B1] [g ⊢ B3]
+unique_bstep_op [g ⊢ B1] [g ⊢ B3]
 ;
 
 % forget_bo and enrich_bc are not composable.

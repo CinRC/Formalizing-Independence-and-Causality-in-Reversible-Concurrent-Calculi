@@ -396,8 +396,8 @@ LF eqbo: bstep_op X1' T1 X1 → bstep_op X2' T2 X2 → type =
 ;
 
 % Uniqueness of the derivation of bstep_op X' T X
-rec unique_bstep_open: (g:ctx) {B1:[g ⊢ bstep_op X' T1 X]} {B2:[g ⊢ bstep_op X' T2 X]} [g ⊢ eqbo B1 B2] =
-/ total b1 (unique_bstep_open _ _ _ _ _ b1 _) /
+rec unique_bstep_op: (g:ctx) {B1:[g ⊢ bstep_op X' T1 X]} {B2:[g ⊢ bstep_op X' T2 X]} [g ⊢ eqbo B1 B2] =
+/ total b1 (unique_bstep_op _ _ _ _ _ b1 _) /
 mlam B1 B2 ⇒ case [_ ⊢ B1] of
   | [g ⊢ bo_nu_cl (\a.O1) (\a.L1) (\a.B1')] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_nu_cl (\a.O2) (\a.L2) (\a.B2')] ⇒
@@ -406,30 +406,30 @@ mlam B1 B2 ⇒ case [_ ⊢ B1] of
          let [g,a:names ⊢ refoc] = unique_occ [g,a:names ⊢ O1] [g,a:names ⊢ O2] in [g ⊢ refbo]
        | [g ⊢ bo_nu_op \a.B2'] ⇒ impossible no_bstep_cl_and_op [g,a:names ⊢ B1'] [g,a:names ⊢ B2'])
   | [g ⊢ bo_kpref B1' (\a.H1) I1] ⇒ let [g ⊢ bo_kpref B2' (\a.H2) I2] = [g ⊢ B2] in
-    let [g ⊢ refbo] = unique_bstep_open [g ⊢ B1'] [g ⊢ B2'] in
+    let [g ⊢ refbo] = unique_bstep_op [g ⊢ B1'] [g ⊢ B2'] in
     let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
     let refnq [g ⊢ I1] = unique_neq [g ⊢ I1] [g ⊢ I2] in [g ⊢ refbo]
   | [g ⊢ bo_suml B1' D1] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bo_suml B2' D2] ⇒ let [g ⊢ refbo] = unique_bstep_open [g ⊢ B1'] [g ⊢ B2'] in
+       | [g ⊢ bo_suml B2' D2] ⇒ let [g ⊢ refbo] = unique_bstep_op [g ⊢ B1'] [g ⊢ B2'] in
          let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ refbo]
        | [g ⊢ bo_sumr B2' D2] ⇒ impossible source_is_not_std_bo [g ⊢ B1'] [g ⊢ D2])
   | [g ⊢ bo_sumr B1' D1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_suml B2' D2] ⇒ impossible source_is_not_std_bo [g ⊢ B1'] [g ⊢ D2]
-       | [g ⊢ bo_sumr B2' D2] ⇒ let [g ⊢ refbo] = unique_bstep_open [g ⊢ B1'] [g ⊢ B2'] in
+       | [g ⊢ bo_sumr B2' D2] ⇒ let [g ⊢ refbo] = unique_bstep_op [g ⊢ B1'] [g ⊢ B2'] in
          let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ refbo])
   | [g ⊢ bo_parl B1' (\a.H1) N1] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bo_parl B2' (\a.H2) N2] ⇒ let [g ⊢ refbo] = unique_bstep_open [g ⊢ B1'] [g ⊢ B2'] in
+       | [g ⊢ bo_parl B2' (\a.H2) N2] ⇒ let [g ⊢ refbo] = unique_bstep_op [g ⊢ B1'] [g ⊢ B2'] in
          let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
          let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ refbo]
        | [g ⊢ bo_parr B2' (\_._) _] ⇒ impossible target_is_not_source_bo [g ⊢ B2'])
   | [g ⊢ bo_parr B1' (\a.H1) N1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_parl B2' (\_._) _] ⇒ impossible target_is_not_source_bo [g ⊢ B2']
-       | [g ⊢ bo_parr B2' (\a.H2) N2] ⇒ let [g ⊢ refbo] = unique_bstep_open [g ⊢ B1'] [g ⊢ B2'] in
+       | [g ⊢ bo_parr B2' (\a.H2) N2] ⇒ let [g ⊢ refbo] = unique_bstep_op [g ⊢ B1'] [g ⊢ B2'] in
          let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
          let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ refbo])
   | [g ⊢ bo_nu_op \a.B1'] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bo_nu_cl (\a.O) (\a.L) (\a.B2')] ⇒ impossible no_bstep_cl_and_op [g,a:names ⊢ B2'] [g,a:names ⊢ B1']
-       | [g ⊢ bo_nu_op \a.B2'] ⇒ let [g,a:names ⊢ refbo] = unique_bstep_open [g,a:names ⊢ B1'] [g,a:names ⊢ B2'] in [g ⊢ refbo])
+       | [g ⊢ bo_nu_op \a.B2'] ⇒ let [g,a:names ⊢ refbo] = unique_bstep_op [g,a:names ⊢ B1'] [g,a:names ⊢ B2'] in [g ⊢ refbo])
 ;
 
 % Equality of derivations of step X T X'
@@ -437,20 +437,149 @@ LF eqst: step X1 T1 X1' → step X2 T2 X2' → type =
   | refst: eqst S S
 ;
 
-rec no_fstep_and_bstep: (g:ctx) [g ⊢ fstep X T1 X'] → [g ⊢ bstep X T2 X'] → [g ⊢ false] =
-/ total f (no_fstep_and_bstep _ _ _ _ _ f _) /
-fn f,b ⇒ ?
+% Given two processes X and X', there cannot be both a forward closed transition and backward closed transition between them
+rec no_fstep_cl_and_bstep_cl: (g:ctx) [g ⊢ fstep_cl X T1 X'] → [g ⊢ bstep_cl X T2 X'] → [g ⊢ false] =
+/ total f (no_fstep_cl_and_bstep_cl _ _ _ _ _ f _) /
+fn f,b ⇒ case f of
+  | [g ⊢ fc_pref _] ⇒ impossible b
+  | [g ⊢ fc_kpref F _ _] ⇒ let [g ⊢ bc_kpref B _ _] = b in
+    impossible no_fstep_cl_and_bstep_cl [g ⊢ F] [g ⊢ B]
+  | [g ⊢ fc_suml F _] ⇒ (case b of
+       | [g ⊢ bc_suml B _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bc_sumr B _] ⇒ impossible target_is_not_source_fc [g ⊢ F])
+  | [g ⊢ fc_sumr F _] ⇒ (case b of
+       | [g ⊢ bc_suml B _] ⇒ impossible target_is_not_source_fc [g ⊢ F]
+       | [g ⊢ bc_sumr B _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ F] [g ⊢ B])
+  | [g ⊢ fc_parl F _ _] ⇒ (case b of
+       | [g ⊢ bc_parl B _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bc_parr B _ _] ⇒ impossible target_is_not_source_fc [g ⊢ F]
+       | [g ⊢ bc_synl _ _ _ BR _ _] ⇒ impossible target_is_not_source_bc [g ⊢ BR]
+       | [g ⊢ bc_synr _ _ _ BR _ _] ⇒ impossible target_is_not_source_bc [g ⊢ BR])
+  | [g ⊢ fc_parr F _ _] ⇒ (case b of
+       | [g ⊢ bc_parl B _ _] ⇒ impossible target_is_not_source_fc [g ⊢ F]
+       | [g ⊢ bc_parr B _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bc_synl BL _ _ _ _ _] ⇒ impossible target_is_not_source_bc [g ⊢ BL]
+       | [g ⊢ bc_synr BL _ _ _ _ _] ⇒ impossible target_is_not_source_bc [g ⊢ BL])
+  | [g ⊢ fc_synl FL _ _ FR _ _] ⇒ (case b of
+       | [g ⊢ bc_parl B _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ FL] [g ⊢ B]
+       | [g ⊢ bc_parr B _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ FR] [g ⊢ B]
+       | [g ⊢ bc_synl BL _ _ _ _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ FL] [g ⊢ BL]
+       | [g ⊢ bc_synr BL _ _ _ _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ FL] [g ⊢ BL])
+  | [g ⊢ fc_synr FL _ _ FR _ _] ⇒ (case b of
+       | [g ⊢ bc_parl B _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ FL] [g ⊢ B]
+       | [g ⊢ bc_parr B _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ FR] [g ⊢ B]
+       | [g ⊢ bc_synl BL _ _ _ _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ FL] [g ⊢ BL]
+       | [g ⊢ bc_synr BL _ _ _ _ _] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ FL] [g ⊢ BL])
+  | [g ⊢ fc_nu \a.F] ⇒ let [g ⊢ bc_nu \a.B] = b in
+    impossible no_fstep_cl_and_bstep_cl [_ ⊢ F] [_ ⊢ B]
 ;
 
+% Given two processes X and X', there cannot be both a forward closed transition and a backward open transition between them
+rec no_fstep_cl_and_bstep_op: (g:ctx) [g ⊢ fstep_cl X T1 X'] → [g ⊢ bstep_op X T2 X'] → [g ⊢ false] =
+/ total f (no_fstep_cl_and_bstep_op _ _ _ _ _ f _) /
+fn f,b ⇒ case f of
+  | [g ⊢ fc_pref _] ⇒ impossible b
+  | [g ⊢ fc_kpref F _ _] ⇒ let [g ⊢ bo_kpref B (\_._) _] = b in
+    impossible no_fstep_cl_and_bstep_op [g ⊢ F] [g ⊢ B]
+  | [g ⊢ fc_suml F _] ⇒ (case b of
+       | [g ⊢ bo_suml B _] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bo_sumr B _] ⇒ impossible target_is_not_source_fc [g ⊢ F])
+  | [g ⊢ fc_sumr F _] ⇒ (case b of
+       | [g ⊢ bo_suml B _] ⇒ impossible target_is_not_source_fc [g ⊢ F]
+       | [g ⊢ bo_sumr B _] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ F] [g ⊢ B])
+  | [g ⊢ fc_parl F _ _] ⇒ (case b of
+       | [g ⊢ bo_parl B (\_._) _] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bo_parr B (\_._) _] ⇒ impossible target_is_not_source_fc [g ⊢ F])
+  | [g ⊢ fc_parr F _ _] ⇒ (case b of
+       | [g ⊢ bo_parl B (\_._) _] ⇒ impossible target_is_not_source_fc [g ⊢ F]
+       | [g ⊢ bo_parr B (\_._) _] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ F] [g ⊢ B])
+  | [g ⊢ fc_synl FL _ _ FR _ _] ⇒ (case b of
+       | [g ⊢ bo_parl B (\_._) _] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ FL] [g ⊢ B]
+       | [g ⊢ bo_parr B (\_._) _] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ FR] [g ⊢ B])
+  | [g ⊢ fc_synr FL _ _ FR _ _] ⇒ (case b of
+       | [g ⊢ bo_parl B (\_._) _] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ FL] [g ⊢ B]
+       | [g ⊢ bo_parr B (\_._) _] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ FR] [g ⊢ B])
+  | [g ⊢ fc_nu \a.F] ⇒ (case b of
+       | [g ⊢ bo_nu_cl (\_._) (\_._) (\a.B)] ⇒ impossible no_fstep_cl_and_bstep_cl [_ ⊢ F] [_ ⊢ B]
+       | [g ⊢ bo_nu_op \a.B] ⇒ impossible no_fstep_cl_and_bstep_op [_ ⊢ F] [_ ⊢ B])
+;
+
+% Given two processes X and X', there cannot be both a forward open transition and a backward closed transition between them
+rec no_fstep_op_and_bstep_cl: (g:ctx) [g ⊢ fstep_op X T1 X'] → [g ⊢ bstep_cl X T2 X'] → [g ⊢ false] =
+/ total f (no_fstep_op_and_bstep_cl _ _ _ _ _ f _) /
+fn f,b ⇒ case f of
+  | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F)] ⇒ let [g ⊢ bc_nu \a.B] = b in
+    impossible no_fstep_cl_and_bstep_cl [_ ⊢ F] [_ ⊢ B]
+  | [g ⊢ fo_kpref F (\_._) _] ⇒ let [g ⊢ bc_kpref B _ _] = b in
+    impossible no_fstep_op_and_bstep_cl [g ⊢ F] [g ⊢ B]
+  | [g ⊢ fo_suml F _] ⇒ (case b of
+       | [g ⊢ bc_suml B _] ⇒ impossible no_fstep_op_and_bstep_cl [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bc_sumr B _] ⇒ impossible target_is_not_source_fo [g ⊢ F])
+  | [g ⊢ fo_sumr F _] ⇒ (case b of
+       | [g ⊢ bc_suml B _] ⇒ impossible target_is_not_source_fo [g ⊢ F]
+       | [g ⊢ bc_sumr B _] ⇒ impossible no_fstep_op_and_bstep_cl [g ⊢ F] [g ⊢ B])
+  | [g ⊢ fo_parl F (\_._) _] ⇒ (case b of
+       | [g ⊢ bc_parl B _ _] ⇒ impossible no_fstep_op_and_bstep_cl [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bc_parr B _ _] ⇒ impossible target_is_not_source_fo [g ⊢ F]
+       | [g ⊢ bc_synl _ _ _ BR _ _] ⇒ impossible target_is_not_source_bc [g ⊢ BR]
+       | [g ⊢ bc_synr _ _ _ BR _ _] ⇒ impossible target_is_not_source_bc [g ⊢ BR])
+  | [g ⊢ fo_parr F (\_._) _] ⇒ (case b of
+       | [g ⊢ bc_parl B _ _] ⇒ impossible target_is_not_source_fo [g ⊢ F]
+       | [g ⊢ bc_parr B _ _] ⇒ impossible no_fstep_op_and_bstep_cl [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bc_synl BL _ _ _ _ _] ⇒ impossible target_is_not_source_bc [g ⊢ BL]
+       | [g ⊢ bc_synr BL _ _ _ _ _] ⇒ impossible target_is_not_source_bc [g ⊢ BL])
+  | [g ⊢ fo_nu_op \a.F] ⇒ let [g ⊢ bc_nu \a.B] = b in
+    impossible no_fstep_op_and_bstep_cl [_ ⊢ F] [_ ⊢ B]
+;
+
+% Given two processes X and X', there cannot be both a forward open transition and a backward open transition between them
+rec no_fstep_op_and_bstep_op: (g:ctx) [g ⊢ fstep_op X T1 X'] → [g ⊢ bstep_op X T2 X'] → [g ⊢ false] =
+/ total f (no_fstep_op_and_bstep_op _ _ _ _ _ f _) /
+fn f,b ⇒ case f of
+  | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F)] ⇒ (case b of
+       | [g ⊢ bo_nu_cl (\_._) (\_._) (\a.B)] ⇒ impossible no_fstep_cl_and_bstep_cl [_ ⊢ F] [_ ⊢ B]
+       | [g ⊢ bo_nu_op \a.B] ⇒ impossible no_fstep_cl_and_bstep_op [_ ⊢ F] [_ ⊢ B])
+  | [g ⊢ fo_kpref F (\_._) _] ⇒ let [g ⊢ bo_kpref B (\_._) _] = b in
+    impossible no_fstep_op_and_bstep_op [g ⊢ F] [g ⊢ B]
+  | [g ⊢ fo_suml F _] ⇒ (case b of
+       | [g ⊢ bo_suml B _] ⇒ impossible no_fstep_op_and_bstep_op [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bo_sumr B _] ⇒ impossible target_is_not_source_fo [g ⊢ F])
+  | [g ⊢ fo_sumr F _] ⇒ (case b of
+       | [g ⊢ bo_suml B _] ⇒ impossible target_is_not_source_fo [g ⊢ F]
+       | [g ⊢ bo_sumr B _] ⇒ impossible no_fstep_op_and_bstep_op [g ⊢ F] [g ⊢ B])
+  | [g ⊢ fo_parl F (\_._) _] ⇒ (case b of
+       | [g ⊢ bo_parl B (\_._) _] ⇒ impossible no_fstep_op_and_bstep_op [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bo_parr B (\_._) _] ⇒ impossible target_is_not_source_fo [g ⊢ F])
+  | [g ⊢ fo_parr F (\_._) _] ⇒ (case b of
+       | [g ⊢ bo_parl B (\_._) _] ⇒ impossible target_is_not_source_fo [g ⊢ F]
+       | [g ⊢ bo_parr B (\_._) _] ⇒ impossible no_fstep_op_and_bstep_op [g ⊢ F] [g ⊢ B])
+  | [g ⊢ fo_nu_op \a.F] ⇒ (case b of
+       | [g ⊢ bo_nu_cl (\_._) (\_._) (\a.B)] ⇒ impossible no_fstep_op_and_bstep_cl [_ ⊢ F] [_ ⊢ B]
+       | [g ⊢ bo_nu_op \a.B] ⇒ impossible no_fstep_op_and_bstep_op [_ ⊢ F] [_ ⊢ B])
+;
+
+% Uniqueness of the derivation of step X T X'
 rec unique_step: (g:ctx) {S1:[g ⊢ step X T1 X']} {S2:[g ⊢ step X T2 X']} [g ⊢ eqst S1 S2] =
 / total s1 (unique_step _ _ _ _ _ s1 _) /
 mlam S1 S2 ⇒ case [_ ⊢ S1] of
   | [g ⊢ sc (fwc F1)] ⇒ (case [g ⊢ S2] of
         | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F1] [g ⊢ F2] in [g ⊢ refst]
         | [g ⊢ so (fwo F2)] ⇒ impossible no_fstep_cl_and_op [g ⊢ F1] [g ⊢ F2]
-        | [g ⊢ sc (bwc B2)] ⇒ impossible no_fstep_and_bstep [g ⊢ fc F1] [g ⊢ bc B2]
-        | [g ⊢ so (bwo B2)] ⇒ impossible no_fstep_and_bstep [g ⊢ fc F1] [g ⊢ bo B2])
-  | [g ⊢ so (fwo F1)] ⇒ ?
-  | [g ⊢ sc (bwc B1)] ⇒ ?
-  | [g ⊢ so (bwo B1)] ⇒ ?
+        | [g ⊢ sc (bwc B2)] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ F1] [g ⊢ B2]
+        | [g ⊢ so (bwo B2)] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ F1] [g ⊢ B2])
+  | [g ⊢ so (fwo F1)] ⇒ (case [g ⊢ S2] of
+        | [g ⊢ sc (fwc F2)] ⇒ impossible no_fstep_cl_and_op [g ⊢ F2] [g ⊢ F1]
+        | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ reffo] = unique_fstep_op [g ⊢ F1] [g ⊢ F2] in [g ⊢ refst]
+        | [g ⊢ sc (bwc B2)] ⇒ impossible no_fstep_op_and_bstep_cl [g ⊢ F1] [g ⊢ B2]
+        | [g ⊢ so (bwo B2)] ⇒ impossible no_fstep_op_and_bstep_op [g ⊢ F1] [g ⊢ B2])
+  | [g ⊢ sc (bwc B1)] ⇒ (case [g ⊢ S2] of
+        | [g ⊢ sc (fwc F2)] ⇒ impossible no_fstep_cl_and_bstep_cl [g ⊢ F2] [g ⊢ B1]
+        | [g ⊢ so (fwo F2)] ⇒ impossible no_fstep_op_and_bstep_cl [g ⊢ F2] [g ⊢ B1]
+        | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ refbc] = unique_bstep_cl [g ⊢ B1] [g ⊢ B2] in [g ⊢ refst]
+        | [g ⊢ so (bwo B2)] ⇒ impossible no_bstep_cl_and_op [g ⊢ B1] [g ⊢ B2])
+  | [g ⊢ so (bwo B1)] ⇒ (case [g ⊢ S2] of
+        | [g ⊢ sc (fwc F2)] ⇒ impossible no_fstep_cl_and_bstep_op [g ⊢ F2] [g ⊢ B1]
+        | [g ⊢ so (fwo F2)] ⇒ impossible no_fstep_op_and_bstep_op [g ⊢ F2] [g ⊢ B1]
+        | [g ⊢ sc (bwc B2)] ⇒ impossible no_bstep_cl_and_op [g ⊢ B2] [g ⊢ B1]
+        | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ refbo] = unique_bstep_op [g ⊢ B1] [g ⊢ B2] in [g ⊢ refst])
 ;

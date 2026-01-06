@@ -107,7 +107,7 @@ rec functional_enrich_bo: (g:ctx) (B:[g ⊢ ccsk.bstep X T X']) (B1:[g ⊢ ccskp
 / total b (functional_enrich_bo _ _ _ _ _ _ b _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ en_bo _ B1 \_._] = d1 in
 let [g ⊢ en_bo _ B2 \_._] = d2 in
-unique_bstep_open [_ ⊢ B1] [_ ⊢ B2]
+unique_bstep_op [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 % The domains of enrich_bc and enrich_bo are disjoint:
