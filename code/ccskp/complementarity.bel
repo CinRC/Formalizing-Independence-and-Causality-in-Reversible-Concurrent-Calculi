@@ -29,6 +29,17 @@ fn i ⇒ case i of
        let [g ⊢ I2'] = symmetric_indep [g ⊢ I2] in [g ⊢ i_s3 I1' I2']
 ;
 
+% We generalize this result to proof labels up to alpha-equivalence,
+% since it is needed in a later proof (see pci.bel).
+rec symmetric_indep_pl: (g:ctx) [g ⊢ indep T1 T2] → [g ⊢ indep T2 T1] =
+/ total i (symmetric_indep_pl _ _ _ i) /
+fn i ⇒ case i of
+  | [g ⊢ i_cc I] ⇒ let [g ⊢ I'] = symmetric_indep [g ⊢ I] in [g ⊢ i_cc I']
+  | [g ⊢ i_co \a.I] ⇒ let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in [g ⊢ i_oc \a.I']
+  | [g ⊢ i_oc \a.I] ⇒ let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in [g ⊢ i_co \a.I']
+  | [g ⊢ i_oo \a.I] ⇒ let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in [g ⊢ i_oo \a.I']
+;
+
 % Proof that connectivity is symmetric
 rec symmetric_conn: (g:ctx) [g ⊢ conn_cl T1 T2] → [g ⊢ conn_cl T2 T1] =
 / total c (symmetric_conn _ _ _ c) /

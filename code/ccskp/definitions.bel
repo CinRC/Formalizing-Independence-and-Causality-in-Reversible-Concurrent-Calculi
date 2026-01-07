@@ -306,4 +306,9 @@ LF indep: pr_lab → pr_lab → type =
   | i_oo: ({a:names} indep_cl (T1 a) (T2 a)) → indep (p_op (open T1)) (p_op (open T2))
 ;
 
+% Independence of transitions
+LF indep_tr: step X T1 X' → step Y T2 Y' → type =
+  | ind_tr: indep T1 T2 → indep_tr (S1:step X T1 X') (S2:step Y T2 Y')
+;
+
 end;
