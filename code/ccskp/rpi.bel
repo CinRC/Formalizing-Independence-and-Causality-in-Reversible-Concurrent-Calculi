@@ -1,0 +1,10 @@
+%%% RPI: reversing preserves independence
+
+% Reversing preserves independence (RPI):
+% If two transitions t and t' are independent, then also inv_tr(t) and t' are independent.
+rec rpi: (g:ctx) (T:[g ⊢ step X1 T1 Y1]) (T':[g ⊢ step X2 T2 Y2]) (S:[g ⊢ step Y1 T1 X1]) 
+  [g ⊢ indep_tr T T'] → [g ⊢ inv_tr T S] → [g ⊢ indep_tr S T'] =
+/ total (rpi _ _ _ _ _ _ _ t _ _ _ _) /
+fn i,d ⇒ let [g ⊢ ind_tr I] = i in
+let [g ⊢ it T S] = d in [g ⊢ ind_tr I]
+;

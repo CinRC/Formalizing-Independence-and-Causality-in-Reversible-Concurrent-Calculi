@@ -46,7 +46,7 @@ let [g ⊢ it S2 S3] = d2 in unique_step [g ⊢ S1] [g ⊢ S3]
 
 % Propagation of coinitial independence (PCI):
 % Given t:step X T1 Y, u:step X T2 Z, u':step Y T2 W and t':step Z T1 W,
-% if t and u are independent, then u' and rev(t) are independent.
+% if t and u are independent, then u' and inv_tr(t) are independent.
 rec pci: (g:ctx) (T:[g ⊢ step X T1 Y]) (U:[g ⊢ step X T2 Z]) (U':[g ⊢ step Y T2 W])
   (T':[g ⊢ step Z T1 W]) (S:[g ⊢ step Y T1 X]) [g ⊢ indep_tr T U] → [g ⊢ inv_tr T S] → [g ⊢ indep_tr U' S] =
 / total (pci _ _ _ _ _ _ _ t _ _ _ _ _ _) /
