@@ -265,13 +265,13 @@ mlam F ⇒ case [_ ⊢ F] of
               let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
               [g ⊢ ex_enfo (en_fo F (ccskp.fo_nu_cl (\a.O) (\a.L) (\a.F1')) (\a.H))]
             | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
-              let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
+              let [g,a:names ⊢ refplc] = [g,a:names ⊢ E] in
               let [g ⊢ L'] = str_labr [g,a:names ⊢ L] in
               let [g ⊢ H'] = str_key [g,a:names ⊢ H] in
               [g ⊢ ex_enfc (en_fc F (ccskp.fc_nu \a.F1') L' H')])
        | [g,a:names ⊢ ex_enfo (en_fo F1 F1' \b.H[..,b,a])] ⇒
          let ex_sfo [g,b:names ⊢ F1'] [g,b:names ⊢ F1''] e = str_fstep_op [g,b:names ⊢ F1'] in
-         let [g,a:names,b:names ⊢ refpl] = e in
+         let [g,a:names,b:names ⊢ refplc] = e in
          [g ⊢ ex_enfo (en_fo F (ccskp.fo_nu_op \a.F1'') \a.H[..,a])])
 ;
 
@@ -320,13 +320,13 @@ mlam B ⇒ case [_ ⊢ B] of
               let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L] [g,a:names ⊢ L'] in
               [g ⊢ ex_enbo (en_bo B (ccskp.bo_nu_cl (\a.O) (\a.L) (\a.B1')) (\a.H))]
             | noc [g,a:names ⊢ T] [g,a:names ⊢ E] ⇒
-              let [g,a:names ⊢ refpl] = [g,a:names ⊢ E] in
+              let [g,a:names ⊢ refplc] = [g,a:names ⊢ E] in
               let [g ⊢ L'] = str_labr [g,a:names ⊢ L] in
               let [g ⊢ H'] = str_key [g,a:names ⊢ H] in
               [g ⊢ ex_enbc (en_bc B (ccskp.bc_nu \a.B1') L' H')])
        | [g,a:names ⊢ ex_enbo (en_bo B1 B1' \b.H[..,b,a])] ⇒
          let ex_sbo [g,b:names ⊢ B1'] [g,b:names ⊢ B1''] e = str_bstep_open [g,b:names ⊢ B1'] in
-         let [g,a:names,b:names ⊢ refpl] = e in
+         let [g,a:names,b:names ⊢ refplc] = e in
          [g ⊢ ex_enbo (en_bo B (ccskp.bo_nu_op \a.B1'') \a.H[..,a])])
 ;
 
