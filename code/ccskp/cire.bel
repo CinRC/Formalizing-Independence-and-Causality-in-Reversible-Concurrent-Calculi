@@ -1,0 +1,12 @@
+%%% CIRE: coinitial independence respects events
+
+% Coinitial independence respects events (CIRE):
+% Given four transitions t,t',u and u', if t~t', u~u', t and u are coinitial,
+% t' and u' are coinitial, and t' and u' are independent, then also t and u are independent.
+rec cire: (g:ctx) (T:[g ⊢ step X1 T1 Y1]) (T':[g ⊢ step X2 T2 Y2]) (U:[g ⊢ step X1 T3 Y3]) (U':[g ⊢ step X2 T4 Y4])
+  equiv_tr [g ⊢ T] [g ⊢ T'] → equiv_tr [g ⊢ U] [g ⊢ U'] → [g ⊢ indep_tr T' U'] → [g ⊢ indep_tr T U] =
+/ total e (cire _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ e _ _) /
+fn et,eu,i ⇒ let [g ⊢ ind_tr I] = i in
+let [_ ⊢ refpl] = equiv_tr_have_same_label et in
+let [_ ⊢ refpl] = equiv_tr_have_same_label eu in [_ ⊢ ind_tr I]
+;

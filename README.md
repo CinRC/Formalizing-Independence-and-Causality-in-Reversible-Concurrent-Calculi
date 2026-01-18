@@ -58,6 +58,10 @@ to perform the type reconstruction of the formalization. Expected result, after 
 ## Type Reconstruction done:  run/../code/ccskp/wf.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/pci.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/pci.bel ##
+## Type Reconstruction begin: run/../code/ccskp/ire.bel ##
+## Type Reconstruction done:  run/../code/ccskp/ire.bel ##
+## Type Reconstruction begin: run/../code/ccskp/cire.bel ##
+## Type Reconstruction done:  run/../code/ccskp/cire.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/rpi.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/rpi.bel ##
 ## Type Reconstruction begin: run/../code/bijection/definitions.bel ##
@@ -206,6 +210,8 @@ opam install --deps-only ./beluga.opam
     * `sp.bel`: … SP (square property)
     * `wf.bel`: … WF (well-foundedness)
     * `pci.bel`: … PCI (propagation of coinitial independence)
+    * `ire.bel`: … IRE (independence respects events)
+    * `cire.bel`: … CIRE (coinitial independence respects events)
     * `rpi.bel`: … RPI (reversing preserves independence)
   + `bijection\`: … the proof of the bijection between CCSK and CCSKP, in particular …
     * `definitions.bel`: … definitions of the forget and enrich functions (as relations)
