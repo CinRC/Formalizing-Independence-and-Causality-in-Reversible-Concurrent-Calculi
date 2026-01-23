@@ -1,47 +1,6 @@
 %%% PCI: propagation of coinitial independence
 
-% The statement of PCI requires the notion of inverse of a transition, which has not been used so far
-% in the development. We define it here and show that the definition is well-posed.
 
-% Inverse of a transition: inv_tr S1 S2 holds iff S2 is the inverse of S1
-LF inv_tr: step X T1 X' → step Y T2 Y' → type =
-  | it: {S1:step X T X'} {S2:step X' T X} inv_tr S1 S2
-;
-
-% We show that, thanks to the loop lemma, inv_tr is a function and, in particular, an involution (inv_tr ∘ inv_tr = id).
-
-% Existential type denoting existence of an inverse transition
-LF ex_inv: step X T X' → type =
-  | ex_iv: inv_tr S1 S2 → ex_inv S1
-;
-
-% Totality of inv_tr: given a transition S,
-% there exists at least one transition S' such that inv_tr(S)=S'.
-rec total_inv: (g:ctx) {S:[g ⊢ step X T X']} [g ⊢ ex_inv S] =
-/ total (total_inv) /
-mlam S ⇒ case [_ ⊢ S] of
-  | [g ⊢ sc (fwc F)] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ ex_iv (it S (sc (bwc B)))]
-  | [g ⊢ so (fwo F)] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ ex_iv (it S (so (bwo B)))]
-  | [g ⊢ sc (bwc B)] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ ex_iv (it S (sc (fwc F)))]
-  | [g ⊢ so (bwo B)] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ ex_iv (it S (so (fwo F)))]
-;
-
-% Functionality of inv_tr: given a transition S,
-% there is at most one transition S' such that inv_tr(S)=S'.
-rec functional_inv: (g:ctx) (S:[g ⊢ step X T X']) (S1:[g ⊢ step Y1 T1 Y1']) (S2:[g ⊢ step Y2 T2 Y2'])
-  [g ⊢ inv_tr S S1] → [g ⊢ inv_tr S S2] → [g ⊢ eqst S1 S2] =
-/ total r1 (functional_inv _ _ _ _ r1 _) /
-fn r1,r2 ⇒ let [g ⊢ it _ S1] = r1 in
-let [g ⊢ it _ S2] = r2 in unique_step [g ⊢ S1] [g ⊢ S2]
-;
-
-% inv_tr is an involution: inv_tr ∘ inv_tr = id.
-rec involution_inv: (g:ctx) (S1:[g ⊢ step X1 T1 X1']) (S2:[g ⊢ step X2 T2 X2'])
-  (S3:[g ⊢ step X3 T3 X3']) [g ⊢ inv_tr S1 S2] → [g ⊢ inv_tr S2 S3] → [g ⊢ eqst S1 S3] =
-/ total s1 (involution_inv _ _ _ _ _ _ _ _ _ _ s1 _ _ _ _) /
-fn d1,d2 ⇒ let [g ⊢ it S1 S2] = d1 in
-let [g ⊢ it S2 S3] = d2 in unique_step [g ⊢ S1] [g ⊢ S3]
-;
 
 
 % Propagation of coinitial independence (PCI):
@@ -50,7 +9,7 @@ let [g ⊢ it S2 S3] = d2 in unique_step [g ⊢ S1] [g ⊢ S3]
 rec pci: (g:ctx) (T:[g ⊢ step X T1 Y]) (U:[g ⊢ step X T2 Z]) (U':[g ⊢ step Y T2 W])
   (T':[g ⊢ step Z T1 W]) (S:[g ⊢ step Y T1 X]) [g ⊢ indep_tr T U] → [g ⊢ inv_tr T S] → [g ⊢ indep_tr U' S] =
 / total (pci _ _ _ _ _ _ _ t _ _ _ _ _ _) /
-fn i,d ⇒ let [g ⊢ ind_tr I] = i in
+fn i,d ⇒ let [g ⊢ ind_tr I _] = i in
 let [g ⊢ it T S] = d in 
-let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in [g ⊢ ind_tr I']
+let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in [g ⊢ ind_tr I' (ct _ _ (st_s* S))]
 ;
