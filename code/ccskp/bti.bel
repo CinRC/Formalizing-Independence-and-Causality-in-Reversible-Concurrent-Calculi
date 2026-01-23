@@ -308,11 +308,6 @@ mlam B1,B2 ⇒ case [_ ⊢ B1] of
 ;
 
 
-% Equality of derivations of bstep X' T X
-LF eqb: bstep X1' T1 X1 → bstep X2' T2 X2 → type =
-  | refb: eqb B B
-;
-
 % Given two backward transitions B1 and B2, id_or_ind B1 B2 holds iff
 % either B1=B2, or B1 and B2 are independent.
 LF id_or_ind: bstep X T1 X1 → bstep X T2 X2 → type =

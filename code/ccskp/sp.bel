@@ -1024,7 +1024,8 @@ case [g ⊢ B1] of
 
 % Existence of combined transitions closing a square diagram
 LF square: step X T1 X1 → step X T2 X2 → type =
-  | sq: step X1 T2 Y → step X2 T1 Y → square (S1:step X T1 X1) (S2:step X T2 X2)
+  | sq: {S2':step X1 T2 Y} {S1':step X2 T1 Y} same_direction (S1:step X T1 X1) S1' → 
+        same_direction (S2:step X T2 X2) S2' → square S1 S2
 ;
 
 
@@ -1039,55 +1040,55 @@ case [_ ⊢ S1] of
   | [g ⊢ sc (fwc F1)] ⇒ (case [g ⊢ S2] of
        | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ B1] = loop_lemma_one_cl [g ⊢ F1] in
          let [g ⊢ s_bfcc F2' B1'] = sp_bfcc [g ⊢ B1] [g ⊢ F2] [g ⊢ J] in
-         let [g ⊢ F1'] = loop_lemma_two_cl [g ⊢ B1'] in [g ⊢ sq (sc (fwc F2')) (sc (fwc F1'))]
+         let [g ⊢ F1'] = loop_lemma_two_cl [g ⊢ B1'] in [g ⊢ sq (sc (fwc F2')) (sc (fwc F1')) (sdf (ftc_cl _) (ftc_cl _)) (sdf (ftc_cl _) (ftc_cl _))]
        | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ B1] = loop_lemma_one_cl [g ⊢ F1] in
          let [g ⊢ s_bfco F2' B1'] = sp_bfco [g ⊢ B1] [g ⊢ F2] [g ⊢ J] in
-         let [g ⊢ F1'] = loop_lemma_two_cl [g ⊢ B1'] in [g ⊢ sq (so (fwo F2')) (sc (fwc F1'))]
+         let [g ⊢ F1'] = loop_lemma_two_cl [g ⊢ B1'] in [g ⊢ sq (so (fwo F2')) (sc (fwc F1')) (sdf (ftc_cl _) (ftc_cl _)) (sdf (ftc_op _) (ftc_op _))]
        | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
          let [g ⊢ i_cc I] = [g ⊢ J] in
          let [g ⊢ I'] = symmetric_indep [g ⊢ I] in
          let [g ⊢ s_ffcc F1' F2'] = sp_ffcc [g ⊢ F2] [g ⊢ F1] [g ⊢ i_cc I'] in
-         let [g ⊢ B2'] = loop_lemma_one_cl [g ⊢ F2'] in [g ⊢ sq (sc (bwc B2')) (sc (fwc F1'))]
+         let [g ⊢ B2'] = loop_lemma_one_cl [g ⊢ F2'] in [g ⊢ sq (sc (bwc B2')) (sc (fwc F1')) (sdf (ftc_cl _) (ftc_cl _)) (sdb (btc_cl _) (btc_cl _))]
        | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
          let [g ⊢ i_co \a.I] = [g ⊢ J] in
          let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in
          let [g ⊢ s_ffoc F1' F2'] = sp_ffoc [g ⊢ F2] [g ⊢ F1] [g ⊢ i_oc \a.I'] in
-         let [g ⊢ B2'] = loop_lemma_one_op [g ⊢ F2'] in [g ⊢ sq (so (bwo B2')) (sc (fwc F1'))])
+         let [g ⊢ B2'] = loop_lemma_one_op [g ⊢ F2'] in [g ⊢ sq (so (bwo B2')) (sc (fwc F1')) (sdf (ftc_cl _) (ftc_cl _)) (sdb (btc_op _) (btc_op _))])
   | [g ⊢ so (fwo F1)] ⇒ (case [g ⊢ S2] of
        | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ B1] = loop_lemma_one_op [g ⊢ F1] in
          let [g ⊢ s_bfoc F2' B1'] = sp_bfoc [g ⊢ B1] [g ⊢ F2] [g ⊢ J] in
-         let [g ⊢ F1'] = loop_lemma_two_op [g ⊢ B1'] in [g ⊢ sq (sc (fwc F2')) (so (fwo F1'))]
+         let [g ⊢ F1'] = loop_lemma_two_op [g ⊢ B1'] in [g ⊢ sq (sc (fwc F2')) (so (fwo F1')) (sdf (ftc_op _) (ftc_op _)) (sdf (ftc_cl _) (ftc_cl _))]
        | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ B1] = loop_lemma_one_op [g ⊢ F1] in
          let [g ⊢ s_bfoo F2' B1'] = sp_bfoo [g ⊢ B1] [g ⊢ F2] [g ⊢ J] in
-         let [g ⊢ F1'] = loop_lemma_two_op [g ⊢ B1'] in [g ⊢ sq (so (fwo F2')) (so (fwo F1'))]
+         let [g ⊢ F1'] = loop_lemma_two_op [g ⊢ B1'] in [g ⊢ sq (so (fwo F2')) (so (fwo F1')) (sdf (ftc_op _) (ftc_op _)) (sdf (ftc_op _) (ftc_op _))]
        | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
          let [g ⊢ i_oc \a.I] = [g ⊢ J] in
          let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in
          let [g ⊢ s_ffco F1' F2'] = sp_ffco [g ⊢ F2] [g ⊢ F1] [g ⊢ i_co \a.I'] in
-         let [g ⊢ B2'] = loop_lemma_one_cl [g ⊢ F2'] in [g ⊢ sq (sc (bwc B2')) (so (fwo F1'))]
+         let [g ⊢ B2'] = loop_lemma_one_cl [g ⊢ F2'] in [g ⊢ sq (sc (bwc B2')) (so (fwo F1')) (sdf (ftc_op _) (ftc_op _)) (sdb (btc_cl _) (btc_cl _))]
        | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
          let [g ⊢ i_oo \a.I] = [g ⊢ J] in
          let [g,a:names ⊢ I'] = symmetric_indep [_ ⊢ I] in
          let [g ⊢ s_ffoo F1' F2'] = sp_ffoo [g ⊢ F2] [g ⊢ F1] [g ⊢ i_oo \a.I'] in
-         let [g ⊢ B2'] = loop_lemma_one_op [g ⊢ F2'] in [g ⊢ sq (so (bwo B2')) (so (fwo F1'))])
+         let [g ⊢ B2'] = loop_lemma_one_op [g ⊢ F2'] in [g ⊢ sq (so (bwo B2')) (so (fwo F1')) (sdf (ftc_op _) (ftc_op _)) (sdb (btc_op _) (btc_op _))])
   | [g ⊢ sc (bwc B1)] ⇒ let [g ⊢ F1] = loop_lemma_two_cl [g ⊢ B1] in
     (case [g ⊢ S2] of
        | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ s_ffcc F2' F1'] = sp_ffcc [g ⊢ F1] [g ⊢ F2] [g ⊢ J] in
-         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (sc (fwc F2')) (sc (bwc B1'))]
+         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (sc (fwc F2')) (sc (bwc B1')) (sdb (btc_cl _) (btc_cl _)) (sdf (ftc_cl _) (ftc_cl _))]
        | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ s_ffco F2' F1'] = sp_ffco [g ⊢ F1] [g ⊢ F2] [g ⊢ J] in
-         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (so (fwo F2')) (sc (bwc B1'))]
+         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (so (fwo F2')) (sc (bwc B1')) (sdb (btc_cl _) (btc_cl _)) (sdf (ftc_op _) (ftc_op _))]
        | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ s_fbcc B2' F1'] = sp_fbcc [g ⊢ F1] [g ⊢ B2] [g ⊢ J] in
-         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (sc (bwc B2')) (sc (bwc B1'))]
+         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (sc (bwc B2')) (sc (bwc B1')) (sdb (btc_cl _) (btc_cl _)) (sdb (btc_cl _) (btc_cl _))]
        | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ s_fbco B2' F1'] = sp_fbco [g ⊢ F1] [g ⊢ B2] [g ⊢ J] in
-         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (so (bwo B2')) (sc (bwc B1'))])
+         let [g ⊢ B1'] = loop_lemma_one_cl [g ⊢ F1'] in [g ⊢ sq (so (bwo B2')) (sc (bwc B1')) (sdb (btc_cl _) (btc_cl _)) (sdb (btc_op _) (btc_op _))])
   | [g ⊢ so (bwo B1)] ⇒ let [g ⊢ F1] = loop_lemma_two_op [g ⊢ B1] in
     (case [g ⊢ S2] of
        | [g ⊢ sc (fwc F2)] ⇒ let [g ⊢ s_ffoc F2' F1'] = sp_ffoc [g ⊢ F1] [g ⊢ F2] [g ⊢ J] in
-         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (sc (fwc F2')) (so (bwo B1'))]
+         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (sc (fwc F2')) (so (bwo B1')) (sdb (btc_op _) (btc_op _)) (sdf (ftc_cl _) (ftc_cl _))]
        | [g ⊢ so (fwo F2)] ⇒ let [g ⊢ s_ffoo F2' F1'] = sp_ffoo [g ⊢ F1] [g ⊢ F2] [g ⊢ J] in
-         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (so (fwo F2')) (so (bwo B1'))]
+         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (so (fwo F2')) (so (bwo B1')) (sdb (btc_op _) (btc_op _)) (sdf (ftc_op _) (ftc_op _))]
        | [g ⊢ sc (bwc B2)] ⇒ let [g ⊢ s_fboc B2' F1'] = sp_fboc [g ⊢ F1] [g ⊢ B2] [g ⊢ J] in
-         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (sc (bwc B2')) (so (bwo B1'))]
+         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (sc (bwc B2')) (so (bwo B1')) (sdb (btc_op _) (btc_op _)) (sdb (btc_cl _) (btc_cl _))]
        | [g ⊢ so (bwo B2)] ⇒ let [g ⊢ s_fboo B2' F1'] = sp_fboo [g ⊢ F1] [g ⊢ B2] [g ⊢ J] in
-         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (so (bwo B2')) (so (bwo B1'))])
+         let [g ⊢ B1'] = loop_lemma_one_op [g ⊢ F1'] in [g ⊢ sq (so (bwo B2')) (so (bwo B1')) (sdb (btc_op _) (btc_op _)) (sdb (btc_op _) (btc_op _))])
 ;

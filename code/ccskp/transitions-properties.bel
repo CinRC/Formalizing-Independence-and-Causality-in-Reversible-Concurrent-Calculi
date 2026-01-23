@@ -1,0 +1,490 @@
+%%% Coercions from forward and backward transitions to combined transitions
+
+% Coercion from forward transitions to combined transitions
+LF forw_to_comb: fstep X T Y → step X T Y → type =
+  | ftc_cl: {F:fstep_cl X T Y} forw_to_comb (fc F) (sc (fwc F))
+  | ftc_op: {F:fstep_op X T Y} forw_to_comb (fo F) (so (fwo F))
+;
+
+% Totality of forw_to_comb: given a forward transition F,
+% there exists at least one combined transition S such that forw_to_comb(F)=S.
+LF ex_ftc: fstep X T Y → type =
+  | ftc: forw_to_comb F S → ex_ftc F
+;
+rec total_forw_to_comb: (g:ctx) {F:[g ⊢ fstep X T Y]} [g ⊢ ex_ftc F] =
+/ total f (total_forw_to_comb _ _ _ _ f) /
+mlam F ⇒ case [_ ⊢ F] of
+  | [g ⊢ fc F'] ⇒ [g ⊢ ftc (ftc_cl F')]
+  | [g ⊢ fo F'] ⇒ [g ⊢ ftc (ftc_op F')]
+;
+
+% Functionality of forw_to_comb: given a forward transition F,
+% there is at most one combined transition S such that forw_to_comb(F)=S.
+rec functional_forw_to_comb: (g:ctx) (F:[g ⊢ fstep X T Y]) (S1:[g ⊢ step X T Y]) (S2:[g ⊢ step X T Y])
+  [g ⊢ forw_to_comb F S1] → [g ⊢ forw_to_comb F S2] → [g ⊢ eqst S1 S2] =
+/ total r1 (functional_forw_to_comb _ _ _ _ r1 _) /
+fn r1,r2 ⇒ case r1 of
+  | [g ⊢ ftc_cl _] ⇒ let [g ⊢ ftc_cl _] = r2 in unique_step [_ ⊢ _] [_ ⊢ _]
+  | [g ⊢ ftc_op _] ⇒ let [g ⊢ ftc_op _] = r2 in unique_step [_ ⊢ _] [_ ⊢ _]
+;
+
+
+% Coercion from backward transitions to combined transitions
+LF back_to_comb: bstep X T Y → step X T Y → type =
+  | btc_cl: {B:bstep_cl X T Y} back_to_comb (bc B) (sc (bwc B))
+  | btc_op: {B:bstep_op X T Y} back_to_comb (bo B) (so (bwo B))
+;
+
+% Totality of back_to_comb: given a backward transition B,
+% there exists at least one combined transition S such that back_to_comb(B)=S.
+LF ex_btc: bstep X T Y → type =
+  | btc: back_to_comb B S → ex_btc B
+;
+rec total_back_to_comb: (g:ctx) {B:[g ⊢ bstep X T Y]} [g ⊢ ex_btc B] =
+/ total b (total_back_to_comb _ _ _ _ b) /
+mlam B ⇒ case [_ ⊢ B] of
+  | [g ⊢ bc B'] ⇒ [g ⊢ btc (btc_cl B')]
+  | [g ⊢ bo B'] ⇒ [g ⊢ btc (btc_op B')]
+;
+
+% Functionality of back_to_comb: given a backward transition B,
+% there is at most one combined transition S such that back_to_comb(B)=S.
+rec functional_back_to_comb: (g:ctx) (B:[g ⊢ bstep X T Y]) (S1:[g ⊢ step X T Y]) (S2:[g ⊢ step X T Y])
+  [g ⊢ back_to_comb B S1] → [g ⊢ back_to_comb B S2] → [g ⊢ eqst S1 S2] =
+/ total r1 (functional_back_to_comb _ _ _ _ r1 _) /
+fn r1,r2 ⇒ case r1 of
+  | [g ⊢ btc_cl _] ⇒ let [g ⊢ btc_cl _] = r2 in unique_step [_ ⊢ _] [_ ⊢ _]
+  | [g ⊢ btc_op _] ⇒ let [g ⊢ btc_op _] = r2 in unique_step [_ ⊢ _] [_ ⊢ _]
+;
+
+
+% Surjectivity of the union of forw_to_comb and back_to_comb: given a combined transition S,
+% there exist either a forward transition F such that forw_to_comb(F)=S,
+% or a backward transition B such that back_to_comb(B)=S.
+LF forw_or_back: step X T Y → type =
+  | or_fw: forw_to_comb F S → forw_or_back S
+  | or_bw: back_to_comb B S → forw_or_back S
+;
+
+rec surjective_forw_back_to_comb: (g:ctx) {S:[g ⊢ step X T Y]} [g ⊢ forw_or_back S] =
+/ total s (surjective_forw_back_to_comb _ _ _ _ s) /
+mlam S ⇒ case [_ ⊢ S] of
+  | [g ⊢ sc (fwc F)] ⇒ [_ ⊢ or_fw (ftc_cl F)]
+  | [g ⊢ so (fwo F)] ⇒ [_ ⊢ or_fw (ftc_op F)]
+  | [g ⊢ sc (bwc B)] ⇒ [_ ⊢ or_bw (btc_cl B)]
+  | [g ⊢ so (bwo B)] ⇒ [_ ⊢ or_bw (btc_op B)]
+;
+
+% The images of forw_to_comb and back_to_comb are disjoint:
+rec disjoint_forw_back_to_comb: (g:ctx) (F:[g ⊢ fstep X T Y]) (B:[g ⊢ bstep X T Y]) (S:[g ⊢ step X T Y])
+  [g ⊢ forw_to_comb F S] → [g ⊢ back_to_comb B S] → [g ⊢ false] =
+/ total f (disjoint_forw_back_to_comb _ _ _ _ f _ _ _ _) /
+fn hf,hb ⇒ case hf of
+  | [g ⊢ ftc_cl F] ⇒ impossible hb
+  | [g ⊢ ftc_op F] ⇒ impossible hb
+;
+
+
+% Injectivity of forw_to_comb: given two forward transitions F1 and F2,
+% if forw_to_comb(F1)=forw_to_comb(F2), then F1=F2.
+rec injective_forw_to_comb: (g:ctx) (F1:[g ⊢ fstep X T Y]) (F2:[g ⊢ fstep X T Y])
+  (S:[g ⊢ step X T Y]) [g ⊢ forw_to_comb F1 S] → [g ⊢ forw_to_comb F2 S] → [g ⊢ eqf F1 F2] =
+/ total f1 (injective_forw_to_comb _ _ _ _ f1 _ _ _ _) /
+fn hf1,hf2 ⇒ unique_fstep_ccskp [_ ⊢ _] [_ ⊢ _]
+;
+
+% Injectivity of back_to_comb: given two backward transitions B1 and B2,
+% if back_to_comb(B1)=back_to_comb(B2), then B1=B2.
+rec injective_back_to_comb: (g:ctx) (B1:[g ⊢ bstep X T Y]) (B2:[g ⊢ bstep X T Y])
+  (S:[g ⊢ step X T Y]) [g ⊢ back_to_comb B1 S] → [g ⊢ back_to_comb B2 S] → [g ⊢ eqb B1 B2] =
+/ total b1 (injective_back_to_comb _ _ _ _ b1 _ _ _ _) /
+fn hb1,hb2 ⇒ unique_bstep_ccskp [_ ⊢ _] [_ ⊢ _]
+;
+
+
+
+%%% Inverse of a transition
+
+% Inverse of a transition: inv_tr S1 S2 holds iff S2 is the inverse of S1
+LF inv_tr: step X T1 X' → step Y T2 Y' → type =
+  | it: {S1:step X T X'} {S2:step X' T X} inv_tr S1 S2
+;
+
+% We show that, thanks to the loop lemma, inv_tr is a function and, in particular, an involution (inv_tr ∘ inv_tr = id).
+
+% Existential type denoting existence of an inverse transition
+LF ex_inv: step X T X' → type =
+  | ex_iv: inv_tr S1 S2 → ex_inv S1
+;
+
+% Totality of inv_tr: given a transition S,
+% there exists at least one transition S' such that inv_tr(S)=S'.
+rec total_inv: (g:ctx) {S:[g ⊢ step X T X']} [g ⊢ ex_inv S] =
+/ total (total_inv) /
+mlam S ⇒ case [_ ⊢ S] of
+  | [g ⊢ sc (fwc F)] ⇒ let [g ⊢ B] = loop_lemma_one_cl [g ⊢ F] in [g ⊢ ex_iv (it S (sc (bwc B)))]
+  | [g ⊢ so (fwo F)] ⇒ let [g ⊢ B] = loop_lemma_one_op [g ⊢ F] in [g ⊢ ex_iv (it S (so (bwo B)))]
+  | [g ⊢ sc (bwc B)] ⇒ let [g ⊢ F] = loop_lemma_two_cl [g ⊢ B] in [g ⊢ ex_iv (it S (sc (fwc F)))]
+  | [g ⊢ so (bwo B)] ⇒ let [g ⊢ F] = loop_lemma_two_op [g ⊢ B] in [g ⊢ ex_iv (it S (so (fwo F)))]
+;
+
+% Functionality of inv_tr: given a transition S,
+% there is at most one transition S' such that inv_tr(S)=S'.
+rec functional_inv: (g:ctx) (S:[g ⊢ step X T X']) (S1:[g ⊢ step Y1 T1 Y1']) (S2:[g ⊢ step Y2 T2 Y2'])
+  [g ⊢ inv_tr S S1] → [g ⊢ inv_tr S S2] → [g ⊢ eqst S1 S2] =
+/ total r1 (functional_inv _ _ _ _ r1 _) /
+fn r1,r2 ⇒ let [g ⊢ it _ S1] = r1 in
+let [g ⊢ it _ S2] = r2 in unique_step [g ⊢ S1] [g ⊢ S2]
+;
+
+% inv_tr is an involution: inv_tr ∘ inv_tr = id.
+rec involution_inv: (g:ctx) (S1:[g ⊢ step X1 T1 X1']) (S2:[g ⊢ step X2 T2 X2'])
+  (S3:[g ⊢ step X3 T3 X3']) [g ⊢ inv_tr S1 S2] → [g ⊢ inv_tr S2 S3] → [g ⊢ eqst S1 S3] =
+/ total s1 (involution_inv _ _ _ _ _ _ _ _ _ _ s1 _ _ _ _) /
+fn d1,d2 ⇒ let [g ⊢ it S1 S2] = d1 in
+let [g ⊢ it S2 S3] = d2 in unique_step [g ⊢ S1] [g ⊢ S3]
+;
+
+
+
+
+% Type family relating two combined transitions having the same direction
+LF same_direction: step X1 T1 Y1 → step X2 T2 Y2 → type =
+  | sdf: forw_to_comb F1 S1 → forw_to_comb F2 S2 → same_direction S1 S2
+  | sdb: back_to_comb B1 S1 → back_to_comb B2 S2 → same_direction S1 S2
+;
+
+
+
+
+
+
+% Auxiliary lemmas for BTI
+
+% If a key K does not occur in a process, and such process makes a backward closed transition
+% labelled by T, then K is different from key(T).
+rec key_in_bstep_cl: (g:ctx) [g ⊢ notin K[] X] → [g ⊢ bstep_cl X T Y] → [g ⊢ key T M[]] → [g ⊢ neq K[] M[]] =
+/ total n (key_in_bstep_cl _ _ _ _ _ _ n _ _) /
+fn n,b,h ⇒ case n of
+  | [g ⊢ not_null] ⇒ impossible b
+  | [g ⊢ not_pref N] ⇒ impossible b
+  | [g ⊢ not_kpref I N] ⇒ (case b of
+       | [g ⊢ bc_pref _] ⇒ let [g ⊢ key_base] = h in [g ⊢ I]
+       | [g ⊢ bc_kpref B H _] ⇒ let [g ⊢ H'] = h in
+         let [g ⊢ refky] = unique_key [g ⊢ H] [g ⊢ H'] in 
+         key_in_bstep_cl [g ⊢ N] [g ⊢ B] [g ⊢ H])
+  | [g ⊢ not_sum N1 N2] ⇒ (case b of
+       | [g ⊢ bc_suml B _] ⇒ let [g ⊢ key_suml H] = h in key_in_bstep_cl [g ⊢ N1] [g ⊢ B] [g ⊢ H]
+       | [g ⊢ bc_sumr B _] ⇒ let [g ⊢ key_sumr H] = h in key_in_bstep_cl [g ⊢ N2] [g ⊢ B] [g ⊢ H])
+  | [g ⊢ not_par N1 N2] ⇒ (case b of
+       | [g ⊢ bc_parl B _ _] ⇒ let [g ⊢ key_parl H] = h in key_in_bstep_cl [g ⊢ N1] [g ⊢ B] [g ⊢ H]
+       | [g ⊢ bc_parr B _ _] ⇒ let [g ⊢ key_parr H] = h in key_in_bstep_cl [g ⊢ N2] [g ⊢ B] [g ⊢ H]
+       | [g ⊢ bc_synl B _ _ _ _ _] ⇒ let [g ⊢ key_sync H] = h in key_in_bstep_cl [g ⊢ N1] [g ⊢ B] [g ⊢ H]
+       | [g ⊢ bc_synr B _ _ _ _ _] ⇒ let [g ⊢ key_sync H] = h in key_in_bstep_cl [g ⊢ N1] [g ⊢ B] [g ⊢ H])
+  | [g ⊢ not_nu \a.N] ⇒ let [g ⊢ bc_nu \a.B] = b in
+    let [g ⊢ H] = h in 
+    let [g,a:names ⊢ I[..]] = key_in_bstep_cl [_ ⊢ N] [_ ⊢ B] [_ ⊢ H[..]] in [g ⊢ I]
+;
+
+% If a key K does not occur in a process, and such process makes a backward open transition
+% labelled by T, then K is different from key(T).
+rec key_in_bstep_op: (g:ctx) [g ⊢ notin K[] X] → [g ⊢ bstep_op X (open \a.T) Y] → [g,a:names ⊢ key T M[]] → [g ⊢ neq K[] M[]] =
+/ total n (key_in_bstep_op _ _ _ _ _ _ n _ _) /
+fn n,b,h ⇒ case n of
+  | [g ⊢ not_null] ⇒ impossible b
+  | [g ⊢ not_pref N] ⇒ impossible b
+  | [g ⊢ not_kpref I N] ⇒ let [g ⊢ bo_kpref B (\a.H) _] = b in
+    let [g,a:names ⊢ H'] = h in
+    let [g,a:names ⊢ refky] = unique_key [_ ⊢ H] [_ ⊢ H'] in 
+    key_in_bstep_op [g ⊢ N] [g ⊢ B] [_ ⊢ H]
+  | [g ⊢ not_sum N1 N2] ⇒ (case b of
+       | [g ⊢ bo_suml B _] ⇒ let [g,a:names ⊢ key_suml H] = h in key_in_bstep_op [g ⊢ N1] [g ⊢ B] [_ ⊢ H]
+       | [g ⊢ bo_sumr B _] ⇒ let [g,a:names ⊢ key_sumr H] = h in key_in_bstep_op [g ⊢ N2] [g ⊢ B] [_ ⊢ H])
+  | [g ⊢ not_par N1 N2] ⇒ (case b of
+       | [g ⊢ bo_parl B (\_._) _] ⇒ let [g,a:names ⊢ key_parl H] = h in key_in_bstep_op [g ⊢ N1] [g ⊢ B] [_ ⊢ H]
+       | [g ⊢ bo_parr B (\_._) _] ⇒ let [g,a:names ⊢ key_parr H] = h in key_in_bstep_op [g ⊢ N2] [g ⊢ B] [_ ⊢ H])
+  | [g ⊢ not_nu \a.N] ⇒ let [g,a:names ⊢ H] = h in 
+    (case b of
+       | [g ⊢ bo_nu_cl (\_._) (\_._) (\a.B)] ⇒
+         let [g,a:names ⊢ I[..]] = key_in_bstep_cl [_ ⊢ N] [_ ⊢ B] [_ ⊢ H[..]] in [g ⊢ I]
+       | [g ⊢ bo_nu_op \a.B] ⇒ 
+         let [g,a:names ⊢ I[..]] = key_in_bstep_op [_ ⊢ N] [_ ⊢ B] [_ ⊢ H[..]] in [g ⊢ I])
+;
+
+% Given two independent valid closed proof labels, their keys are different.
+rec indep_impl_diff_keys: (g:ctx) [g ⊢ valid_cl T1] → [g ⊢ valid_cl T2]
+  → [g ⊢ indep_cl T1 T2] → [g ⊢ key T1 K1[]] → [g ⊢ key T2 K2[]] → [g ⊢ neq K1[] K2[]] =
+/ total i (indep_impl_diff_keys _ _ _ _ _ _ _ i _ _) /
+fn v1,v2,i,h1,h2 ⇒ case i of
+  | [g ⊢ i_c1l I] ⇒ let [g ⊢ v_suml V1] = v1 in
+    let [g ⊢ v_suml V2] = v2 in
+    let [g ⊢ key_suml H1] = h1 in
+    let [g ⊢ key_suml H2] = h2 in indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ i_c1r I] ⇒ let [g ⊢ v_sumr V1] = v1 in
+    let [g ⊢ v_sumr V2] = v2 in
+    let [g ⊢ key_sumr H1] = h1 in
+    let [g ⊢ key_sumr H2] = h2 in indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ i_p1l I] ⇒ let [g ⊢ v_parl V1] = v1 in
+    let [g ⊢ v_parl V2] = v2 in
+    let [g ⊢ key_parl H1] = h1 in
+    let [g ⊢ key_parl H2] = h2 in indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ i_p1r I] ⇒ let [g ⊢ v_parr V1] = v1 in
+    let [g ⊢ v_parr V2] = v2 in
+    let [g ⊢ key_parr H1] = h1 in
+    let [g ⊢ key_parr H2] = h2 in indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ H2]
+  | [g ⊢ i_p2l H1 H2 N] ⇒ let [g ⊢ key_parl H1'] = h1 in
+    let [g ⊢ key_parr H2'] = h2 in
+    let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ H2'] in [g ⊢ N]
+  | [g ⊢ i_p2r H1 H2 N] ⇒ let [g ⊢ key_parr H1'] = h1 in
+    let [g ⊢ key_parl H2'] = h2 in
+    let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ H2'] in [g ⊢ N]
+  | [g ⊢ i_s1l I] ⇒ let [g ⊢ key_parl H1] = h1 in
+    let [g ⊢ key_sync H2] = h2 in
+    let [g ⊢ v_parl V1] = v1 in
+    (case v2 of
+       | [g ⊢ v_synl V2 _ _ _ _ _] ⇒ indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ H2]
+       | [g ⊢ v_synr V2 _ _ _ _ _] ⇒ indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ H2])
+  | [g ⊢ i_s1r I] ⇒ let [g ⊢ key_parr H1] = h1 in
+    let [g ⊢ key_sync H2] = h2 in
+    let [g ⊢ v_parr V1] = v1 in
+    (case v2 of
+       | [g ⊢ v_synl _ V2 _ HL2 _ HR2] ⇒ let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HL2] in
+         indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ HR2]
+       | [g ⊢ v_synr _ V2 _ HL2 _ HR2] ⇒ let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HL2] in
+         indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ HR2])
+  | [g ⊢ i_s2l I] ⇒ let [g ⊢ key_sync H1] = h1 in
+    let [g ⊢ key_parl H2] = h2 in
+    let [g ⊢ v_parl V2] = v2 in
+    (case v1 of
+       | [g ⊢ v_synl V1 _ _ _ _ _] ⇒ indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ H2]
+       | [g ⊢ v_synr V1 _ _ _ _ _] ⇒ indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ H1] [g ⊢ H2])
+  | [g ⊢ i_s2r I] ⇒ let [g ⊢ key_sync H1] = h1 in
+    let [g ⊢ key_parr H2] = h2 in
+    let [g ⊢ v_parr V2] = v2 in
+    (case v1 of
+       | [g ⊢ v_synl _ V1 _ HL1 _ HR1] ⇒ let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HL1] in
+         indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ HR1] [g ⊢ H2]
+       | [g ⊢ v_synr _ V1 _ HL1 _ HR1] ⇒ let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ HL1] in
+         indep_impl_diff_keys [g ⊢ V1] [g ⊢ V2] [g ⊢ I] [g ⊢ HR1] [g ⊢ H2])
+  | [g ⊢ i_s3 I1 I2] ⇒ let [g ⊢ key_sync H1] = h1 in
+    let [g ⊢ key_sync H2] = h2 in 
+    (case v1 of
+       | [g ⊢ v_synl VL1 VR1 _ HL1 _ HR1] ⇒ (case v2 of
+            | [g ⊢ v_synl VL2 VR2 _ HL2 _ HR2] ⇒
+              indep_impl_diff_keys [g ⊢ VL1] [g ⊢ VL2] [g ⊢ I1] [g ⊢ H1] [g ⊢ H2]
+            | [g ⊢ v_synr VL2 VR2 _ HL2 _ HR2] ⇒ 
+              indep_impl_diff_keys [g ⊢ VL1] [g ⊢ VL2] [g ⊢ I1] [g ⊢ H1] [g ⊢ H2])
+       | [g ⊢ v_synr VL1 VR1 _ HL1 _ HR1] ⇒ (case v2 of
+            | [g ⊢ v_synl VL2 VR2 _ HL2 _ HR2] ⇒
+              indep_impl_diff_keys [g ⊢ VL1] [g ⊢ VL2] [g ⊢ I1] [g ⊢ H1] [g ⊢ H2]
+            | [g ⊢ v_synr VL2 VR2 _ HL2 _ HR2] ⇒
+              indep_impl_diff_keys [g ⊢ VL1] [g ⊢ VL2] [g ⊢ I1] [g ⊢ H1] [g ⊢ H2]))
+;
+
+% Strengthening lemma for indep_cl 
+rec str_indep: (g:ctx) [g,a:names ⊢ indep_cl T1[..] T2[..]] → [g ⊢ indep_cl T1 T2] =
+/ total i (str_indep _ _ _ i) /
+fn i ⇒ case i of
+  | [g,a:names ⊢ i_c1l I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_c1l I']
+  | [g,a:names ⊢ i_c1r I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_c1r I']
+  | [g,a:names ⊢ i_p1l I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_p1l I']
+  | [g,a:names ⊢ i_p1r I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_p1r I']
+  | [g,a:names ⊢ i_p2l H1 H2 N[..]] ⇒ let [g ⊢ H1'] = str_key [_ ⊢ H1] in
+     let [g ⊢ H2'] = str_key [_ ⊢ H2] in [g ⊢ i_p2l H1' H2' N]
+  | [g,a:names ⊢ i_p2r H1 H2 N[..]] ⇒ let [g ⊢ H1'] = str_key [_ ⊢ H1] in
+     let [g ⊢ H2'] = str_key [_ ⊢ H2] in [g ⊢ i_p2r H1' H2' N]
+  | [g,a:names ⊢ i_s1l I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_s1l I']
+  | [g,a:names ⊢ i_s1r I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_s1r I']
+  | [g,a:names ⊢ i_s2l I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_s2l I']
+  | [g,a:names ⊢ i_s2r I] ⇒ let [g ⊢ I'] = str_indep [_ ⊢ I] in [g ⊢ i_s2r I']
+  | [g,a:names ⊢ i_s3 I1 I2] ⇒ let [g ⊢ I1'] = str_indep [_ ⊢ I1] in
+    let [g ⊢ I2'] = str_indep [_ ⊢ I2] in [g ⊢ i_s3 I1' I2']
+;
+
+
+
+% Auxiliary lemmas for SP
+
+% If a process X makes a closed forward transition F into the process X',
+% and a key K does not occur in X' (i.e., notin K X' holds), then K does
+% not occur in X as well (notin K X).
+rec notin_propagates_to_source_fc: (g:ctx) [g ⊢ fstep_cl X T X'] →
+   [g ⊢ notin K[] X'] → [g ⊢ notin K[] X] =
+/ total f (notin_propagates_to_source_fc _ _ _ _ _ f _) /
+fn f,n ⇒ case f of
+  | [g ⊢ fc_pref _] ⇒ let [g ⊢ not_kpref _ N] = n in [g ⊢ not_pref N]
+  | [g ⊢ fc_kpref F _ _] ⇒ let [g ⊢ not_kpref I N] = n in
+    let [g ⊢ N'] = notin_propagates_to_source_fc [g ⊢ F] [g ⊢ N] in [g ⊢ not_kpref I N']
+  | [g ⊢ fc_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fc [g ⊢ F1] [g ⊢ N1] in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fc_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fc_parl F1 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fc [g ⊢ F1] [g ⊢ N1] in [g ⊢ not_par N1' N2]
+  | [g ⊢ fc_parr F2 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1 N2']
+  | [g ⊢ fc_synl F1 _ _ F2 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fc [g ⊢ F1] [g ⊢ N1] in
+    let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1' N2']
+  | [g ⊢ fc_synr F1 _ _ F2 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fc [g ⊢ F1] [g ⊢ N1] in
+    let [g ⊢ N2'] = notin_propagates_to_source_fc [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1' N2']
+  | [g ⊢ fc_nu \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ N'] = notin_propagates_to_source_fc [_ ⊢ F] [_ ⊢ N] in [g ⊢ not_nu \a.N']
+;
+
+% If a process X makes an open forward transition F into the process X',
+% and a key K does not occur in X' (i.e., notin K X' holds), then K does
+% not occur in X as well (notin K X).
+rec notin_propagates_to_source_fo: (g:ctx) [g ⊢ fstep_op X T X'] →
+   [g ⊢ notin K[] X'] → [g ⊢ notin K[] X] =
+/ total f (notin_propagates_to_source_fo _ _ _ _ _ f _) /
+fn f,n ⇒ case f of
+  | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F)] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ N'] = notin_propagates_to_source_fc [_ ⊢ F] [_ ⊢ N] in [g ⊢ not_nu \a.N']
+  | [g ⊢ fo_kpref F (\_._) _] ⇒ let [g ⊢ not_kpref I N] = n in
+    let [g ⊢ N'] = notin_propagates_to_source_fo [g ⊢ F] [g ⊢ N] in [g ⊢ not_kpref I N']
+  | [g ⊢ fo_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fo [g ⊢ F1] [g ⊢ N1] in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fo_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_source_fo [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fo_parl F1 (\_._) _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source_fo [g ⊢ F1] [g ⊢ N1] in [g ⊢ not_par N1' N2]
+  | [g ⊢ fo_parr F2 (\_._) _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_source_fo [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1 N2']
+  | [g ⊢ fo_nu_op \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ N'] = notin_propagates_to_source_fo [_ ⊢ F] [_ ⊢ N] in [g ⊢ not_nu \a.N']
+;
+
+% If a process X makes a closed forward transition F into the process X',
+% and a key K does not occur in X (i.e., notin K X holds), then
+% then any key different than K does not occur in X' (notin K X').
+rec notin_propagates_to_target_fc: (g:ctx) [g ⊢ fstep_cl X T X'] →
+  [g ⊢ key T M[]] → [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
+/ total f (notin_propagates_to_target_fc _ _ _ _ _ _ f _ _ _) /
+fn f,h,n,i ⇒ case f of
+  | [g ⊢ fc_pref _] ⇒ let [g ⊢ key_base] = h in
+    let [g ⊢ not_pref N] = n in
+    let [g ⊢ I] = symmetric_neq i in [g ⊢ not_kpref I N]
+  | [g ⊢ fc_kpref F _ _] ⇒ let [g ⊢ not_kpref I' N] = n in
+    let [g ⊢ N'] = notin_propagates_to_target_fc [g ⊢ F] h [g ⊢ N] i in [g ⊢ not_kpref I' N']
+  | [g ⊢ fc_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ key_suml H1] = h in
+    let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F1] [g ⊢ H1] [g ⊢ N1] i in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fc_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ key_sumr H2] = h in
+    let [g ⊢ N2'] = notin_propagates_to_target_fc [g ⊢ F2] [g ⊢ H2] [g ⊢ N2] i in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fc_parl F1 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ key_parl H1] = h in
+    let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F1] [g ⊢ H1] [g ⊢ N1] i in [g ⊢ not_par N1' N2]
+  | [g ⊢ fc_parr F2 _ _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ key_parr H2] = h in
+    let [g ⊢ N2'] = notin_propagates_to_target_fc [g ⊢ F2] [g ⊢ H2] [g ⊢ N2] i in [g ⊢ not_par N1 N2']
+  | [g ⊢ fc_synl F1 _ H1 F2 _ H2] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ key_sync H1'] = h in
+    let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F1] [g ⊢ H1] [g ⊢ N1] i in
+    let [g ⊢ N2'] = notin_propagates_to_target_fc [g ⊢ F2] [g ⊢ H2] [g ⊢ N2] i in [g ⊢ not_par N1' N2']
+  | [g ⊢ fc_synr F1 _ H1 F2 _ H2] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ key_sync H1'] = h in
+    let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
+    let [g ⊢ N1'] = notin_propagates_to_target_fc [g ⊢ F1] [g ⊢ H1] [g ⊢ N1] i in
+    let [g ⊢ N2'] = notin_propagates_to_target_fc [g ⊢ F2] [g ⊢ H2] [g ⊢ N2] i in [g ⊢ not_par N1' N2']
+  | [g ⊢ fc_nu \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g ⊢ H] = h in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ N'] = notin_propagates_to_target_fc [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
+;
+
+% If a process X makes an open forward transition F into the process X',
+% and a key K does not occur in X (i.e., notin K X holds), then
+% then any key different than K does not occur in X' (notin K X').
+rec notin_propagates_to_target_fo: (g:ctx) [g ⊢ fstep_op X (open \a.T) X'] →
+  [g,a:names ⊢ key T M[]] → [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
+/ total f (notin_propagates_to_target_fo _ _ _ _ _ _ f _ _ _) /
+fn f,h,n,i ⇒ case f of
+  | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F)] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ H] = h in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ N'] = notin_propagates_to_target_fc [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
+  | [g ⊢ fo_kpref F (\_._) _] ⇒ let [g ⊢ not_kpref I' N] = n in
+    let [g ⊢ N'] = notin_propagates_to_target_fo [g ⊢ F] h [g ⊢ N] i in [g ⊢ not_kpref I' N']
+  | [g ⊢ fo_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g,a:names ⊢ key_suml H1] = h in
+    let [g ⊢ N1'] = notin_propagates_to_target_fo [g ⊢ F1] [_ ⊢ H1] [g ⊢ N1] i in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fo_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g,a:names ⊢ key_sumr H2] = h in
+    let [g ⊢ N2'] = notin_propagates_to_target_fo [g ⊢ F2] [_ ⊢ H2] [g ⊢ N2] i in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fo_parl F1 (\_._) _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g,a:names ⊢ key_parl H1] = h in
+    let [g ⊢ N1'] = notin_propagates_to_target_fo [g ⊢ F1] [_ ⊢ H1] [g ⊢ N1] i in [g ⊢ not_par N1' N2]
+  | [g ⊢ fo_parr F2 (\_._) _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g,a:names ⊢ key_parr H2] = h in
+    let [g ⊢ N2'] = notin_propagates_to_target_fo [g ⊢ F2] [_ ⊢ H2] [g ⊢ N2] i in [g ⊢ not_par N1 N2']
+  | [g ⊢ fo_nu_op \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ H] = h in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ N'] = notin_propagates_to_target_fo [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
+;
+
+% If a process X' makes a closed backward transition B into the process X,
+% and a key K does not occur in X (i.e., notin K X holds), then
+% then any key different than K does not occur in X' (notin K X').
+rec notin_propagates_to_source_bc: (g:ctx) [g ⊢ bstep_cl X' T X] →
+  [g ⊢ key T M[]] → [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
+/ total b (notin_propagates_to_source_bc _ _ _ _ _ _ b _ _ _) /
+fn b,h,n,i ⇒ let [g ⊢ F] = loop_lemma_two_cl b in
+notin_propagates_to_target_fc [g ⊢ F] h n i
+;
+
+% If a process X' makes an open backward transition B into the process X,
+% and a key K does not occur in X (i.e., notin K X holds), then
+% then any key different than K does not occur in X' (notin K X').
+rec notin_propagates_to_source_bo: (g:ctx) [g ⊢ bstep_op X' (open \a.T) X] →
+  [g,a:names ⊢ key T M[]] → [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
+/ total b (notin_propagates_to_source_bo _ _ _ _ _ _ b _ _ _) /
+fn b,h,n,i ⇒ let [g ⊢ F] = loop_lemma_two_op b in
+notin_propagates_to_target_fo [g ⊢ F] h n i
+;
+
+% If a process X' makes a closed backward transition B into the process X,
+% and a key K does not occur in X' (i.e., notin K X' holds), then K does
+% not occur in X as well (notin K X).
+rec notin_propagates_to_target_bc: (g:ctx) [g ⊢ bstep_cl X' T X] →
+  [g ⊢ notin K[] X'] → [g ⊢ notin K[] X] =
+/ total b (notin_propagates_to_target_bc _ _ _ _ _ b _) /
+fn b,n ⇒ let [g ⊢ F] = loop_lemma_two_cl b in
+notin_propagates_to_source_fc [g ⊢ F] n
+;
+
+% If a process X' makes an open backward transition B into the process X,
+% and a key K does not occur in X' (i.e., notin K X' holds), then K does
+% not occur in X as well (notin K X).
+rec notin_propagates_to_target_bo: (g:ctx) [g ⊢ bstep_op X' (open \a.T) X] →
+  [g ⊢ notin K[] X'] → [g ⊢ notin K[] X] =
+/ total b (notin_propagates_to_target_bo _ _ _ _ _ b _) /
+fn b,n ⇒ let [g ⊢ F] = loop_lemma_two_op b in
+notin_propagates_to_source_fo [g ⊢ F] n
+;
+
+
+% If two closed proof labels depending on a name "a" are independent,
+% they remain independent even if we replace one of the two "a"s with a fresh name "b".
+rec ind_rename: (g:ctx) [g,a:names ⊢ indep_cl T1 T2] → [g,a:names,b:names ⊢ indep_cl T1[..,a] T2[..,b]] =
+/ total i (ind_rename _ _ _ i) /
+fn i ⇒ case i of
+  | [g,a:names ⊢ i_c1l I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_c1l I']
+  | [g,a:names ⊢ i_c1r I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_c1r I']
+  | [g,a:names ⊢ i_p1l I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_p1l I']
+  | [g,a:names ⊢ i_p1r I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_p1r I']
+  | [g,a:names ⊢ i_p2l H1 H2 N[..]] ⇒ [g,a:names,b:names ⊢ i_p2l H1[..,a] H2[..,b] N[..]]
+  | [g,a:names ⊢ i_p2r H1 H2 N[..]] ⇒ [g,a:names,b:names ⊢ i_p2r H1[..,a] H2[..,b] N[..]]
+  | [g,a:names ⊢ i_s1l I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_s1l I']
+  | [g,a:names ⊢ i_s1r I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_s1r I']
+  | [g,a:names ⊢ i_s2l I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_s2l I']
+  | [g,a:names ⊢ i_s2r I] ⇒ let [g,a:names,b:names ⊢ I'] = ind_rename [_ ⊢ I] in [_ ⊢ i_s2r I']
+  | [g,a:names ⊢ i_s3 I1 I2] ⇒ let [g,a:names,b:names ⊢ I1'] = ind_rename [_ ⊢ I1] in
+    let [g,a:names,b:names ⊢ I2'] = ind_rename [_ ⊢ I2] in [_ ⊢ i_s3 I1' I2']
+;

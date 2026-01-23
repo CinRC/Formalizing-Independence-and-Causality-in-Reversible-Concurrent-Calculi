@@ -1,5 +1,164 @@
 %%% IRE: independence respects events
 
+%%% Equivalence of transitions ~: two transitions are equivalent if they correspond to the same event
+
+% Base case of the definition of equivalence of transitions:
+% Two combined transitions are equivalent if they appear at opposite sides
+% of a non-degenerate square in which each adjacent pair of transitions are independent.
+inductive equiv_tr_base: (g:ctx) [g ⊢ step P A Q] → [g ⊢ step R A S] → ctype =
+  | etb: (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S]) (T':[g ⊢ step R A S])
+         (RT:[g ⊢ step Q A P]) (RU:[g ⊢ step R B P]) (RU':[g ⊢ step S B Q]) (RT':[g ⊢ step S A R])
+         [g ⊢ inv_tr T RT] → [g ⊢ inv_tr U RU] → [g ⊢ inv_tr U' RU'] → [g ⊢ inv_tr T' RT'] →
+         [g ⊢ indep_tr T U] → [g ⊢ indep_tr RU T'] → [g ⊢ indep_tr RT' RU'] → [g ⊢ indep_tr U' RT] →
+         equiv_tr_base [g ⊢ T] [g ⊢ T']
+;
+
+%{
+% Example of equivalence of transitions:
+% P = a | b,  Q = a[k1] | b,  R = a | b[k0],  S = a[k1] | b[k0],
+% with transitions executing a and b in either order.
+rec example1: {S1:[a:names,b:names ⊢ step (par (pref (inp a) null) (pref (out b) null)) 
+                                          (p_cl (pr_parl (pr_base (inp a) (s z))))
+                                          (par (kpref (inp a) (s z) null) (pref (out b) null))]}
+              {S2:[a:names,b:names ⊢ step (par (pref (inp a) null) (kpref (out b) (z) null))
+                                          (p_cl (pr_parl (pr_base (inp a) (s z)))) 
+                                          (par (kpref (inp a) (s z) null) (kpref (out b) (z) null))]}
+              equiv_tr_base [a:names,b:names ⊢ S1] [a:names,b:names ⊢ S2] = 
+/ total s1 (example1 s1 _) /
+mlam S1,S2 ⇒ case [a:names,b:names ⊢ S1] of
+  | [a:names,b:names ⊢ sc (fwc F)] ⇒ (case [a:names,b:names ⊢ S2] of
+       | [a:names,b:names ⊢ sc (fwc F')] ⇒ 
+         let [a:names,b:names ⊢ ftc (ftc_cl F1)] = total_forw_to_comb [a:names,b:names ⊢ fc F] in
+         let [a:names,b:names ⊢ reffc] = unique_fstep_cl [a:names,b:names ⊢ F] [a:names,b:names ⊢ F1] in
+         let [a:names,b:names ⊢ ftc (ftc_cl F4)] = total_forw_to_comb [a:names,b:names ⊢ fc F'] in
+         let [a:names,b:names ⊢ reffc] = unique_fstep_cl [a:names,b:names ⊢ F'] [a:names,b:names ⊢ F4] in
+         let [a:names,b:names ⊢ ex_iv (it _ RT)] = total_inv [a:names,b:names ⊢ sc (fwc F)] in
+         let [a:names,b:names ⊢ ex_iv (it _ RT')] = total_inv [a:names,b:names ⊢ sc (fwc F')] in
+         et_ff [_ ⊢ fc F] [_ ⊢ fc (fc_parr (fc_pref std_null) key_base (not_pref not_null))]
+         [_ ⊢ fc (fc_parr (fc_pref std_null) key_base (not_kpref (nless (lzero z)) not_null))] [_ ⊢ fc F']
+         [_ ⊢ ftc_cl F] [_ ⊢ ftc_cl _] [_ ⊢ ftc_cl _] [_ ⊢ ftc_cl F']
+         [_ ⊢ it _ RT] [_ ⊢ it _ (sc (bwc (bc_parr (bc_pref std_null) key_base (not_pref not_null))))]
+         [_ ⊢ it _ (sc (bwc (bc_parr (bc_pref std_null) key_base (not_kpref (nless (lzero z)) not_null))))] [_ ⊢ it _ RT']
+         [_ ⊢ ind_tr (i_cc (i_p2l key_base key_base (ngreat (lzero z))))] [_ ⊢ ind_tr (i_cc (i_p2r key_base key_base (nless (lzero z))))]
+         [_ ⊢ ind_tr (i_cc (i_p2l key_base key_base (ngreat (lzero z))))] [_ ⊢ ind_tr (i_cc (i_p2r key_base key_base (nless (lzero z))))]
+         (fn e ⇒ impossible e)
+       | [a:names,b:names ⊢ sc (bwc (bc_parl B' _ _))] ⇒ impossible [a:names,b:names ⊢ B'])
+  | [a:names,b:names ⊢ sc (bwc (bc_parl B _ _))] ⇒ impossible [a:names,b:names ⊢ B]
+;
+}%
+
+rec no_composable_tr_with_same_label: (g:ctx) [g ⊢ fstep X T Y] → [g ⊢ fstep Y T Z] → [g ⊢ false] =
+/ total x (no_composable_tr_with_same_label x _ _ _ _ _) /
+fn fs1,fs2 ⇒ case fs1 of
+  | [g ⊢ fc F1] ⇒ let [g ⊢ fc F2] = fs2 in
+    (case [g ⊢ F1] of 
+       | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ key_base N] = [g ⊢ F2] in impossible irreflexive_neq [g ⊢ N]
+       | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2']
+       | [g ⊢ fc_suml F1' _] ⇒ let [g ⊢ fc_suml F2' _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2']
+       | [g ⊢ fc_sumr F1' _] ⇒ let [g ⊢ fc_sumr F2' _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2']
+       | [g ⊢ fc_parl F1' _ _] ⇒ let [g ⊢ fc_parl F2' _ _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2']
+       | [g ⊢ fc_parr F1' _ _] ⇒ let [g ⊢ fc_parr F2' _ _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2']
+       | [g ⊢ fc_synl F1' _ _ _ _ _] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fc_synl F2' _ _ _ _ _] ⇒ impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2']
+            | [g ⊢ fc_synr F2' _ _ _ _ _] ⇒ impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2'])
+       | [g ⊢ fc_synr F1' _ _ _ _ _] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fc_synl F2' _ _ _ _ _] ⇒ impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2']
+            | [g ⊢ fc_synr F2' _ _ _ _ _] ⇒ impossible no_composable_tr_with_same_label [g ⊢ fc F1'] [g ⊢ fc F2'])
+       | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [_ ⊢ fc F1'] [_ ⊢ fc F2'])
+  | [g ⊢ fo F1] ⇒ let [g ⊢ fo F2] = fs2 in
+    (case [g ⊢ F1] of 
+       | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F1')] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F2')] ⇒ impossible no_composable_tr_with_same_label [_ ⊢ fc F1'] [_ ⊢ fc F2']
+            | [g ⊢ fo_nu_op \a.F2'] ⇒ ?)%impossible no_composable_tr_with_same_label [g,a:names ⊢ fc F1'] [_ ⊢ fo F2'])
+       | [g ⊢ fo_kpref F1' (\_._) _] ⇒ let [g ⊢ fo_kpref F2' (\_._) _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fo F1'] [g ⊢ fo F2']
+       | [g ⊢ fo_suml F1' _] ⇒ let [g ⊢ fo_suml F2' _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fo F1'] [g ⊢ fo F2']
+       | [g ⊢ fo_sumr F1' _] ⇒ let [g ⊢ fo_sumr F2' _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fo F1'] [g ⊢ fo F2']
+       | [g ⊢ fo_parl F1' (\_._) _] ⇒ let [g ⊢ fo_parl F2' (\_._) _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fo F1'] [g ⊢ fo F2']
+       | [g ⊢ fo_parr F1' (\_._) _] ⇒ let [g ⊢ fo_parr F2' (\_._) _] = [g ⊢ F2] in impossible no_composable_tr_with_same_label [g ⊢ fo F1'] [g ⊢ fo F2']
+       | [g ⊢ fo_nu_op \a.F1'] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F2')] ⇒ ?%impossible no_composable_tr_with_same_label [g,a:names ⊢ fc F1'] [_ ⊢ fc F2']
+            | [g ⊢ fo_nu_op \a.F2'] ⇒ impossible no_composable_tr_with_same_label [_ ⊢ fo F1'] [_ ⊢ fo F2'])
+    );
+
+rec equiv_tr_have_same_dir: (g:ctx) (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S]) (T':[g ⊢ step R A S])
+  (RT:[g ⊢ step Q A P]) (RU:[g ⊢ step R B P]) (RU':[g ⊢ step S B Q]) (RT':[g ⊢ step S A R])
+  [g ⊢ inv_tr T RT] → [g ⊢ inv_tr U RU] → [g ⊢ inv_tr U' RU'] → [g ⊢ inv_tr T' RT'] →
+  [g ⊢ indep_tr T U] → [g ⊢ indep_tr RU T'] → [g ⊢ indep_tr RT' RU'] → [g ⊢ indep_tr U' RT] →
+  [g ⊢ same_direction T T'] =
+/ total t (equiv_tr_have_same_dir _ _ _ _ _ _ _ t _ _ _ _ _ _ _ _ _ _ _ _ _ _ _) /
+fn r1,r2,r3,r4,i1,i2,i3,i4 ⇒
+let [g ⊢ it T RT] = r1 in
+let [g ⊢ it U RU] = r2 in
+let [g ⊢ it U' RU'] = r3 in
+let [g ⊢ it T' RT'] = r4 in
+(case [g ⊢ T] of
+  | [g ⊢ sc (fwc FT)] ⇒ (case [g ⊢ T'] of
+       | [g ⊢ sc (fwc FT')] ⇒ [g ⊢ sdf (ftc_cl FT) (ftc_cl FT')]
+       | [g ⊢ sc (bwc BT')] ⇒ let [g ⊢ FT'] = loop_lemma_two_cl [g ⊢ BT'] in
+              let [g ⊢ refst] = functional_inv r4 [g ⊢ it T' (sc (fwc FT'))] in
+              let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] i3 in 
+              let [g ⊢ sdf (ftc_cl _) (ftc_cl FT'')] = [g ⊢ SD1] in impossible no_composable_tr_with_same_label [g ⊢ fc FT] [g ⊢ fc FT''])
+  | [g ⊢ so (fwo FT)] ⇒ ?
+  | [g ⊢ sc (bwc BT)] ⇒ ?
+  | [g ⊢ so (bwo BT)] ⇒ ?
+)
+;
+
+% Equivalence of transitions ~:
+% Reflexive, symmetric and transitive closure of the equiv_tr_base relation.
+inductive equiv_tr: (g:ctx) [g ⊢ step P A Q] → [g ⊢ step R B S] → ctype =
+  | et_base: equiv_tr_base [g ⊢ T] [g ⊢ T'] → equiv_tr [g ⊢ T] [g ⊢ T']
+  | et_refl: equiv_tr [g ⊢ T] [g ⊢ T]
+  | et_sym: equiv_tr [g ⊢ T'] [g ⊢ T] → equiv_tr [g ⊢ T] [g ⊢ T']
+  | et_trans: equiv_tr [g ⊢ T] [g ⊢ T'] → equiv_tr [g ⊢ T'] [g ⊢ T''] → equiv_tr [g ⊢ T] [g ⊢ T'']
+;
+
+% Equality of proof labels
+LF eqpl: pr_lab → pr_lab → type =
+  | refpl: eqpl T T
+;
+
+% Equivalent transitions share the same proof label
+rec equiv_tr_have_same_label: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R B S]) 
+  equiv_tr [g ⊢ T] [g ⊢ T'] → [g ⊢ eqpl A B] =
+/ total e (equiv_tr_have_same_label _ _ _ _ _ _ _ _ _ e) /
+fn e ⇒ case e of
+  | et_base _ ⇒ [_ ⊢ refpl]
+  | et_refl ⇒ [_ ⊢ refpl]
+  | et_sym e' ⇒ let [_ ⊢ refpl] = equiv_tr_have_same_label e' in [_ ⊢ refpl]
+  | et_trans e1 e2 ⇒ let [_ ⊢ refpl] = equiv_tr_have_same_label e1 in
+                      let [_ ⊢ refpl] = equiv_tr_have_same_label e2 in [_ ⊢ refpl]
+;
+
+% Equivalent transitions are connected
+rec equiv_tr_are_connected: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R A S])
+  equiv_tr_base [g ⊢ T] [g ⊢ T'] → [g ⊢ conn_tr T T'] =
+/ total e (equiv_tr_are_connected _ _ _ _ _ _ _ _ e) /
+?%fn e ⇒ 
+%  | et_base e' ⇒ (case e' of
+%       let newcons h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 : equiv_tr_base_aux [g ⊢ ST] [g ⊢ SU] [g ⊢ SU'] [g ⊢ ST'] = e in
+       %let [g ⊢ ST] = [_ ⊢ ST] in 
+       %let h1':[g ⊢ forw_to_comb T ST] = h1 in
+       %let h2':[g ⊢ forw_to_comb U SU] = h2 in
+       %let h4':[g ⊢ forw_to_comb T' ST'] = h4 in
+%       [g ⊢ ct ST ST' (tr_s* (st_s* SU) (st_s* ST'))]
+              
+       %| aet_ff [_ ⊢ T] [_ ⊢ U] [_ ⊢ _] [_ ⊢ T'] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] %[_ ⊢ _]
+       %        %{[_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _]}% f ⇒ ?)
+       %| aet_fb [_ ⊢ T] [_ ⊢ U] [_ ⊢ _] [_ ⊢ T'] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _]
+       %        [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] f ⇒ ?
+       %| aet_bf [_ ⊢ T] [_ ⊢ U] [_ ⊢ _] [_ ⊢ T'] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _]
+       %        [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] f ⇒ ?
+       %| aet_bb [_ ⊢ T] [_ ⊢ U] [_ ⊢ _] [_ ⊢ T'] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _]
+       %        [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] [_ ⊢ _] f ⇒ ?
+       
+%  | et_refl ⇒ ?%[_ ⊢ refpl]
+%  | et_sym e' ⇒ ?%let [_ ⊢ refpl] = equiv_tr_have_same_label e' in [_ ⊢ refpl]
+%  | et_trans e1 e2 ⇒ ?%let [_ ⊢ refpl] = equiv_tr_have_same_label e1 in
+                      %let [_ ⊢ refpl] = equiv_tr_have_same_label e2 in [_ ⊢ refpl]
+%)
+;
+
 % Independence respects events (IRE):
 % Given three transitions t,t' and u, if t~t' (t and t' are equivalent) and t' and u are independent,
 % then also t and u are independent.
