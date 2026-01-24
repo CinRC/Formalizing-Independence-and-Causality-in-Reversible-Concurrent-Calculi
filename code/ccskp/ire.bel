@@ -53,7 +53,45 @@ LF key_pl: pr_lab → keys → type =
 ;
 
 rec aux7: (g:ctx) [g ⊢ fstep_cl X T Y] → [g ⊢ key T K[]] → [g ⊢ notin K[] Y] → [g ⊢ false] =
-?
+/ total f (aux7 _ _ _ _ _ f _ _) /
+fn f,h,n ⇒ case f of
+  | [g ⊢ fc_pref _] ⇒ let [g ⊢ key_base] = h in
+    let [g ⊢ not_kpref I _] = n in impossible irreflexive_neq [g ⊢ I]
+  | [g ⊢ fc_kpref F H _] ⇒ let [g ⊢ refk] = functional_key h [g ⊢ H] in
+    let [g ⊢ not_kpref _ N] = n in impossible aux7 [g ⊢ F] [g ⊢ H] [g ⊢ N]
+  | [g ⊢ fc_suml F D] ⇒ let [g ⊢ key_suml H] = h in
+    let [g ⊢ not_sum N _] = n in impossible aux7 [g ⊢ F] [g ⊢ H] [g ⊢ N]
+  | [g ⊢ fc_sumr F D] ⇒ let [g ⊢ key_sumr H] = h in
+    let [g ⊢ not_sum _ N] = n in impossible aux7 [g ⊢ F] [g ⊢ H] [g ⊢ N]
+  | [g ⊢ fc_parl F _ _] ⇒ let [g ⊢ key_parl H] = h in
+    let [g ⊢ not_par N _] = n in impossible aux7 [g ⊢ F] [g ⊢ H] [g ⊢ N]
+  | [g ⊢ fc_parr F _ _] ⇒ let [g ⊢ key_parr H] = h in
+    let [g ⊢ not_par _ N] = n in impossible aux7 [g ⊢ F] [g ⊢ H] [g ⊢ N]
+  | [g ⊢ fc_synl F _ _ _ _ _] ⇒ let [g ⊢ key_sync H] = h in
+    let [g ⊢ not_par N _] = n in impossible aux7 [g ⊢ F] [g ⊢ H] [g ⊢ N]
+  | [g ⊢ fc_synr F _ _ _ _ _] ⇒ let [g ⊢ key_sync H] = h in
+    let [g ⊢ not_par N _] = n in impossible aux7 [g ⊢ F] [g ⊢ H] [g ⊢ N]
+  | [g ⊢ fc_nu \a.F] ⇒ let [g ⊢ H] = h in
+    let [g ⊢ not_nu \a.N] = n in impossible aux7 [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N]
+;
+
+rec aux8: (g:ctx) [g ⊢ fstep_op X (open \a.T) Y] → [g,a:names ⊢ key T K[]] → [g ⊢ notin K[] Y] → [g ⊢ false] =
+/ total f (aux8 _ _ _ _ _ f _ _) /
+fn f,h,n ⇒ case f of
+  | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F)] ⇒ let [g,a:names ⊢ H] = h in
+    let [g ⊢ not_nu \a.N] = n in impossible aux7 [_ ⊢ F] [_ ⊢ H] [_ ⊢ N]
+  | [g ⊢ fo_kpref F (\a.H) _] ⇒ let [g,a:names ⊢ refk] = functional_key h [_ ⊢ H] in
+    let [g ⊢ not_kpref _ N] = n in impossible aux8 [g ⊢ F] [_ ⊢ H] [g ⊢ N]
+  | [g ⊢ fo_suml F D] ⇒ let [g,a:names ⊢ key_suml H] = h in
+    let [g ⊢ not_sum N _] = n in impossible aux8 [g ⊢ F] [_ ⊢ H] [g ⊢ N]
+  | [g ⊢ fo_sumr F D] ⇒ let [g,a:names ⊢ key_sumr H] = h in
+    let [g ⊢ not_sum _ N] = n in impossible aux8 [g ⊢ F] [_ ⊢ H] [g ⊢ N]
+  | [g ⊢ fo_parl F (\_._) _] ⇒ let [g,a:names ⊢ key_parl H] = h in
+    let [g ⊢ not_par N _] = n in impossible aux8 [g ⊢ F] [_ ⊢ H] [g ⊢ N]
+  | [g ⊢ fo_parr F (\_._) _] ⇒ let [g,a:names ⊢ key_parr H] = h in
+    let [g ⊢ not_par _ N] = n in impossible aux8 [g ⊢ F] [_ ⊢ H] [g ⊢ N]
+  | [g ⊢ fo_nu_op \a.F] ⇒ let [g,a:names ⊢ H] = h in
+    let [g ⊢ not_nu \a.N] = n in impossible aux8 [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N]
 ;
 
 rec no_composable_fw_tr_with_same_key: (g:ctx) [g ⊢ fstep X T1 Y] → [g ⊢ fstep Y T2 Z] →
@@ -176,87 +214,156 @@ fn fs1,fs2,h1,h2 ⇒ case fs1 of
                  | [g ⊢ fo_parr F2' (\a.H2') _] ⇒ let [g,a:names ⊢ key_parr H2''] = [_ ⊢ H2] in
                    let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
                    impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1'] [g ⊢ fo F2'] [g ⊢ key_cl H1'] [g ⊢ key_op \a.H2'])
-            | [g ⊢ fc_synl FL1 _ HL1 FR1 _ HR1] ⇒ ?%{let [g ⊢ key_sync H1''] = [g ⊢ H1] in
+            | [g ⊢ fc_synl FL1 _ HL1 FR1 _ HR1] ⇒ let [g ⊢ key_sync H1''] = [g ⊢ H1] in
               let [g ⊢ refk] = functional_key [g ⊢ HL1] [g ⊢ H1''] in
               (case [g ⊢ F2] of
-                 | [g ⊢ fc_parl F2' H2' _] ⇒ let [g ⊢ key_parl H2''] = [g ⊢ H2] in
-                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
-                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FL1] [g ⊢ fc F2'] [g ⊢ key_cl HL1] [g ⊢ key_cl H2']
-                 | [g ⊢ fc_parr F2' H2' _] ⇒ let [g ⊢ key_parr H2''] = [g ⊢ H2] in
-                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
-                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FR1] [g ⊢ fc F2'] [g ⊢ key_cl HR1] [g ⊢ key_cl H2']
-                 | [g ⊢ fc_synl F2' _ H2' _ _ _] ⇒ let [g ⊢ key_sync H2''] = [g ⊢ H2] in
-                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
-                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FL1] [g ⊢ fc F2'] [g ⊢ key_cl HL1] [g ⊢ key_cl H2']
-                 | [g ⊢ fc_synr F2' _ H2' _ _ _] ⇒ let [g ⊢ key_sync H2''] = [g ⊢ H2] in
-                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
-                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FL1] [g ⊢ fc F2'] [g ⊢ key_cl HL1] [g ⊢ key_cl H2'])}%
-            | [g ⊢ fc_synr FL1 _ HL1 FR1 _ HR1] ⇒ ?%{let [g ⊢ key_sync H1''] = [g ⊢ H1] in
+                 | [g ⊢ fo_parl F2' (\a.H2') _] ⇒ let [g,a:names ⊢ key_parl H2''] = [_ ⊢ H2] in
+                   let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FL1] [g ⊢ fo F2'] [g ⊢ key_cl HL1] [g ⊢ key_op \a.H2']
+                 | [g ⊢ fo_parr F2' (\a.H2') _] ⇒ let [g,a:names ⊢ key_parr H2''] = [_ ⊢ H2] in
+                   let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FR1] [g ⊢ fo F2'] [g ⊢ key_cl HR1] [g ⊢ key_op \a.H2'])
+            | [g ⊢ fc_synr FL1 _ HL1 FR1 _ HR1] ⇒ let [g ⊢ key_sync H1''] = [g ⊢ H1] in
               let [g ⊢ refk] = functional_key [g ⊢ HL1] [g ⊢ H1''] in
               (case [g ⊢ F2] of
-                 | [g ⊢ fc_parl F2' H2' _] ⇒ let [g ⊢ key_parl H2''] = [g ⊢ H2] in
-                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
-                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FL1] [g ⊢ fc F2'] [g ⊢ key_cl HL1] [g ⊢ key_cl H2']
-                 | [g ⊢ fc_parr F2' H2' _] ⇒ let [g ⊢ key_parr H2''] = [g ⊢ H2] in
-                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
-                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FR1] [g ⊢ fc F2'] [g ⊢ key_cl HR1] [g ⊢ key_cl H2']
-                 | [g ⊢ fc_synl F2' _ H2' _ _ _] ⇒ let [g ⊢ key_sync H2''] = [g ⊢ H2] in
-                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
-                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FL1] [g ⊢ fc F2'] [g ⊢ key_cl HL1] [g ⊢ key_cl H2']
-                 | [g ⊢ fc_synr F2' _ H2' _ _ _] ⇒ let [g ⊢ key_sync H2''] = [g ⊢ H2] in
-                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
-                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FL1] [g ⊢ fc F2'] [g ⊢ key_cl HL1] [g ⊢ key_cl H2'])}%
+                 | [g ⊢ fo_parl F2' (\a.H2') _] ⇒ let [g,a:names ⊢ key_parl H2''] = [_ ⊢ H2] in
+                   let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FL1] [g ⊢ fo F2'] [g ⊢ key_cl HL1] [g ⊢ key_op \a.H2']
+                 | [g ⊢ fo_parr F2' (\a.H2') _] ⇒ let [g,a:names ⊢ key_parr H2''] = [_ ⊢ H2] in
+                   let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fc FR1] [g ⊢ fo F2'] [g ⊢ key_cl HR1] [g ⊢ key_op \a.H2'])
             | [g ⊢ fc_nu \a.F1'] ⇒ (case [g ⊢ F2] of
                  | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F2')] ⇒ 
                    impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fc F1'] [_ ⊢ fc F2'] [_ ⊢ key_cl H1[..]] [_ ⊢ key_cl H2]
-                 | [g ⊢ fo_nu_op \a.F2'] ⇒ impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fc F1'] [_ ⊢ fo F2'] [_ ⊢ key_cl H1[..]] [_ ⊢ key_op \a.H2[..]])
-       ))
-  | [g ⊢ fo F1] ⇒ (case fs2 of
-       | [g ⊢ fc F2] ⇒ ?
-       | [g ⊢ fo F2] ⇒ ?)
+                 | [g ⊢ fo_nu_op \a.F2'] ⇒ impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fc F1'] [_ ⊢ fo F2'] [_ ⊢ key_cl H1[..]] [_ ⊢ key_op \a.H2[..]])))
+  | [g ⊢ fo F1] ⇒ let [g ⊢ key_op \a.H1] = h1 in
+    (case fs2 of
+       | [g ⊢ fc F2] ⇒ let [g ⊢ key_cl H2] = h2 in
+         (case [g ⊢ F1] of
+            | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F1')] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+              impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fc F1'] [_ ⊢ fc F2'] [_ ⊢ key_cl H1] [_ ⊢ key_cl H2[..]]
+            | [g ⊢ fo_kpref F1' (\a.H1') _] ⇒ 
+              let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1] [_ ⊢ H1'] in
+              let [g ⊢ fc_kpref F2' H2' _] = [g ⊢ F2] in
+              let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ H2'] in impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1] [g ⊢ key_cl H2]
+            | [g ⊢ fo_suml F1' _] ⇒ (case [g ⊢ F2] of 
+                 | [g ⊢ fc_suml F2' _] ⇒ let [g,a:names ⊢ key_suml H1'] = [_ ⊢ H1] in
+                   let [g ⊢ key_suml H2'] = [g ⊢ H2] in impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_cl H2']
+                 | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fo [g ⊢ F1'] [g ⊢ D2])
+            | [g ⊢ fo_sumr F1' _] ⇒ (case [g ⊢ F2] of 
+                 | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fo [g ⊢ F1'] [g ⊢ D2]
+                 | [g ⊢ fc_sumr F2' _] ⇒ let [g,a:names ⊢ key_sumr H1'] = [_ ⊢ H1] in
+                   let [g ⊢ key_sumr H2'] = [g ⊢ H2] in impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_cl H2'])
+            | [g ⊢ fo_parl F1' (\a.H1') _] ⇒ let [g,a:names ⊢ key_parl H1''] = [_ ⊢ H1] in
+              let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1'] [_ ⊢ H1''] in
+              (case [g ⊢ F2] of
+                 | [g ⊢ fc_parl F2' H2' _] ⇒ let [g ⊢ key_parl H2''] = [g ⊢ H2] in
+                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_cl H2']
+                 | [g ⊢ fc_parr _ H2' N2] ⇒ let [g ⊢ key_parr H2''] = [g ⊢ H2] in
+                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
+                   impossible aux8 [g ⊢ F1'] [_ ⊢ H1'] [g ⊢ N2]
+                 | [g ⊢ fc_synl F2' _ H2' _ _ _] ⇒ let [g ⊢ key_sync H2''] = [g ⊢ H2] in
+                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_cl H2']
+                 | [g ⊢ fc_synr F2' _ H2' _ _ _] ⇒ let [g ⊢ key_sync H2''] = [g ⊢ H2] in
+                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_cl H2'])
+            | [g ⊢ fo_parr F1' (\a.H1') _] ⇒ let [g,a:names ⊢ key_parr H1''] = [_ ⊢ H1] in
+              let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1'] [_ ⊢ H1''] in
+              (case [g ⊢ F2] of
+                 | [g ⊢ fc_parl _ H2' N2] ⇒ let [g ⊢ key_parl H2''] = [g ⊢ H2] in
+                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
+                   impossible aux8 [g ⊢ F1'] [_ ⊢ H1'] [g ⊢ N2]
+                 | [g ⊢ fc_parr F2' H2' _] ⇒ let [g ⊢ key_parr H2''] = [g ⊢ H2] in
+                   let [g ⊢ refk] = functional_key [g ⊢ H2'] [g ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_cl H2']
+                 | [g ⊢ fc_synl _ _ HL2 F2' _ HR2] ⇒ let [g ⊢ key_sync H2''] = [g ⊢ H2] in
+                   let [g ⊢ refk] = functional_key [g ⊢ HL2] [g ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_cl HR2]
+                 | [g ⊢ fc_synr _ _ HL2 F2' _ HR2] ⇒ let [g ⊢ key_sync H2''] = [g ⊢ H2] in
+                   let [g ⊢ refk] = functional_key [g ⊢ HL2] [g ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fc F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_cl HR2])
+            | [g ⊢ fo_nu_op \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+              impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fo F1'] [_ ⊢ fc F2'] [_ ⊢ key_op \a.H1[..]] [_ ⊢ key_cl H2[..]])
+       | [g ⊢ fo F2] ⇒ let [g ⊢ key_op \a.H2] = h2 in
+         (case [g ⊢ F1] of
+            | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F1')] ⇒ (case [g ⊢ F2] of
+                 | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F2')] ⇒ 
+                   impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fc F1'] [_ ⊢ fc F2'] [_ ⊢ key_cl H1] [_ ⊢ key_cl H2]
+                 | [g ⊢ fo_nu_op \a.F2'] ⇒ impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fc F1'] [_ ⊢ fo F2'] [_ ⊢ key_cl H1] [_ ⊢ key_op \a.H2[..]])
+            | [g ⊢ fo_kpref F1' (\a.H1') _] ⇒ 
+              let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1] [_ ⊢ H1'] in
+              let [g ⊢ fo_kpref F2' (\a.H2') _] = [g ⊢ F2] in
+              let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2] [_ ⊢ H2'] in impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fo F2'] [g ⊢ key_op \a.H1] [g ⊢ key_op \a.H2]
+            | [g ⊢ fo_suml F1' _] ⇒ (case [g ⊢ F2] of 
+                 | [g ⊢ fo_suml F2' _] ⇒ let [g,a:names ⊢ key_suml H1'] = [_ ⊢ H1] in
+                   let [g,a:names ⊢ key_suml H2'] = [_ ⊢ H2] in impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fo F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_op \a.H2']
+                 | [g ⊢ fo_sumr _ D2] ⇒ impossible target_is_not_std_fo [g ⊢ F1'] [g ⊢ D2])
+            | [g ⊢ fo_sumr F1' _] ⇒ (case [g ⊢ F2] of 
+                 | [g ⊢ fo_suml _ D2] ⇒ impossible target_is_not_std_fo [g ⊢ F1'] [g ⊢ D2]
+                 | [g ⊢ fo_sumr F2' _] ⇒ let [g,a:names ⊢ key_sumr H1'] = [_ ⊢ H1] in
+                   let [g,a:names ⊢ key_sumr H2'] = [_ ⊢ H2] in impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fo F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_op \a.H2'])
+            | [g ⊢ fo_parl F1' (\a.H1') _] ⇒ let [g,a:names ⊢ key_parl H1''] = [_ ⊢ H1] in
+              let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1'] [_ ⊢ H1''] in
+              (case [g ⊢ F2] of
+                 | [g ⊢ fo_parl F2' (\a.H2') _] ⇒ let [g,a:names ⊢ key_parl H2''] = [_ ⊢ H2] in
+                   let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fo F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_op \a.H2']
+                 | [g ⊢ fo_parr _ (\a.H2') N2] ⇒ let [g,a:names ⊢ key_parr H2''] = [_ ⊢ H2] in
+                   let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
+                   impossible aux8 [g ⊢ F1'] [_ ⊢ H1'] [g ⊢ N2])
+            | [g ⊢ fo_parr F1' (\a.H1') _] ⇒ let [g,a:names ⊢ key_parr H1''] = [_ ⊢ H1] in
+              let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1'] [_ ⊢ H1''] in
+              (case [g ⊢ F2] of
+                 | [g ⊢ fo_parl _ (\a.H2') N2] ⇒ let [g,a:names ⊢ key_parl H2''] = [_ ⊢ H2] in
+                   let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
+                   impossible aux8 [g ⊢ F1'] [_ ⊢ H1'] [g ⊢ N2]
+                 | [g ⊢ fo_parr F2' (\a.H2') _] ⇒ let [g,a:names ⊢ key_parr H2''] = [_ ⊢ H2] in
+                   let [g,a:names ⊢ refk] = functional_key [_ ⊢ H2'] [_ ⊢ H2''] in
+                   impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1'] [g ⊢ fo F2'] [g ⊢ key_op \a.H1'] [g ⊢ key_op \a.H2'])
+            | [g ⊢ fo_nu_op \a.F1'] ⇒ (case [g ⊢ F2] of
+                 | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F2')] ⇒ 
+                   impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fo F1'] [_ ⊢ fc F2'] [_ ⊢ key_op \a.H1[..]] [_ ⊢ key_cl H2]
+                 | [g ⊢ fo_nu_op \a.F2'] ⇒ impossible no_composable_fw_tr_with_same_key [g,a:names ⊢ fo F1'] [_ ⊢ fo F2'] [_ ⊢ key_op \a.H1[..]] [_ ⊢ key_op \a.H2[..]])))
+;
+
+rec no_composable_bw_tr_with_same_key: (g:ctx) [g ⊢ bstep Z T2 Y] → [g ⊢ bstep Y T1 X] →
+  [g ⊢ key_pl T2 K[]] → [g ⊢ key_pl T1 K[]] → [g ⊢ false] =
+/ total x (no_composable_bw_tr_with_same_key x _ _ _ _ _ _ _ _ _ _) /
+fn bs1,bs2,h1,h2 ⇒ case bs1 of
+  | [g ⊢ bc B1] ⇒ let [g ⊢ F1] = loop_lemma_two_cl [g ⊢ B1] in
+    (case bs2 of
+       | [g ⊢ bc B2] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
+         no_composable_fw_tr_with_same_key [g ⊢ fc F2] [g ⊢ fc F1] h2 h1
+       | [g ⊢ bo B2] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
+         no_composable_fw_tr_with_same_key [g ⊢ fo F2] [g ⊢ fc F1] h2 h1)
+  | [g ⊢ bo B1] ⇒ let [g ⊢ F1] = loop_lemma_two_op [g ⊢ B1] in
+    (case bs2 of
+       | [g ⊢ bc B2] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
+         no_composable_fw_tr_with_same_key [g ⊢ fc F2] [g ⊢ fo F1] h2 h1
+       | [g ⊢ bo B2] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
+         no_composable_fw_tr_with_same_key [g ⊢ fo F2] [g ⊢ fo F1] h2 h1)
 ;
 
 
-rec no_composable_tr_with_same_label_fc: (g:ctx) [g ⊢ fstep_cl X T Y] → [g ⊢ fstep_cl Y T Z] → [g ⊢ false] =
-/ total f1 (no_composable_tr_with_same_label_fc _ _ _ _ _ f1 _) /
-fn f1,f2 ⇒ case f1 of
-  | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ key_base N] = f2 in impossible irreflexive_neq [g ⊢ N]
-  | [g ⊢ fc_kpref F1 _ _] ⇒ let [g ⊢ fc_kpref F2 _ _] = f2 in impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fc_suml F1 _] ⇒ let [g ⊢ fc_suml F2 _] = f2 in impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fc_sumr F1 _] ⇒ let [g ⊢ fc_sumr F2 _] = f2 in impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fc_parl F1 _ _] ⇒ let [g ⊢ fc_parl F2 _ _] = f2 in impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fc_parr F1 _ _] ⇒ let [g ⊢ fc_parr F2 _ _] = f2 in impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fc_synl F1 _ _ _ _ _] ⇒ (case f2 of
-       | [g ⊢ fc_synl F2 _ _ _ _ _] ⇒ impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2]
-       | [g ⊢ fc_synr F2 _ _ _ _ _] ⇒ impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2])
-  | [g ⊢ fc_synr F1 _ _ _ _ _] ⇒ (case f2 of
-       | [g ⊢ fc_synl F2 _ _ _ _ _] ⇒ impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2]
-       | [g ⊢ fc_synr F2 _ _ _ _ _] ⇒ impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2])
-  | [g ⊢ fc_nu \a.F1] ⇒ let [g ⊢ fc_nu \a.F2] = f2 in impossible no_composable_tr_with_same_label_fc [_ ⊢ F1] [_ ⊢ F2]
-;
-
-rec no_composable_tr_with_same_label_fo: (g:ctx) [g ⊢ fstep_op X T Y] → [g ⊢ fstep_op Y T Z] → [g ⊢ false] =
-/ total f1 (no_composable_tr_with_same_label_fo _ _ _ _ _ f1 _) /
-fn f1,f2 ⇒ case f1 of
-  | [g ⊢ fo_nu_cl (\a.O1) (\a.L1) (\a.F1)] ⇒ (case f2 of
-       | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F2)] ⇒ impossible no_composable_tr_with_same_label_fc [_ ⊢ F1] [_ ⊢ F2]
-       | [g ⊢ fo_nu_op \a.F2] ⇒ ?)%impossible no_composable_tr_with_same_label [g,a:names ⊢ F1] [_ ⊢ F2])
-  | [g ⊢ fo_kpref F1 (\_._) _] ⇒ let [g ⊢ fo_kpref F2 (\_._) _] = f2 in impossible no_composable_tr_with_same_label_fo [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fo_suml F1 _] ⇒ let [g ⊢ fo_suml F2 _] = f2 in impossible no_composable_tr_with_same_label_fo [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fo_sumr F1 _] ⇒ let [g ⊢ fo_sumr F2 _] = f2 in impossible no_composable_tr_with_same_label_fo [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fo_parl F1 (\_._) _] ⇒ let [g ⊢ fo_parl F2 (\_._) _] = f2 in impossible no_composable_tr_with_same_label_fo [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fo_parr F1 (\_._) _] ⇒ let [g ⊢ fo_parr F2 (\_._) _] = f2 in impossible no_composable_tr_with_same_label_fo [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fo_nu_op \a.F1] ⇒ (case f2 of
-       | [g ⊢ fo_nu_cl (\_._) (\_._) (\a.F2)] ⇒ ?%impossible no_composable_tr_with_same_label [g,a:names ⊢ F1] [_ ⊢ F2]
-       | [g ⊢ fo_nu_op \a.F2] ⇒ impossible no_composable_tr_with_same_label_fo [_ ⊢ F1] [_ ⊢ F2])
-;
-
-rec no_composable_tr_with_same_label: (g:ctx) [g ⊢ fstep X T Y] → [g ⊢ fstep Y T Z] → [g ⊢ false] =
-/ total x (no_composable_tr_with_same_label x _ _ _ _ _) /
+rec no_composable_fw_tr_with_same_label: (g:ctx) [g ⊢ fstep X T Y] → [g ⊢ fstep Y T Z] → [g ⊢ false] =
+/ total x (no_composable_fw_tr_with_same_label x _ _ _ _ _) /
 fn fs1,fs2 ⇒ case fs1 of
-  | [g ⊢ fc F1] ⇒ let [g ⊢ fc F2] = fs2 in impossible no_composable_tr_with_same_label_fc [g ⊢ F1] [g ⊢ F2]
-  | [g ⊢ fo F1] ⇒ let [g ⊢ fo F2] = fs2 in impossible no_composable_tr_with_same_label_fo [g ⊢ F1] [g ⊢ F2]
-  ;  
+  | [g ⊢ fc F1]:[g ⊢ fstep _ (p_cl T) _] ⇒ let [g ⊢ ex_k H] = total_key [g ⊢ T] in
+    let [g ⊢ fc F2] = fs2 in impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl H] [g ⊢ key_cl H]
+  | [g ⊢ fo F1]:[g ⊢ fstep _ (p_op (open \a.T)) _] ⇒ let [g,a:names ⊢ ex_k H] = total_key [_ ⊢ T] in
+    let [g ⊢ fo F2] = fs2 in impossible no_composable_fw_tr_with_same_key [g ⊢ fo F1] [g ⊢ fo F2] [g ⊢ key_op \a.H] [g ⊢ key_op \a.H]
+;
+
+rec no_composable_bw_tr_with_same_label: (g:ctx) [g ⊢ bstep X T Y] → [g ⊢ bstep Y T Z] → [g ⊢ false] =
+/ total x (no_composable_bw_tr_with_same_label x _ _ _ _ _) /
+fn bs1,bs2 ⇒ case bs1 of
+  | [g ⊢ bc F1]:[g ⊢ bstep _ (p_cl T) _] ⇒ let [g ⊢ ex_k H] = total_key [g ⊢ T] in
+    let [g ⊢ bc F2] = bs2 in impossible no_composable_bw_tr_with_same_key [g ⊢ bc F1] [g ⊢ bc F2] [g ⊢ key_cl H] [g ⊢ key_cl H]
+  | [g ⊢ bo F1]:[g ⊢ bstep _ (p_op (open \a.T)) _] ⇒ let [g,a:names ⊢ ex_k H] = total_key [_ ⊢ T] in
+    let [g ⊢ bo F2] = bs2 in impossible no_composable_bw_tr_with_same_key [g ⊢ bo F1] [g ⊢ bo F2] [g ⊢ key_op \a.H] [g ⊢ key_op \a.H]
+;
 
 
 rec equiv_tr_have_same_dir: (g:ctx) (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S]) (T':[g ⊢ step R A S])
@@ -276,11 +383,25 @@ let [g ⊢ it T' RT'] = r4 in
        | [g ⊢ sc (bwc BT')] ⇒ let [g ⊢ FT'] = loop_lemma_two_cl [g ⊢ BT'] in
               let [g ⊢ refst] = functional_inv r4 [g ⊢ it T' (sc (fwc FT'))] in
               let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] i3 in 
-              let [g ⊢ sdf (ftc_cl _) (ftc_cl FT'')] = [g ⊢ SD1] in impossible no_composable_tr_with_same_label [g ⊢ fc FT] [g ⊢ fc FT''])
-  | [g ⊢ so (fwo FT)] ⇒ ?
-  | [g ⊢ sc (bwc BT)] ⇒ ?
-  | [g ⊢ so (bwo BT)] ⇒ ?
-)
+              let [g ⊢ sdf (ftc_cl _) (ftc_cl FT'')] = [g ⊢ SD1] in impossible no_composable_fw_tr_with_same_label [g ⊢ fc FT] [g ⊢ fc FT''])
+  | [g ⊢ so (fwo FT)] ⇒ (case [g ⊢ T'] of
+       | [g ⊢ so (fwo FT')] ⇒ [g ⊢ sdf (ftc_op FT) (ftc_op FT')]
+       | [g ⊢ so (bwo BT')] ⇒ let [g ⊢ FT'] = loop_lemma_two_op [g ⊢ BT'] in
+              let [g ⊢ refst] = functional_inv r4 [g ⊢ it T' (so (fwo FT'))] in
+              let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] i3 in 
+              let [g ⊢ sdf (ftc_op _) (ftc_op FT'')] = [g ⊢ SD1] in impossible no_composable_fw_tr_with_same_label [g ⊢ fo FT] [g ⊢ fo FT''])
+  | [g ⊢ sc (bwc BT)] ⇒ (case [g ⊢ T'] of
+       | [g ⊢ sc (fwc FT')] ⇒ let [g ⊢ BT'] = loop_lemma_one_cl [g ⊢ FT'] in
+              let [g ⊢ refst] = functional_inv r4 [g ⊢ it T' (sc (bwc BT'))] in
+              let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] i3 in 
+              let [g ⊢ sdb (btc_cl _) (btc_cl BT'')] = [g ⊢ SD1] in impossible no_composable_bw_tr_with_same_label [g ⊢ bc BT] [g ⊢ bc BT'']
+       | [g ⊢ sc (bwc BT')] ⇒ [g ⊢ sdb (btc_cl BT) (btc_cl BT')])
+  | [g ⊢ so (bwo BT)] ⇒ (case [g ⊢ T'] of
+       | [g ⊢ so (fwo FT')] ⇒ let [g ⊢ BT'] = loop_lemma_one_op [g ⊢ FT'] in
+              let [g ⊢ refst] = functional_inv r4 [g ⊢ it T' (so (bwo BT'))] in
+              let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] i3 in 
+              let [g ⊢ sdb (btc_op _) (btc_op BT'')] = [g ⊢ SD1] in impossible no_composable_bw_tr_with_same_label [g ⊢ bo BT] [g ⊢ bo BT'']
+       | [g ⊢ so (bwo BT')] ⇒ [g ⊢ sdb (btc_op BT) (btc_op BT')]))
 ;
 
 % Equivalence of transitions ~:
