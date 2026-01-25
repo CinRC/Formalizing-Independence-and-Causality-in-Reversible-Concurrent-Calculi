@@ -143,11 +143,6 @@ fn b ⇒ case b of
 
 %%% Uniqueness of the derivation of closed transitions %%%
 
-% Equality of derivations of fstep_cl X T X'
-LF eqfc: fstep_cl X1 T1 X1' → fstep_cl X2 T2 X2' → type =
-  | reffc: eqfc F F
-;
-
 % Uniqueness of the derivation of fstep_cl X T X'
 rec unique_fstep_cl: (g:ctx) {F1:[g ⊢ fstep_cl X T1 X']} {F2:[g ⊢ fstep_cl X T2 X']} [g ⊢ eqfc F1 F2] =
 / total f1 (unique_fstep_cl _ _ _ _ _ f1 _) /
@@ -204,11 +199,6 @@ mlam F1 F2 ⇒ case [_ ⊢ F1] of
          let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in [g ⊢ reffc])
   | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
     let [g,a:names ⊢ reffc] = unique_fstep_cl [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffc]
-;
-
-% Equality of derivations of bstep_cl X' T X
-LF eqbc: bstep_cl X1' T1 X1 → bstep_cl X2' T2 X2 → type =
-  | refbc: eqbc B B
 ;
 
 % Uniqueness of the derivation of bstep_cl X' T X
@@ -348,11 +338,6 @@ fn b1,b2 ⇒ case b1 of
 
 %%% Uniqueness of the derivation of open transitions %%%
 
-% Equality of derivations of fstep_op X T X'
-LF eqfo: fstep_op X1 T1 X1' → fstep_op X2 T2 X2' → type =
-  | reffo: eqfo F F
-;
-
 % Uniqueness of the derivation of fstep_op X T X'
 rec unique_fstep_op: (g:ctx) {F1:[g ⊢ fstep_op X T1 X']} {F2:[g ⊢ fstep_op X T2 X']} [g ⊢ eqfo F1 F2] =
 / total f1 (unique_fstep_op _ _ _ _ _ f1 _) /
@@ -388,11 +373,6 @@ mlam F1 F2 ⇒ case [_ ⊢ F1] of
   | [g ⊢ fo_nu_op \a.F1'] ⇒ (case [g ⊢ F2] of
        | [g ⊢ fo_nu_cl (\a.O) (\a.L) (\a.F2')] ⇒ impossible no_fstep_cl_and_op [g,a:names ⊢ F2'] [g,a:names ⊢ F1']
        | [g ⊢ fo_nu_op \a.F2'] ⇒ let [g,a:names ⊢ reffo] = unique_fstep_op [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffo])
-;
-
-% Equality of derivations of bstep_op X' T X
-LF eqbo: bstep_op X1' T1 X1 → bstep_op X2' T2 X2 → type =
-  | refbo: eqbo B B
 ;
 
 % Uniqueness of the derivation of bstep_op X' T X
@@ -433,11 +413,6 @@ mlam B1 B2 ⇒ case [_ ⊢ B1] of
 ;
 
 
-% Equality of derivations of fstep X T X'
-LF eqf: fstep X1 T1 X1' → fstep X2 T2 X2' → type =
-  | reff: eqf F F
-;
-
 % Uniqueness of the derivation of fstep X T X'
 rec unique_fstep_ccskp: (g:ctx) {F1:[g ⊢ fstep X T1 X']} {F2:[g ⊢ fstep X T2 X']} [g ⊢ eqf F1 F2] =
 / total f1 (unique_fstep_ccskp _ _ _ _ _ f1 _) /
@@ -448,11 +423,6 @@ mlam FS1 FS2 ⇒ case [_ ⊢ FS1] of
   | [g ⊢ fo F1] ⇒ (case [g ⊢ FS2] of
         | [g ⊢ fc F2] ⇒ impossible no_fstep_cl_and_op [g ⊢ F2] [g ⊢ F1]
         | [g ⊢ fo F2] ⇒ let [g ⊢ reffo] = unique_fstep_op [g ⊢ F1] [g ⊢ F2] in [g ⊢ reff])
-;
-
-% Equality of derivations of bstep X' T X
-LF eqb: bstep X1' T1 X1 → bstep X2' T2 X2 → type =
-  | refb: eqb B B
 ;
 
 % Uniqueness of the derivation of bstep X' T X
@@ -467,11 +437,6 @@ mlam BS1 BS2 ⇒ case [_ ⊢ BS1] of
         | [g ⊢ bo B2] ⇒ let [g ⊢ refbo] = unique_bstep_op [g ⊢ B1] [g ⊢ B2] in [g ⊢ refb])
 ;
 
-
-% Equality of derivations of step X T X'
-LF eqst: step X1 T1 X1' → step X2 T2 X2' → type =
-  | refst: eqst S S
-;
 
 % Given two processes X and X', there cannot be both a forward closed transition and backward closed transition between them
 rec no_fstep_cl_and_bstep_cl: (g:ctx) [g ⊢ fstep_cl X T1 X'] → [g ⊢ bstep_cl X T2 X'] → [g ⊢ false] =

@@ -311,4 +311,67 @@ LF indep_tr: step X T1 X' → step Y T2 Y' → type =
   | ind_tr: indep T1 T2 → conn_tr (S1:step X T1 X') (S2:step Y T2 Y') → indep_tr S1 S2
 ;
 
+
+%%% Type families for equality
+
+% Equality of derivations of lab T A
+LF eqlb: lab T1 A1 → lab T2 A2 → type =
+  | reflb: eqlb L L
+;
+
+% Equality of derivations of key T K
+LF eqky: key T1 K1 → key T2 K2 → type =
+  | refky: eqky H H
+;
+
+% Equality of derivations of occurs A T
+LF eqoc: occurs A1 T1 → occurs A2 T2 → type =
+  | refoc: eqoc O O
+;
+
+% Equality of derivations of fstep_cl X T X'
+LF eqfc: fstep_cl X1 T1 X1' → fstep_cl X2 T2 X2' → type =
+  | reffc: eqfc F F
+;
+
+% Equality of derivations of bstep_cl X' T X
+LF eqbc: bstep_cl X1' T1 X1 → bstep_cl X2' T2 X2 → type =
+  | refbc: eqbc B B
+;
+
+% Equality of derivations of fstep_op X T X'
+LF eqfo: fstep_op X1 T1 X1' → fstep_op X2 T2 X2' → type =
+  | reffo: eqfo F F
+;
+
+% Equality of derivations of bstep_op X' T X
+LF eqbo: bstep_op X1' T1 X1 → bstep_op X2' T2 X2 → type =
+  | refbo: eqbo B B
+;
+
+% Equality of derivations of fstep X T X'
+LF eqf: fstep X1 T1 X1' → fstep X2 T2 X2' → type =
+  | reff: eqf F F
+;
+
+% Equality of derivations of bstep X' T X
+LF eqb: bstep X1' T1 X1 → bstep X2' T2 X2 → type =
+  | refb: eqb B B
+;
+
+% Equality of derivations of step X T X'
+LF eqst: step X1 T1 X1' → step X2 T2 X2' → type =
+  | refst: eqst S S
+;
+
+% Equality of closed proof keyed labels
+LF eqplc: pr_lab_cl → pr_lab_cl → type =
+  | refplc: eqplc T T
+;
+
+% Equality of proof labels
+LF eqpl: pr_lab → pr_lab → type =
+  | refpl: eqpl T T
+;
+
 end;

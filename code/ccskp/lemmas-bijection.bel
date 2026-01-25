@@ -1,10 +1,5 @@
 %%% Auxiliary lemmas for the bijection between CCSK and CCSKP %%%
 
-% Equality of closed proof keyed labels
-LF eqplc: pr_lab_cl → pr_lab_cl → type =
-  | refplc: eqplc T T
-;
-
 % Given a derivation of lab T A in a context [g,a:names],
 % with 'a' not occurring in T, then we can obtain a derivation
 % of lab T A in the stronger context [g].

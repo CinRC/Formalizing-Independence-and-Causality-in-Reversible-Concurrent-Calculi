@@ -80,7 +80,7 @@ Tests can be run using e.g.
 beluga run/ex-processes.cfg 
 ```
 
-For this particular set of example, expected result is, after ±1 second, is
+For this particular set of examples, expected result is, after ±1 second,
 
 ```Shell
 ## Type Reconstruction begin: run/../code/shared/definitions.bel ##
@@ -237,6 +237,7 @@ opam install --deps-only ./beluga.opam
     * `backward-transitions-ccskp.bel`: … backward transitions in CCSKP
     * `stuck-std-ccskp.bel`: … proofs that some standard processes are stuck in CCSKP
     * `stuck-keyed-ccskp.bel`: … proofs that some processes containing keys are stuck in CCSKP
+    * `events.bel`: … transitions representing the same event
   + `causality-relations\`: … causality relations on proof labels, in particular …
     * `connectivity.bel`: … connected proof labels
     * `dependence.bel`: … dependent proof labels

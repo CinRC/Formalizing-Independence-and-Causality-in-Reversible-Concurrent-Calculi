@@ -65,11 +65,6 @@ fn h1,h2 ⇒ case h1 of
   | [g ⊢ key_sync H1] ⇒ let [g ⊢ key_sync H2] = h2 in functional_key [g ⊢ H1] [g ⊢ H2]
 ;
 
-% Equality of derivations of lab T A
-LF eqlb: lab T1 A1 → lab T2 A2 → type =
-  | reflb: eqlb L L
-;
-
 % Uniqueness of the derivation of lab T A
 rec unique_lab: (g:ctx) {L1:[g ⊢ lab T A1]} {L2:[g ⊢ lab T A2]} [g ⊢ eqlb L1 L2] =
 / total l1 (unique_lab _ _ _ _ l1 _) /
@@ -84,11 +79,6 @@ mlam L1 L2 ⇒ case [_ ⊢ L1] of
   | [g ⊢ lab_parr L1'] ⇒ let [g ⊢ lab_parr L2'] = [g ⊢ L2] in
     let [g ⊢ reflb] = unique_lab [g ⊢ L1'] [g ⊢ L2'] in [g ⊢ reflb]
   | [g ⊢ lab_sync] ⇒ let [g ⊢ lab_sync] = [g ⊢ L2] in [g ⊢ reflb]
-;
-
-% Equality of derivations of key T K
-LF eqky: key T1 K1 → key T2 K2 → type =
-  | refky: eqky H H
 ;
 
 % Uniqueness of the derivation of key T K
@@ -106,11 +96,6 @@ mlam H1 H2 ⇒ case [_ ⊢ H1] of
     let [g ⊢ refky] = unique_key [g ⊢ H1'] [g ⊢ H2'] in [g ⊢ refky]
   | [g ⊢ key_sync H1'] ⇒ let [g ⊢ key_sync H2'] = [g ⊢ H2] in
     let [g ⊢ refky] = unique_key [g ⊢ H1'] [g ⊢ H2'] in [g ⊢ refky]
-;
-
-% Equality of derivations of occurs A T
-LF eqoc: occurs A1 T1 → occurs A2 T2 → type =
-  | refoc: eqoc O O
 ;
 
 % Uniqueness of the derivation of occurs A T

@@ -1,0 +1,23 @@
+% Example of equivalence of transitions:
+% P = a | b,  Q = a[k1] | b,  R = a | b[k0],  S = a[k1] | b[k0],
+% with transitions executing a and b in either order.
+rec ex_event: {T:[a:names,b:names ⊢ step (par (pref (inp a) null) (pref (out b) null)) 
+                                          (p_cl (pr_parl (pr_base (inp a) (s z))))
+                                          (par (kpref (inp a) (s z) null) (pref (out b) null))]}
+              {T':[a:names,b:names ⊢ step (par (pref (inp a) null) (kpref (out b) (z) null))
+                                          (p_cl (pr_parl (pr_base (inp a) (s z)))) 
+                                          (par (kpref (inp a) (s z) null) (kpref (out b) (z) null))]}
+              equiv_tr [a:names,b:names ⊢ T] [a:names,b:names ⊢ T'] = 
+/ total t (ex_event t _) /
+mlam T,T' ⇒ 
+let [a:names,b:names ⊢ ex_iv (it T RT)] = total_inv [_ ⊢ T] in
+let [a:names,b:names ⊢ ex_iv (it T' RT')] = total_inv [_ ⊢ T'] in
+et_base (etb [_ ⊢ it T RT]
+[_ ⊢ it (sc (fwc (fc_parr (fc_pref std_null) key_base (not_pref not_null)))) (sc (bwc (bc_parr (bc_pref std_null) key_base (not_pref not_null))))]
+[_ ⊢ it (sc (fwc (fc_parr (fc_pref std_null) key_base (not_kpref (nless (lzero z)) not_null)))) (sc (bwc (bc_parr (bc_pref std_null) key_base (not_kpref (nless (lzero z)) not_null))))]
+[_ ⊢ it T' RT']
+[_ ⊢ ind_tr (i_cc (i_p2l key_base key_base (ngreat (lzero z)))) (ct _ _ (st_s* (sc (fwc (fc_parr (fc_pref std_null) key_base (not_pref not_null))))))]
+[_ ⊢ ind_tr (i_cc (i_p2r key_base key_base (nless (lzero z)))) (ct _ _ (st_s* T'))]
+[_ ⊢ ind_tr (i_cc (i_p2l key_base key_base (ngreat (lzero z)))) (ct _ _ (st_s* (sc (bwc (bc_parr (bc_pref std_null) key_base (not_kpref (nless (lzero z)) not_null))))))]
+[_ ⊢ ind_tr (i_cc (i_p2r key_base key_base (nless (lzero z)))) (ct _ _ (st_s* RT))])
+;

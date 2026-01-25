@@ -1,8 +1,5 @@
 %%% PCI: propagation of coinitial independence
 
-
-
-
 % Propagation of coinitial independence (PCI):
 % Given t:step X T1 Y, u:step X T2 Z, u':step Y T2 W and t':step Z T1 W,
 % if t and u are independent, then u' and inv_tr(t) are independent.
