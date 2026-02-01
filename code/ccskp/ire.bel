@@ -3,60 +3,71 @@
 %%% Equivalence of transitions ~: two transitions are equivalent if they correspond to the same event
 
 % Base case of the definition of equivalence of transitions:
-% Two combined transitions are equivalent if they appear at opposite sides
-% of a square in which each adjacent pair of transitions are independent.
-inductive equiv_tr_base: (g:ctx) [g ⊢ step P A Q] → [g ⊢ step R A S] → ctype =
-  | etb: (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S]) (T':[g ⊢ step R A S])
-         (RT:[g ⊢ step Q A P]) (RU:[g ⊢ step R B P]) (RU':[g ⊢ step S B Q]) (RT':[g ⊢ step S A R])
-         [g ⊢ inv_tr T RT] → [g ⊢ inv_tr U RU] → [g ⊢ inv_tr U' RU'] → [g ⊢ inv_tr T' RT'] →
-         [g ⊢ indep_tr T U] → [g ⊢ indep_tr RU T'] → [g ⊢ indep_tr RT' RU'] → [g ⊢ indep_tr U' RT] →
-         equiv_tr_base [g ⊢ T] [g ⊢ T']
+% Since CCSKP is pre-reversible, we can use the simplified definition of events as in
+% Def. 4.8 of "An Axiomatic Theory for Reversible Computation" by I. Lanese et al.:
+% Two combined transitions with the same direction t: P --[α]--> Q and t': R --[α]--> S
+% are equivalent if there exist two combined transitions with the same direction
+% u: P --[β]--> R and u': Q --[β]--> S such that t and u are independent.
+
+LF equiv_tr_base: step P A Q → step R A S → type =
+  | etb: same_direction (T:step P A Q) (T':step R A S) → same_direction (U:step P B R) (U':step Q B S) → 
+         indep_tr T U → equiv_tr_base T T'
 ;
 
-% For ease of use in the formalization, this definition is weaker than its informal counterpart:
-% Definition 2.5 additionally requires that the two transitions have the same direction
-% and that the corresponding diagram is non-degenerate.
-% Below we prove that, for CCSKP, the additional required conditions are actually implied
-% by our weaker definition; as a conclusion, this definition is sound.
+% We can show that this definition is equivalent to Def. 2.5 in the paper. In particular
+% we have to prove that, given t~t' as above:
+% - the pairs of transitions (inv(u), t'), (inv(t'),inv(u')) and (u', inv(t)) are independent
+% - the diamond is not degenerate: Q != R if t and u are both forward or backward, P !=S otherwise.
 
-% If equiv_tr_base T T', then T and T' have the same direction.
-rec equiv_tr_have_same_dir: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R A S])
-  equiv_tr_base [g ⊢ T] [g ⊢ T'] → [g ⊢ same_direction T T'] =
-/ total t (equiv_tr_have_same_dir _ _ _ _ _ _ t _ _) /
-fn he ⇒ let etb [g ⊢ it T RT] _ [g ⊢ it U' RU'] [g ⊢ it T' RT'] _ _ hi3 _ = he in
-(case [g ⊢ T] of
-  | [g ⊢ sc (fwc FT)] ⇒ (case [g ⊢ T'] of
-       | [g ⊢ sc (fwc FT')] ⇒ [g ⊢ sdf (ftc_cl FT) (ftc_cl FT')]
-       | [g ⊢ sc (bwc BT')] ⇒ let [g ⊢ FT'] = loop_lemma_two_cl [g ⊢ BT'] in
-              let [g ⊢ refst] = functional_inv [g ⊢ it T' RT'] [g ⊢ it T' (sc (fwc FT'))] in
-              let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] hi3 in 
-              let [g ⊢ sdf (ftc_cl _) (ftc_cl FT'')] = [g ⊢ SD1] in impossible no_composable_fw_tr_with_same_label [g ⊢ fc FT] [g ⊢ fc FT''])
-  | [g ⊢ so (fwo FT)] ⇒ (case [g ⊢ T'] of
-       | [g ⊢ so (fwo FT')] ⇒ [g ⊢ sdf (ftc_op FT) (ftc_op FT')]
-       | [g ⊢ so (bwo BT')] ⇒ let [g ⊢ FT'] = loop_lemma_two_op [g ⊢ BT'] in
-              let [g ⊢ refst] = functional_inv [g ⊢ it T' RT'] [g ⊢ it T' (so (fwo FT'))] in
-              let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] hi3 in 
-              let [g ⊢ sdf (ftc_op _) (ftc_op FT'')] = [g ⊢ SD1] in impossible no_composable_fw_tr_with_same_label [g ⊢ fo FT] [g ⊢ fo FT''])
-  | [g ⊢ sc (bwc BT)] ⇒ (case [g ⊢ T'] of
-       | [g ⊢ sc (fwc FT')] ⇒ let [g ⊢ BT'] = loop_lemma_one_cl [g ⊢ FT'] in
-              let [g ⊢ refst] = functional_inv [g ⊢ it T' RT'] [g ⊢ it T' (sc (bwc BT'))] in
-              let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] hi3 in 
-              let [g ⊢ sdb (btc_cl _) (btc_cl BT'')] = [g ⊢ SD1] in impossible no_composable_bw_tr_with_same_label [g ⊢ bc BT] [g ⊢ bc BT'']
-       | [g ⊢ sc (bwc BT')] ⇒ [g ⊢ sdb (btc_cl BT) (btc_cl BT')])
-  | [g ⊢ so (bwo BT)] ⇒ (case [g ⊢ T'] of
-       | [g ⊢ so (fwo FT')] ⇒ let [g ⊢ BT'] = loop_lemma_one_op [g ⊢ FT'] in
-              let [g ⊢ refst] = functional_inv [g ⊢ it T' RT'] [g ⊢ it T' (so (bwo BT'))] in
-              let [g ⊢ sq _ T'' SD1 _] = sp [g ⊢ RT'] [g ⊢ RU'] hi3 in 
-              let [g ⊢ sdb (btc_op _) (btc_op BT'')] = [g ⊢ SD1] in impossible no_composable_bw_tr_with_same_label [g ⊢ bo BT] [g ⊢ bo BT'']
-       | [g ⊢ so (bwo BT')] ⇒ [g ⊢ sdb (btc_op BT) (btc_op BT')]))
+%(RT:[g ⊢ step Q A P]) (RU:[g ⊢ step R B P]) (RU':[g ⊢ step S B Q]) (RT':[g ⊢ step S A R])
+% [g ⊢ inv_tr T RT] → [g ⊢ inv_tr U RU] → [g ⊢ inv_tr U' RU'] → [g ⊢ inv_tr T' RT'] →
+% [g ⊢ indep_tr T U] → [g ⊢ indep_tr RU T'] → [g ⊢ indep_tr RT' RU'] → [g ⊢ indep_tr U' RT] 
+
+LF ex_indep_tr_one: step P A Q → step P B R → step Q B S → step R A S → type =
+  | exi1: inv_tr U RU → indep_tr RU T' → ex_indep_tr_one T U U' T'
 ;
+
+rec indep_tr_in_diamond_one: (g:ctx) (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S])
+  (T':[g ⊢ step R A S]) [g ⊢ same_direction T T'] → [g ⊢ same_direction U U'] 
+  → [g ⊢ indep_tr T U] → [g ⊢ ex_indep_tr_one T U U' T'] =
+/ total t (indep_tr_in_diamond_one _ _ _ _ _ _ t _ _) /
+fn sd1,sd2,hi ⇒ let [g ⊢ ind_tr I (ct _ U _)] = hi in
+let [g ⊢ _]:[g ⊢ same_direction _ T'] = sd1 in
+let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in
+let [g ⊢ ex_iv HRU] = total_inv [g ⊢ U] in
+let [g ⊢ it _ _] = [g ⊢ HRU] in
+[g ⊢ exi1 HRU (ind_tr I' (ct _ _ (st_s* T')))]
+;
+
+LF ex_indep_tr_two: step P A Q → step P B R → step Q B S → step R A S → type =
+  | exi2: inv_tr T' RT' → inv_tr U' RU' → indep_tr RT' RU' → ex_indep_tr_two T U U' T'
+;
+
+rec indep_tr_in_diamond_two: (g:ctx) (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S])
+  (T':[g ⊢ step R A S]) [g ⊢ same_direction T T'] → [g ⊢ same_direction U U'] 
+  → [g ⊢ indep_tr T U] → [g ⊢ ex_indep_tr_two T U U' T'] =
+?
+;
+
+LF ex_indep_tr_three: step P A Q → step P B R → step Q B S → step R A S → type =
+  | exi3: inv_tr T RT → indep_tr U' RT → ex_indep_tr_three T U U' T'
+;
+
+rec indep_tr_in_diamond_three: (g:ctx) (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S])
+  (T':[g ⊢ step R A S]) [g ⊢ same_direction T T'] → [g ⊢ same_direction U U'] 
+  → [g ⊢ indep_tr T U] → [g ⊢ ex_indep_tr_three T U U' T'] =
+?
+;
+
+% For the second condition, we prove that Q != R and P != S regardless of the directions of t and u.
 
 % If equiv_tr_base T T', then target(T) and source(T') are not equal processes.
 rec non_degenerate_diamonds_one: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R A S])
-  equiv_tr_base [g ⊢ T] [g ⊢ T'] → [g ⊢ eqp Q R] → [g ⊢ false] =
+  [g ⊢ equiv_tr_base T T'] → [g ⊢ eqp Q R] → [g ⊢ false] =
 / total t (non_degenerate_diamonds_one _ _ _ _ _ _ t _ _ _) /
 fn he,e ⇒ let [g ⊢ refp] = e in
-case equiv_tr_have_same_dir he of
+let [g ⊢ etb SD1 _ _] = he in
+case [g ⊢ SD1] of
   | [g ⊢ sdf HF HF'] ⇒ let [g ⊢ _]:[g ⊢ forw_to_comb F _] = [g ⊢ HF] in
                         let [g ⊢ _]:[g ⊢ forw_to_comb F' _] = [g ⊢ HF'] in
                         impossible no_composable_fw_tr_with_same_label [g ⊢ F] [g ⊢ F']
@@ -67,10 +78,11 @@ case equiv_tr_have_same_dir he of
 
 % If equiv_tr_base T T', then source(T) and target(T') are not equal processes.
 rec non_degenerate_diamonds_two: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R A S])
-  equiv_tr_base [g ⊢ T] [g ⊢ T'] → [g ⊢ eqp P S] → [g ⊢ false] =
+  [g ⊢ equiv_tr_base T T'] → [g ⊢ eqp P S] → [g ⊢ false] =
 / total t (non_degenerate_diamonds_two _ _ _ _ _ _ t _ _ _) /
 fn he,e ⇒ let [g ⊢ refp] = e in
-case equiv_tr_have_same_dir he of
+let [g ⊢ etb SD1 _ _] = he in
+case [g ⊢ SD1] of
   | [g ⊢ sdf HF HF'] ⇒ let [g ⊢ _]:[g ⊢ forw_to_comb F _] = [g ⊢ HF] in
                         let [g ⊢ _]:[g ⊢ forw_to_comb F' _] = [g ⊢ HF'] in
                         impossible no_composable_fw_tr_with_same_label [g ⊢ F'] [g ⊢ F]
@@ -82,40 +94,38 @@ case equiv_tr_have_same_dir he of
 
 % Equivalence of transitions ~:
 % Reflexive, symmetric and transitive closure of the equiv_tr_base relation.
-inductive equiv_tr: (g:ctx) [g ⊢ step P A Q] → [g ⊢ step R B S] → ctype =
-  | et_base: equiv_tr_base [g ⊢ T] [g ⊢ T'] → equiv_tr [g ⊢ T] [g ⊢ T']
-  | et_refl: equiv_tr [g ⊢ T] [g ⊢ T]
-  | et_sym: equiv_tr [g ⊢ T'] [g ⊢ T] → equiv_tr [g ⊢ T] [g ⊢ T']
-  | et_trans: equiv_tr [g ⊢ T] [g ⊢ T'] → equiv_tr [g ⊢ T'] [g ⊢ T''] → equiv_tr [g ⊢ T] [g ⊢ T'']
+LF equiv_tr: step P A Q → step R B S → type =
+  | et_base: equiv_tr_base T T' → equiv_tr T T'
+  | et_refl: equiv_tr T T
+  | et_sym: equiv_tr T' T → equiv_tr T T'
+  | et_trans: equiv_tr T T' → equiv_tr T' T'' → equiv_tr T T''
 ;
 
 % Equivalent transitions share the same proof label
 rec equiv_tr_have_same_label: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R B S]) 
-  equiv_tr [g ⊢ T] [g ⊢ T'] → [g ⊢ eqpl A B] =
+  [g ⊢ equiv_tr T T'] → [g ⊢ eqpl A B] =
 / total e (equiv_tr_have_same_label _ _ _ _ _ _ _ _ _ e) /
 fn e ⇒ case e of
-  | et_base _ ⇒ [_ ⊢ refpl]
-  | et_refl ⇒ [_ ⊢ refpl]
-  | et_sym e' ⇒ let [_ ⊢ refpl] = equiv_tr_have_same_label e' in [_ ⊢ refpl]
-  | et_trans e1 e2 ⇒ let [_ ⊢ refpl] = equiv_tr_have_same_label e1 in
-                      let [_ ⊢ refpl] = equiv_tr_have_same_label e2 in [_ ⊢ refpl]
+  | [_ ⊢ et_base _] ⇒ [_ ⊢ refpl]
+  | [_ ⊢ et_refl] ⇒ [_ ⊢ refpl]
+  | [_ ⊢ et_sym E'] ⇒ let [_ ⊢ refpl] = equiv_tr_have_same_label [_ ⊢ E'] in [_ ⊢ refpl]
+  | [_ ⊢ et_trans E1 E2] ⇒ let [_ ⊢ refpl] = equiv_tr_have_same_label [_ ⊢ E1] in
+                            let [_ ⊢ refpl] = equiv_tr_have_same_label [_ ⊢ E2] in [_ ⊢ refpl]
 ;
 
 % Equivalent transitions are connected
 rec equiv_tr_are_connected: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R B S])
-  equiv_tr [g ⊢ T] [g ⊢ T'] → [g ⊢ conn_tr T T'] =
+  [g ⊢ equiv_tr T T'] → [g ⊢ conn_tr T T'] =
 / total e (equiv_tr_are_connected _ _ _ _ _ _ _ _ _ e) /
 fn e ⇒ case e of
-  | et_base (etb hr1 hr2 hr3 hr4 hi1 hi2 hi3 hi4) ⇒
-    let [g ⊢ it T RT] = hr1 in
-    let [g ⊢ it U RU] = hr2 in
-    let [g ⊢ it T' RT'] = hr4 in
-    [g ⊢ ct T T' (tr_s* (st_s* U) (st_s* T'))]
-  | et_refl ⇒ let _:equiv_tr [g ⊢ T] [g ⊢ T] = e in [_ ⊢ ct _ _ (st_s* T)]
-  | et_sym e' ⇒ let [g ⊢ ct T' T S*] = equiv_tr_are_connected e' in
+  | [_ ⊢ et_base (etb _ SD2 _)]:[_ ⊢ equiv_tr T T'] ⇒
+    let [_ ⊢ _]:[_ ⊢ same_direction U _] = [_ ⊢ SD2] in
+    [_ ⊢ ct T T' (tr_s* (st_s* U) (st_s* T'))]
+  | [_ ⊢ et_refl] ⇒ let [_ ⊢ _]:[_ ⊢ equiv_tr T T] = e in [_ ⊢ ct _ _ (st_s* T)]
+  | [_ ⊢ et_sym E'] ⇒ let [g ⊢ ct T' T S*] = equiv_tr_are_connected [_ ⊢ E'] in
                  let [g ⊢ S*'] = symmetric_step* [g ⊢ S*] in [g ⊢ ct _ _ (tr_s* (st_s* T) (tr_s* S*' (st_s* T')))]
-  | et_trans e1 e2 ⇒ let [g ⊢ ct _ T S1*] = equiv_tr_are_connected e1 in
-                      let [g ⊢ ct _ _ S2*] = equiv_tr_are_connected e2 in
+  | [_ ⊢ et_trans E1 E2] ⇒ let [g ⊢ ct _ T S1*] = equiv_tr_are_connected [_ ⊢ E1] in
+                      let [g ⊢ ct _ _ S2*] = equiv_tr_are_connected [_ ⊢ E2] in
                       let [g ⊢ RT] = symmetric_step [g ⊢ T] in [g ⊢ ct _ _ (tr_s* S1* (tr_s* (st_s* RT) S2*))]
 ;
 
@@ -123,7 +133,7 @@ fn e ⇒ case e of
 % Given three transitions t,t' and u, if t~t' (t and t' are equivalent) and t' and u are independent,
 % then also t and u are independent.
 rec ire: (g:ctx) (T:[g ⊢ step X1 T1 Y1]) (T':[g ⊢ step X2 T2 Y2]) (U:[g ⊢ step X3 T3 Y3]) 
-  equiv_tr [g ⊢ T] [g ⊢ T'] → [g ⊢ indep_tr T' U] → [g ⊢ indep_tr T U] =
+  [g ⊢ equiv_tr T T'] → [g ⊢ indep_tr T' U] → [g ⊢ indep_tr T U] =
 / total e (ire _ _ _ _ _ _ _ _ _ _ _ _ _ e _) /
 fn e,i ⇒ let [g ⊢ ind_tr I (ct T' _ S'*)] = i in
 let [_ ⊢ refpl] = equiv_tr_have_same_label e in 
