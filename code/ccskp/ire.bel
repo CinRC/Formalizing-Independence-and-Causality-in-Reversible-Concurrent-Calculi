@@ -16,17 +16,13 @@ LF equiv_tr_base: step P A Q → step R A S → type =
 
 % We can show that this definition is equivalent to Def. 2.5 in the paper. In particular
 % we have to prove that, given t~t' as above:
-% - the pairs of transitions (inv(u), t'), (inv(t'),inv(u')) and (u', inv(t)) are independent
-% - the diamond is not degenerate: Q != R if t and u are both forward or backward, P !=S otherwise.
+% 1) The pairs of transitions (inv(u), t'), (inv(t'),inv(u')) and (u', inv(t)) are independent
+% 2) The diamond is not degenerate: Q != R if t and u are both forward or backward, P !=S otherwise.
 
-%(RT:[g ⊢ step Q A P]) (RU:[g ⊢ step R B P]) (RU':[g ⊢ step S B Q]) (RT':[g ⊢ step S A R])
-% [g ⊢ inv_tr T RT] → [g ⊢ inv_tr U RU] → [g ⊢ inv_tr U' RU'] → [g ⊢ inv_tr T' RT'] →
-% [g ⊢ indep_tr T U] → [g ⊢ indep_tr RU T'] → [g ⊢ indep_tr RT' RU'] → [g ⊢ indep_tr U' RT] 
-
+% Given t,u,u',t' as in the definition of equiv_tr_base t t', then inv(u) and t' are independent
 LF ex_indep_tr_one: step P A Q → step P B R → step Q B S → step R A S → type =
   | exi1: inv_tr U RU → indep_tr RU T' → ex_indep_tr_one T U U' T'
 ;
-
 rec indep_tr_in_diamond_one: (g:ctx) (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S])
   (T':[g ⊢ step R A S]) [g ⊢ same_direction T T'] → [g ⊢ same_direction U U'] 
   → [g ⊢ indep_tr T U] → [g ⊢ ex_indep_tr_one T U U' T'] =
@@ -39,27 +35,40 @@ let [g ⊢ it _ _] = [g ⊢ HRU] in
 [g ⊢ exi1 HRU (ind_tr I' (ct _ _ (st_s* T')))]
 ;
 
+% Given t,u,u',t' as in the definition of equiv_tr_base t t', then inv(t') and inv(u') are independent
 LF ex_indep_tr_two: step P A Q → step P B R → step Q B S → step R A S → type =
   | exi2: inv_tr T' RT' → inv_tr U' RU' → indep_tr RT' RU' → ex_indep_tr_two T U U' T'
 ;
-
 rec indep_tr_in_diamond_two: (g:ctx) (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S])
   (T':[g ⊢ step R A S]) [g ⊢ same_direction T T'] → [g ⊢ same_direction U U'] 
   → [g ⊢ indep_tr T U] → [g ⊢ ex_indep_tr_two T U U' T'] =
-?
+/ total t (indep_tr_in_diamond_two _ _ _ _ _ _ t _ _) /
+fn sd1,sd2,hi ⇒ let [g ⊢ ind_tr I (ct _ _ _)] = hi in
+let [g ⊢ _]:[g ⊢ same_direction _ T'] = sd1 in
+let [g ⊢ _]:[g ⊢ same_direction _ U'] = sd2 in
+let [g ⊢ ex_iv HRT'] = total_inv [g ⊢ T'] in
+let [g ⊢ it _ _] = [g ⊢ HRT'] in
+let [g ⊢ ex_iv HRU'] = total_inv [g ⊢ U'] in
+let [g ⊢ it _ RU'] = [g ⊢ HRU'] in
+[g ⊢ exi2 HRT' HRU' (ind_tr I (ct _ _ (st_s* RU')))]
 ;
 
+% Given t,u,u',t' as in the definition of equiv_tr_base t t', then u' and inv(t) are independent
 LF ex_indep_tr_three: step P A Q → step P B R → step Q B S → step R A S → type =
   | exi3: inv_tr T RT → indep_tr U' RT → ex_indep_tr_three T U U' T'
 ;
-
 rec indep_tr_in_diamond_three: (g:ctx) (T:[g ⊢ step P A Q]) (U:[g ⊢ step P B R]) (U':[g ⊢ step Q B S])
   (T':[g ⊢ step R A S]) [g ⊢ same_direction T T'] → [g ⊢ same_direction U U'] 
   → [g ⊢ indep_tr T U] → [g ⊢ ex_indep_tr_three T U U' T'] =
-?
+/ total t (indep_tr_in_diamond_three _ _ _ _ _ _ t _ _) /
+fn sd1,sd2,hi ⇒ let [g ⊢ ind_tr I (ct T _ _)] = hi in
+let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in
+let [g ⊢ ex_iv HRT] = total_inv [g ⊢ T] in
+let [g ⊢ it _ RT] = [g ⊢ HRT] in
+[g ⊢ exi3 HRT (ind_tr I' (ct _ _ (st_s* RT)))]
 ;
 
-% For the second condition, we prove that Q != R and P != S regardless of the directions of t and u.
+% To prove 2), we show that Q != R and P != S regardless of the directions of t and u.
 
 % If equiv_tr_base T T', then target(T) and source(T') are not equal processes.
 rec non_degenerate_diamonds_one: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R A S])
