@@ -55,4 +55,16 @@ LF step: proc → key_lab → proc → type =
   | bw: bstep X' T X → step X' T X
 ;
 
+% Paths
+LF step*: proc → proc → type =
+  | id_s*: step* X X
+  | st_s*: step X T Y → step* X Y
+  | tr_s*: step* X Y → step* Y Z → step* X Z
+;
+
+% Connected transitions
+LF conn_tr: step X T1 X' → step Y T2 Y' → type =
+  | ctr: {S1:step X T1 X'}{S2: step Y T2 Y'} step* X Y' → conn_tr S1 S2
+;
+
 end;

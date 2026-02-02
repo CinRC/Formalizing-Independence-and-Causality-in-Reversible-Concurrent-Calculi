@@ -1,0 +1,114 @@
+% Definitions needed to state the axioms from "An Axiomatic Approach to Reversible Computation" for CCSK
+
+% Independence of CCSK transitions:
+% Two CCSK transitions s1 and s2 are independent if they are connected and the proof labels
+% of their corresponding CCSKP transitions enrich(s1) and enrich(s2) are independent.
+LF ccsk_indep_tr: ccsk.step X T1 X' → ccsk.step Y T2 Y' → type =
+  | ccsk_ind_tr: enrich (S1:ccsk.step X T1 X') (S1+:ccskp.step X T1+ X') →
+    enrich (S2:ccsk.step Y T2 Y') (S2+:ccskp.step Y T2+ Y') →
+    indep T1+ T2+ → ccsk.conn_tr S1 S2 → ccsk_indep_tr S1 S2
+;
+
+% Type family relating two combined CCSK transitions having the same direction
+LF ccsk_same_direction: ccsk.step X1 T1 Y1 → ccsk.step X2 T2 Y2 → type =
+  | ccsk_sdf: ccsk_same_direction (fw F1) (fw F2)
+  | ccsk_sdb: ccsk_same_direction (bw B1) (bw B2)
+;
+
+% Existence of combined transitions closing a square diagram in CCSK
+LF ccsk_square: ccsk.step X T1 X1 → ccsk.step X T2 X2 → type =
+  | ccsk_sq: {S2':ccsk.step X1 T2 Y} {S1':ccsk.step X2 T1 Y} ccsk_same_direction (S1:ccsk.step X T1 X1) S1' → 
+    ccsk_same_direction (S2:ccsk.step X T2 X2) S2' → ccsk_square (S1:ccsk.step X T1 X1) (S2:ccsk.step X T2 X2)
+;
+
+
+
+% Auxiliary lemmas for SP
+
+% [[ Currently unused ]]
+% Given a CCSK path between two processes, there exists a CCSKP path between the same processes.
+rec path_ccsk_to_ccskp: (g:ctx) [g ⊢ ccsk.step* X X'] → [g ⊢ ccskp.step* X X'] =
+/ total s* (path_ccsk_to_ccskp _ _ _ s*) /
+fn s* ⇒ case s* of
+  | [g ⊢ ccsk.id_s*] ⇒ [g ⊢ ccskp.id_s*]
+  | [g ⊢ ccsk.st_s* S] ⇒ let {EN:[g ⊢ enrich _ S+]}[g ⊢ ex_en EN] = total_enrich [g ⊢ S] in [g ⊢ ccskp.st_s* S+]
+  | [g ⊢ ccsk.tr_s* S1* S2*] ⇒ let [g ⊢ S1*+] = path_ccsk_to_ccskp [g ⊢ S1*] in
+                                let [g ⊢ S2*+] = path_ccsk_to_ccskp [g ⊢ S2*] in [g ⊢ ccskp.tr_s* S1*+ S2*+]
+;
+
+% Equality of keyed labels
+LF eqkl: key_lab → key_lab → type =
+  | refkl: eqkl T T
+;
+
+% If two CCSKP transitions s1 and s2 have the same proof label, then their corresponding
+% CCSK transitions forget(s1) and forget(s2) have the same keyed label.
+rec injective_forget_on_labels: (g:ctx) (S1+:[g ⊢ ccskp.step X1 T+ Y1]) (S2+:[g ⊢ ccskp.step X2 T+ Y2])
+  (S1:[g ⊢ ccsk.step X1 T1 Y1]) (S2:[g ⊢ ccsk.step X2 T2 Y2]) [g ⊢ forget S1+ S1] → [g ⊢ forget S2+ S2] →
+  [g ⊢ eqkl T1 T2] =
+/ total (injective_forget_on_labels) /
+fn fg1,fg2 ⇒ case fg1 of
+  | [g ⊢ fgfc (fg_fc _ _ L1 H1)] ⇒ (case fg2 of
+       | [g ⊢ fgfc (fg_fc _ _ L2 H2)] ⇒ let [g ⊢ refl] = functional_lab [g ⊢ L1] [g ⊢ L2] in
+         let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H2] in [g ⊢ refkl]
+       | [g ⊢ fgbc (fg_bc _ _ L2 H2)] ⇒ let [g ⊢ refl] = functional_lab [g ⊢ L1] [g ⊢ L2] in
+         let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H2] in [g ⊢ refkl])
+  | [g ⊢ fgfo (fg_fo _ _ \a.H1)] ⇒ (case fg2 of
+       | [g ⊢ fgfo (fg_fo _ _ \a.H2)] ⇒ let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1] [_ ⊢ H2] in [g ⊢ refkl]
+       | [g ⊢ fgbo (fg_bo _ _ \a.H2)] ⇒ let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1] [_ ⊢ H2] in [g ⊢ refkl])
+  | [g ⊢ fgbc (fg_bc _ _ L1 H1)] ⇒ (case fg2 of
+       | [g ⊢ fgfc (fg_fc _ _ L2 H2)] ⇒ let [g ⊢ refl] = functional_lab [g ⊢ L1] [g ⊢ L2] in
+         let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H2] in [g ⊢ refkl]
+       | [g ⊢ fgbc (fg_bc _ _ L2 H2)] ⇒ let [g ⊢ refl] = functional_lab [g ⊢ L1] [g ⊢ L2] in
+         let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H2] in [g ⊢ refkl])
+  | [g ⊢ fgbo (fg_bo _ _ \a.H1)] ⇒ (case fg2 of
+       | [g ⊢ fgfo (fg_fo _ _ \a.H2)] ⇒ let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1] [_ ⊢ H2] in [g ⊢ refkl]
+       | [g ⊢ fgbo (fg_bo _ _ \a.H2)] ⇒ let [g,a:names ⊢ refk] = functional_key [_ ⊢ H1] [_ ⊢ H2] in [g ⊢ refkl])
+;
+
+% If two CCSKP transitions s1 and s2 have the same direction, then their corresponding
+% CCSK transitions forget(s1) and forget(s2) have the same direction.
+rec sdir_ccskp_to_ccsk: (g:ctx) (S1+:[g ⊢ ccskp.step X1 T1+ Y1]) (S2+:[g ⊢ ccskp.step X2 T2+ Y2])
+  (S1:[g ⊢ ccsk.step X1 T1 Y1]) (S2:[g ⊢ ccsk.step X2 T2 Y2]) [g ⊢ same_direction S1+ S2+]
+  → [g ⊢ forget S1+ S1] → [g ⊢ forget S2+ S2] → [g ⊢ ccsk_same_direction S1 S2] =
+/ total s (sdir_ccskp_to_ccsk _ _ _ _ _ _ _ _ _ s _ _ _ _ _ _) /
+fn sd+,fg1,fg2 ⇒ case sd+ of
+  | [g ⊢ sdf _ _] ⇒ (case fg1 of
+    | [g ⊢ fgfc _] ⇒ (case fg2 of
+         | [g ⊢ fgfc _] ⇒ [g ⊢ ccsk_sdf]
+         | [g ⊢ fgfo _] ⇒ [g ⊢ ccsk_sdf])
+    | [g ⊢ fgfo _] ⇒ (case fg2 of
+         | [g ⊢ fgfc _] ⇒ [g ⊢ ccsk_sdf]
+         | [g ⊢ fgfo _] ⇒ [g ⊢ ccsk_sdf]))
+  | [g ⊢ sdb _ _] ⇒ (case fg1 of
+    | [g ⊢ fgbc _] ⇒ (case fg2 of
+         | [g ⊢ fgbc _] ⇒ [g ⊢ ccsk_sdb]
+         | [g ⊢ fgbo _] ⇒ [g ⊢ ccsk_sdb])
+    | [g ⊢ fgbo _] ⇒ (case fg2 of
+         | [g ⊢ fgbc _] ⇒ [g ⊢ ccsk_sdb]
+         | [g ⊢ fgbo _] ⇒ [g ⊢ ccsk_sdb]))
+;
+
+
+% Square Property:
+% Given two independent coinitial combined transitions,
+% there exist two cofinal combined transition closing the square diagram.
+rec ccsk_sp: (g:ctx) {S1:[g ⊢ ccsk.step X T1 X1]} {S2:[g ⊢ ccsk.step X T2 X2]}
+  [g ⊢ ccsk_indep_tr S1 S2] → [g ⊢ ccsk_square S1 S2] =
+/ total s1 (ccsk_sp _ _ _ _ _ _ s1 _ _) /
+mlam S1,S2 ⇒ fn i ⇒ let [g ⊢ ccsk_ind_tr EN1 EN2 I+ (ctr _ _ S*)] = i in
+let [g ⊢ _]:[g ⊢ enrich _ S1+] = [g ⊢ EN1] in
+let [g ⊢ _]:[g ⊢ enrich _ S2+] = [g ⊢ EN2] in
+let [g ⊢ sq S2'+ S1'+ SD1+ SD2+] = sp [g ⊢ S1+] [g ⊢ S2+] [g ⊢ ind_tr I+ (ct _ _ (ccskp.st_s* S2+))] in
+let {FG2':[g ⊢ forget _ S2']}[g ⊢ ex_fg FG2'] = total_forget [g ⊢ S2'+] in
+let {FG1':[g ⊢ forget _ S1']}[g ⊢ ex_fg FG1'] = total_forget [g ⊢ S1'+] in
+let [g ⊢ ex_fg FG1] = total_forget [g ⊢ S1+] in
+let [g ⊢ ex_fg FG2] = total_forget [g ⊢ S2+] in
+let [g ⊢ refs] = inverse_two [g ⊢ EN1] [g ⊢ FG1] in
+let [g ⊢ refs] = inverse_two [g ⊢ EN2] [g ⊢ FG2] in
+let [g ⊢ SD1] = sdir_ccskp_to_ccsk [g ⊢ SD1+] [g ⊢ FG1] [g ⊢ FG1'] in
+let [g ⊢ SD2] = sdir_ccskp_to_ccsk [g ⊢ SD2+] [g ⊢ FG2] [g ⊢ FG2'] in
+let [g ⊢ refkl] = injective_forget_on_labels [g ⊢ FG1] [g ⊢ FG1'] in
+let [g ⊢ refkl] = injective_forget_on_labels [g ⊢ FG2] [g ⊢ FG2'] in
+[g ⊢ ccsk_sq S2' S1' SD1 SD2]
+;
