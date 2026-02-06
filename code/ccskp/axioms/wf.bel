@@ -1,63 +1,75 @@
 %%% WF: well-foundedness
 
-% Accessibility of CCSKP processes
+% A binary relation < on a set X is well-founded if it contains no infinite descending chains  ... x_{n+1} < x_n < ... < x_1 < x_0.
+% Constructively, well-foundedness is typically defined via the inductive predicate of accessibility:
+% An element x of X is accessible if every element x' < x is accessible.
+% In other words, if x is accessible, then each chain ending with x_0 is finite.
+% Well-foundedness of < is shown by proving that every element in X is accessible.
+% (Cf. e.g. the definitions of well-foundedness in Rocq and Agda, or “POPLMark reloaded: Mechanizing proofs by logical relations”
+% by A. Abel et al., doi:10.1017/S0956796819000170)
+
+% In our setting, X is the set of all processes and < is defined by:
+% P < Q iff there exists a combined transition t: P --[α]--> Q.
+% To prove well-foundedness, we show that each process is accessible.
+
+% Type family encoding accessibility of CCSKP processes
 inductive acc: (g:ctx) [g ⊢ proc] → ctype =
   | acc_intro: {g:ctx} {X':[g ⊢ proc]}
     ({X:[g ⊢ proc]} {T:[g ⊢ pr_lab]} [g ⊢ fstep X T X'] → acc [g ⊢ X]) → acc [g ⊢ X']
 ;
 
 % If X is accessible, then A[K].X is accessible
-rec wf_kpref: (g:ctx) {A:[g ⊢ labels]} {K:[⊢ keys]} acc [g ⊢ X] → acc [g ⊢ kpref A K[] X] =
-/ total a (wf_kpref _ _ _ _ a) /
+rec acc_kpref: (g:ctx) {A:[g ⊢ labels]} {K:[⊢ keys]} acc [g ⊢ X] → acc [g ⊢ kpref A K[] X] =
+/ total a (acc_kpref _ _ _ _ a) /
 mlam A,K ⇒ fn a ⇒ let acc_intro [g] [g ⊢ X] h = a in
 acc_intro [g] [g ⊢ kpref A K[] X] (mlam Y,T ⇒ fn f ⇒ (case f of 
        | [g ⊢ fc (fc_pref _)] ⇒ acc_intro [g] [_ ⊢ pref A X] (mlam _,_ ⇒ fn f' ⇒
          (case f' of
             | [g ⊢ fc F'] ⇒ impossible [g ⊢ F']
             | [g ⊢ fo F'] ⇒ impossible [g ⊢ F']))
-       | [g ⊢ fc (fc_kpref F _ _)] ⇒ wf_kpref [_ ⊢ _] [_ ⊢ _] (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
-       | [g ⊢ fo (fo_kpref F (\_._) _)] ⇒ wf_kpref [_ ⊢ _] [_ ⊢ _] (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
+       | [g ⊢ fc (fc_kpref F _ _)] ⇒ acc_kpref [_ ⊢ _] [_ ⊢ _] (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
+       | [g ⊢ fo (fo_kpref F (\_._) _)] ⇒ acc_kpref [_ ⊢ _] [_ ⊢ _] (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
 ;
 
 % If X1 and X2 are accessible, then X1+X2 is accessible
-rec wf_sum: (g:ctx) acc [g ⊢ X1] → acc [g ⊢ X2] → acc [g ⊢ sum X1 X2] =
-/ total {a1 a2} (wf_sum _ _ _ a1 a2) /
+rec acc_sum: (g:ctx) acc [g ⊢ X1] → acc [g ⊢ X2] → acc [g ⊢ sum X1 X2] =
+/ total {a1 a2} (acc_sum _ _ _ a1 a2) /
 fn a1,a2 ⇒ let acc_intro [g] [g ⊢ X1] h1 = a1 in
 let acc_intro [g] [g ⊢ X2] h2 = a2 in
 acc_intro [g] [g ⊢ sum X1 X2] (mlam _,_ ⇒ fn f ⇒ (case f of
-       | [g ⊢ fc (fc_suml F _)] ⇒ wf_sum (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F]) a2
-       | [g ⊢ fc (fc_sumr F _)] ⇒ wf_sum a1 (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
-       | [g ⊢ fo (fo_suml F _)] ⇒ wf_sum (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F]) a2
-       | [g ⊢ fo (fo_sumr F _)] ⇒ wf_sum a1 (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
+       | [g ⊢ fc (fc_suml F _)] ⇒ acc_sum (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F]) a2
+       | [g ⊢ fc (fc_sumr F _)] ⇒ acc_sum a1 (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
+       | [g ⊢ fo (fo_suml F _)] ⇒ acc_sum (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F]) a2
+       | [g ⊢ fo (fo_sumr F _)] ⇒ acc_sum a1 (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
 ;
 
 % If X1 and X2 are accessible, then X1|X2 is accessible
-rec wf_par: (g:ctx) acc [g ⊢ X1] → acc [g ⊢ X2] → acc [g ⊢ par X1 X2] =
-/ total {a1 a2} (wf_par _ _ _ a1 a2) /
+rec acc_par: (g:ctx) acc [g ⊢ X1] → acc [g ⊢ X2] → acc [g ⊢ par X1 X2] =
+/ total {a1 a2} (acc_par _ _ _ a1 a2) /
 fn a1,a2 ⇒ let acc_intro [g] [g ⊢ X1] h1 = a1 in
 let acc_intro [g] [g ⊢ X2] h2 = a2 in
 acc_intro [g] [g ⊢ par X1 X2] (mlam _,_ ⇒ fn f ⇒ (case f of
-       | [g ⊢ fc (fc_parl F _ _)] ⇒ wf_par (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F]) a2
-       | [g ⊢ fc (fc_parr F _ _)] ⇒ wf_par a1 (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
-       | [g ⊢ fc (fc_synl F1 _ _ F2 _ _)] ⇒ wf_par (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F1]) (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F2])
-       | [g ⊢ fc (fc_synr F1 _ _ F2 _ _)] ⇒ wf_par (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F1]) (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F2])
-       | [g ⊢ fo (fo_parl F (\_._) _)] ⇒ wf_par (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F]) a2
-       | [g ⊢ fo (fo_parr F (\_._) _)] ⇒ wf_par a1 (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
+       | [g ⊢ fc (fc_parl F _ _)] ⇒ acc_par (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F]) a2
+       | [g ⊢ fc (fc_parr F _ _)] ⇒ acc_par a1 (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
+       | [g ⊢ fc (fc_synl F1 _ _ F2 _ _)] ⇒ acc_par (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F1]) (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F2])
+       | [g ⊢ fc (fc_synr F1 _ _ F2 _ _)] ⇒ acc_par (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F1]) (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F2])
+       | [g ⊢ fo (fo_parl F (\_._) _)] ⇒ acc_par (h1 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F]) a2
+       | [g ⊢ fo (fo_parr F (\_._) _)] ⇒ acc_par a1 (h2 [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
 ;
 
 % If (X a) is accessible for all a, then nu (\a.X) is accessible
-rec wf_nu: (g:ctx) acc [g,a:names ⊢ X] → acc [g ⊢ nu \a.X] =
-/ total a (wf_nu _ _ a) /
+rec acc_nu: (g:ctx) acc [g,a:names ⊢ X] → acc [g ⊢ nu \a.X] =
+/ total a (acc_nu _ _ a) /
 fn a ⇒ let acc_intro [g,a:names] [g,a:names ⊢ X] h = a in
 acc_intro [g] [g ⊢ nu \a.X] (mlam _,_ ⇒ fn f ⇒ (case f of 
-       | [g ⊢ fc (fc_nu \a.F)] ⇒ wf_nu (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
-       | [g ⊢ fo (fo_nu_cl (\_._) (\_._) (\a.F))] ⇒ wf_nu (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
-       | [g ⊢ fo (fo_nu_op \a.F)] ⇒ wf_nu (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
+       | [g ⊢ fc (fc_nu \a.F)] ⇒ acc_nu (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
+       | [g ⊢ fo (fo_nu_cl (\_._) (\_._) (\a.F))] ⇒ acc_nu (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fc F])
+       | [g ⊢ fo (fo_nu_op \a.F)] ⇒ acc_nu (h [_ ⊢ _] [_ ⊢ _] [_ ⊢ fo F])))
 ;
 
-% Well-foundedness of processes: all processes are accessible
-rec wf_proc: (g:ctx) {X:[g ⊢ proc]} acc [g ⊢ X] =
-/ total x (wf_proc _ x) /
+% Well-foundedness (WF): all processes are accessible
+rec wf: (g:ctx) {X:[g ⊢ proc]} acc [g ⊢ X] =
+/ total x (wf _ x) /
 mlam X ⇒ case [_ ⊢ X] of
   | [g ⊢ null] ⇒ acc_intro [g] [_ ⊢ null] (mlam _,_ ⇒ fn f ⇒ (case f of 
        | [g ⊢ fc F] ⇒ impossible [g ⊢ F]
@@ -65,8 +77,8 @@ mlam X ⇒ case [_ ⊢ X] of
   | [g ⊢ pref A X1] ⇒ acc_intro [g] [_ ⊢ pref A X1] (mlam _,_ ⇒ fn f ⇒ (case f of 
        | [g ⊢ fc F] ⇒ impossible [g ⊢ F]
        | [g ⊢ fo F] ⇒ impossible [g ⊢ F]))
-  | [g ⊢ kpref A K[] X1] ⇒ wf_kpref [_ ⊢ _] [_ ⊢ _] (wf_proc [g ⊢ X1])
-  | [g ⊢ sum X1 X2] ⇒ wf_sum (wf_proc [g ⊢ X1]) (wf_proc [g ⊢ X2])
-  | [g ⊢ par X1 X2] ⇒ wf_par (wf_proc [g ⊢ X1]) (wf_proc [g ⊢ X2])
-  | [g ⊢ nu \a.X1] ⇒ wf_nu (wf_proc [_ ⊢ X1])
+  | [g ⊢ kpref A K[] X1] ⇒ acc_kpref [_ ⊢ _] [_ ⊢ _] (wf [g ⊢ X1])
+  | [g ⊢ sum X1 X2] ⇒ acc_sum (wf [g ⊢ X1]) (wf [g ⊢ X2])
+  | [g ⊢ par X1 X2] ⇒ acc_par (wf [g ⊢ X1]) (wf [g ⊢ X2])
+  | [g ⊢ nu \a.X1] ⇒ acc_nu (wf [_ ⊢ X1])
 ;
