@@ -91,7 +91,7 @@ fn sd+,fg1,fg2 ⇒ case sd+ of
 
 
 
-% BTI:
+% Backward transitions are independent (BTI):
 % Given two backward transitions sharing the same source process,
 % if they are not equal, they are independent.
 rec ccsk_bti: (g:ctx) {B1:[g ⊢ ccsk.bstep X T1 X1]} {B2:[g ⊢ ccsk.bstep X T2 X2]}
@@ -124,7 +124,7 @@ case total_enrich_b [_ ⊢ B1] of
 ;
 
 
-% Square Property:
+% Square property (SP):
 % Given two independent coinitial combined transitions,
 % there exist two cofinal combined transition closing the square diagram.
 rec ccsk_sp: (g:ctx) {S1:[g ⊢ ccsk.step X T1 X1]} {S2:[g ⊢ ccsk.step X T2 X2]}
@@ -145,4 +145,29 @@ let [g ⊢ SD2] = sdir_ccskp_to_ccsk [g ⊢ SD2+] [g ⊢ FG2] [g ⊢ FG2'] in
 let [g ⊢ refkl] = injective_forget_on_labels [g ⊢ FG1] [g ⊢ FG1'] in
 let [g ⊢ refkl] = injective_forget_on_labels [g ⊢ FG2] [g ⊢ FG2'] in
 [g ⊢ ccsk_sq S2' S1' SD1 SD2]
+;
+
+
+
+% Type family encoding accessibility of CCSK processes
+inductive ccsk_acc: (g:ctx) [g ⊢ proc] → ctype =
+  | ccsk_acc_intro: {g:ctx} {X':[g ⊢ proc]}
+    ({X:[g ⊢ proc]} {KL:[g ⊢ key_lab]} [g ⊢ ccsk.fstep X KL X'] → ccsk_acc [g ⊢ X]) → ccsk_acc [g ⊢ X']
+;
+
+% If a process X is accessible w.r.t. the LTS of CCSKP, then it is accessible w.r.t. the LTS of CCSK. 
+rec acc_ccskp_to_ccsk: (g:ctx) acc [g ⊢ X] → ccsk_acc [g ⊢ X] =
+/ total a (acc_ccskp_to_ccsk _ _ a) /
+fn a ⇒ let acc_intro [g] [g ⊢ X] h = a in
+ccsk_acc_intro [g] [g ⊢ X] (mlam _,_ ⇒ fn f ⇒
+  let [g ⊢ F] = f in
+  (case total_enrich_f [g ⊢ F] of
+     | {EN:[g ⊢ enrich_fc _ F+]}[g ⊢ ex_enfc EN] ⇒ acc_ccskp_to_ccsk (h _ _ [g ⊢ fc F+])
+     | {EN:[g ⊢ enrich_fo _ F+]}[g ⊢ ex_enfo EN] ⇒ acc_ccskp_to_ccsk (h _ _ [g ⊢ fo F+])))
+;
+
+% Well-foundedness (WF): all processes are accessible
+rec ccsk_wf: (g:ctx) {X:[g ⊢ proc]} ccsk_acc [g ⊢ X] =
+/ total x (ccsk_wf _ x) /
+mlam X ⇒ acc_ccskp_to_ccsk (wf [_ ⊢ X])
 ;
