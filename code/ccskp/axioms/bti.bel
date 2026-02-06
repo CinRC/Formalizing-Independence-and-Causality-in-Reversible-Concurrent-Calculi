@@ -315,12 +315,11 @@ LF id_or_ind: bstep X T1 X1 → bstep X T2 X2 → type =
   | bt_ind: back_to_comb B1 S1 → back_to_comb B2 S2 → indep_tr S1 S2 → id_or_ind B1 B2
 ;
 
-% BTI:
-% Given two backward transitions sharing the same source process,
-% they are either identical or their proof labels are independent.
-rec bti: (g:ctx) {B1:[g ⊢ bstep X T1 X1]} {B2:[g ⊢ bstep X T2 X2]}
+% We prove an equivalent formulation of BTI which does not assume the inequality of the given transitions.
+% Given two backward transitions sharing the same source process, they are either identical or their proof labels are independent.
+rec bti_equiv: (g:ctx) {B1:[g ⊢ bstep X T1 X1]} {B2:[g ⊢ bstep X T2 X2]}
   [g ⊢ id_or_ind B1 B2] =
-/ total b1 (bti _ _ _ _ _ _ b1 _) /
+/ total b1 (bti_equiv _ _ _ _ _ _ b1 _) /
 mlam B1,B2 ⇒  let [g ⊢ btc C1] = total_back_to_comb [_ ⊢ B1] in
 let [g ⊢ btc C2] = total_back_to_comb [g ⊢ B2] in
 case [g ⊢ B1] of
@@ -334,4 +333,21 @@ case [g ⊢ B1] of
        | [g ⊢ bo B2'] ⇒ (case bti_oo [g ⊢ B1'] [g ⊢ B2'] of
             | [g ⊢ bt_id_oo refbo] ⇒ [g ⊢ bt_id refb]
             | [g ⊢ bt_ind_oo I] ⇒ [g ⊢ bt_ind C1 C2 (ind_tr I (ct _ _ (st_s* (so (bwo B2')))))]))
+;
+
+% Independence for backward transitions: two backward transitions are independent if
+% they are independent as combined transitions.
+LF indep_bw_tr: bstep X T1 X1 → bstep X T2 X2 → type =
+  | ind_bw_tr: back_to_comb B1 S1 → back_to_comb B2 S2 → indep_tr S1 S2 → indep_bw_tr B1 B2
+;
+
+% Backward transitions are independent (BTI):
+% Given two backward transitions sharing the same source process,
+% if they are not equal, they are independent.
+rec bti: (g:ctx) {B1:[g ⊢ bstep X T1 X1]} {B2:[g ⊢ bstep X T2 X2]}
+  ([g ⊢ eqb B1 B2] → [g ⊢ false]) → [g ⊢ indep_bw_tr B1 B2] =
+/ total b1 (bti _ _ _ _ _ _ b1 _ _) /
+mlam B1,B2 ⇒ fn e ⇒ case bti_equiv [_ ⊢ B1] [_ ⊢ B2] of
+  | [g ⊢ bt_id refb] ⇒ impossible e [g ⊢ refb]
+  | [g ⊢ bt_ind BC1 BC2 I] ⇒ [g ⊢ ind_bw_tr BC1 BC2 I]
 ;

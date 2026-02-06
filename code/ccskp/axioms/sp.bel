@@ -1029,7 +1029,7 @@ LF square: step X T1 X1 → step X T2 X2 → type =
 ;
 
 
-% Square Property:
+% Square property (SP):
 % Given two independent coinitial combined transitions,
 % there exist two cofinal combined transition closing the square diagram.
 rec sp: (g:ctx) {S1:[g ⊢ step X T1 X1]} {S2:[g ⊢ step X T2 X2]}

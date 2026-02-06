@@ -90,6 +90,40 @@ fn sd+,fg1,fg2 ⇒ case sd+ of
 ;
 
 
+
+% BTI:
+% Given two backward transitions sharing the same source process,
+% if they are not equal, they are independent.
+rec ccsk_bti: (g:ctx) {B1:[g ⊢ ccsk.bstep X T1 X1]} {B2:[g ⊢ ccsk.bstep X T2 X2]}
+  ([g ⊢ eqbs B1 B2] → [g ⊢ false]) → [g ⊢ ccsk_indep_tr (bw B1) (bw B2)] =
+/ total b1 (ccsk_bti _ _ _ _ _ _ b1 _ _) /
+mlam B1,B2 ⇒ fn f ⇒
+case total_enrich_b [_ ⊢ B1] of
+  | {EN1:[g ⊢ enrich_bc _ B1+]}[g ⊢ ex_enbc EN1] ⇒ (case total_enrich_b [_ ⊢ B2] of
+       | {EN2:[g ⊢ enrich_bc _ B2+]}[g ⊢ ex_enbc EN2] ⇒ 
+         let [g ⊢ ind_bw_tr _ _ (ind_tr I+ _)] = bti [g ⊢ bc B1+] [g ⊢ bc B2+]
+             (fn e ⇒ let [g ⊢ refb] = e in
+             let [g ⊢ ex_fgbc FG] = total_forget_bc [g ⊢ B1+] in
+             let [g ⊢ refbs] = inverse_bc_two [g ⊢ EN1] [g ⊢ FG] in
+             let [g ⊢ refbs] = inverse_bc_two [g ⊢ EN2] [g ⊢ FG] in impossible f [g ⊢ refbs]) in
+         [g ⊢ ccsk_ind_tr (enbc EN1) (enbc EN2) I+ (ctr _ _ (ccsk.st_s* (bw B2)))]
+       | {EN2:[g ⊢ enrich_bo _ B2+]}[g ⊢ ex_enbo EN2] ⇒
+         let [g ⊢ ind_bw_tr _ _ (ind_tr I+ _)] = bti [g ⊢ bc B1+] [g ⊢ bo B2+] (fn e ⇒ impossible e) in
+         [g ⊢ ccsk_ind_tr (enbc EN1) (enbo EN2) I+ (ctr _ _ (ccsk.st_s* (bw B2)))])
+  | {EN1:[g ⊢ enrich_bo _ B1+]}[g ⊢ ex_enbo EN1] ⇒ (case total_enrich_b [_ ⊢ B2] of
+       | {EN2:[g ⊢ enrich_bc _ B2+]}[g ⊢ ex_enbc EN2] ⇒
+         let [g ⊢ ind_bw_tr _ _ (ind_tr I+ _)] = bti [g ⊢ bo B1+] [g ⊢ bc B2+] (fn e ⇒ impossible e) in
+         [g ⊢ ccsk_ind_tr (enbo EN1) (enbc EN2) I+ (ctr _ _ (ccsk.st_s* (bw B2)))]
+       | {EN2:[g ⊢ enrich_bo _ B2+]}[g ⊢ ex_enbo EN2] ⇒
+         let [g ⊢ ind_bw_tr _ _ (ind_tr I+ _)] = bti [g ⊢ bo B1+] [g ⊢ bo B2+]
+             (fn e ⇒ let [g ⊢ refb] = e in
+             let [g ⊢ ex_fgbo FG] = total_forget_bo [g ⊢ B1+] in
+             let [g ⊢ refbs] = inverse_bo_two [g ⊢ EN1] [g ⊢ FG] in
+             let [g ⊢ refbs] = inverse_bo_two [g ⊢ EN2] [g ⊢ FG] in impossible f [g ⊢ refbs]) in
+         [g ⊢ ccsk_ind_tr (enbo EN1) (enbo EN2) I+ (ctr _ _ (ccsk.st_s* (bw B2)))])
+;
+
+
 % Square Property:
 % Given two independent coinitial combined transitions,
 % there exist two cofinal combined transition closing the square diagram.
