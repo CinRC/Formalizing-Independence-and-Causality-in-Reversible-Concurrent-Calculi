@@ -7,7 +7,7 @@ rec functional_forget_fc: (g:ctx) (F:[g ⊢ ccskp.fstep_cl X T X']) (F1:[g ⊢ c
 / total f (functional_forget_fc _ _ _ _ _ _ f _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fg_fc _ F1 _ _] = d1 in
 let [g ⊢ fg_fc _ F2 _ _] = d2 in
-unique_fstep [_ ⊢ F1] [_ ⊢ F2]
+ccsk_unique_fstep [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % Functionality of forget_fo:
@@ -17,7 +17,7 @@ rec functional_forget_fo: (g:ctx) (F:[g ⊢ ccskp.fstep_op X T X']) (F1:[g ⊢ c
 / total f (functional_forget_fo _ _ _ _ _ _ f _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fg_fo _ F1 \_._] = d1 in
 let [g ⊢ fg_fo _ F2 \_._] = d2 in
-unique_fstep [_ ⊢ F1] [_ ⊢ F2]
+ccsk_unique_fstep [_ ⊢ F1] [_ ⊢ F2]
 ;
 
 % Functionality of forget_bc:
@@ -27,7 +27,7 @@ rec functional_forget_bc: (g:ctx) (B:[g ⊢ ccskp.bstep_cl X' T X]) (B1:[g ⊢ c
 / total b (functional_forget_bc _ _ _ _ _ _ b _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fg_bc _ B1 _ _] = d1 in
 let [g ⊢ fg_bc _ B2 _ _] = d2 in
-unique_bstep [_ ⊢ B1] [_ ⊢ B2]
+ccsk_unique_bstep [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 % Functionality of forget_bo:
@@ -37,7 +37,7 @@ rec functional_forget_bo: (g:ctx) (B:[g ⊢ ccskp.bstep_op X' T X]) (B1:[g ⊢ c
 / total b (functional_forget_bo _ _ _ _ _ _ b _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ fg_bo _ B1 \_._] = d1 in
 let [g ⊢ fg_bo _ B2 \_._] = d2 in
-unique_bstep [_ ⊢ B1] [_ ⊢ B2]
+ccsk_unique_bstep [_ ⊢ B1] [_ ⊢ B2]
 ;
 
 

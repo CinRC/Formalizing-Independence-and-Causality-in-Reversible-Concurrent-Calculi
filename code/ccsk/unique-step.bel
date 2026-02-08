@@ -2,23 +2,23 @@
 
 --open ccsk.
 
-% Equality of derivations of fstep X T X'
-LF eqfs: fstep X1 T1 X1' → fstep X2 T2 X2' → type =
+% Equality of derivations of fstep X KL X'
+LF eqfs: fstep X1 KL1 X1' → fstep X2 KL2 X2' → type =
   | reffs: eqfs F F
 ;
 
-% Equality of derivations of bstep X' T X
-LF eqbs: bstep X1' T1 X1 → bstep X2' T2 X2 → type =
+% Equality of derivations of bstep X' KL X
+LF eqbs: bstep X1' KL1 X1 → bstep X2' KL2 X2 → type =
   | refbs: eqbs B B
 ;
 
-% Equality of derivations of step X T X'
-LF eqs: step X1 T1 X1' → step X2 T2 X2' → type =
+% Equality of derivations of step X KL X'
+LF eqs: step X1 KL1 X1' → step X2 KL2 X2' → type =
   | refs: eqs S S
 ;
 
 % The target of a forward transition is not standard
-rec target_is_not_std: (g:ctx) [g ⊢ fstep X T X'] → [g ⊢ std X'] → [g ⊢ false] =
+rec target_is_not_std: (g:ctx) [g ⊢ fstep X KL X'] → [g ⊢ std X'] → [g ⊢ false] =
 / total f (target_is_not_std _ _ _ _ f _) /
 fn f,d ⇒ case f of
   | [g ⊢ fs_pref _] ⇒ impossible d
@@ -40,7 +40,7 @@ fn f,d ⇒ case f of
 ;
 
 % The source of a backward transition is not standard
-rec source_is_not_std: (g:ctx) [g ⊢ bstep X' T X] → [g ⊢ std X'] → [g ⊢ false] =
+rec source_is_not_std: (g:ctx) [g ⊢ bstep X' KL X] → [g ⊢ std X'] → [g ⊢ false] =
 / total b (source_is_not_std _ _ _ _ b _) /
 fn b,d ⇒ case b of
   | [g ⊢ bs_pref _] ⇒ impossible d
@@ -62,7 +62,7 @@ fn b,d ⇒ case b of
 ;
 
 % Source and target of a forward transition are not equal
-rec target_is_not_source: (g:ctx) [g ⊢ step X T X] → [g ⊢ false] =
+rec target_is_not_source: (g:ctx) [g ⊢ step X KL X] → [g ⊢ false] =
 / total s (target_is_not_source s _ _ _) /
 fn s ⇒ case s of
   | [g ⊢ fw F] ⇒ (case [g ⊢ F] of
@@ -87,92 +87,142 @@ fn s ⇒ case s of
 
 
 
-% Uniqueness of the derivation of fstep X T X'
-rec unique_fstep: (g:ctx) {F1:[g ⊢ fstep X T1 X']} {F2:[g ⊢ fstep X T2 X']} [g ⊢ eqfs F1 F2] =
-/ total f1 (unique_fstep _ _ _ _ _ f1 _) /
+% Uniqueness of the derivation of fstep X KL X'
+rec ccsk_unique_fstep: (g:ctx) {F1:[g ⊢ fstep X KL1 X']} {F2:[g ⊢ fstep X KL2 X']} [g ⊢ eqfs F1 F2] =
+/ total f1 (ccsk_unique_fstep _ _ _ _ _ f1 _) /
 mlam F1 F2 ⇒ case [_ ⊢ F1] of
   | [g ⊢ fs_pref D1] ⇒ let [g ⊢ fs_pref D2] = [g ⊢ F2] in
     let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ reffs]
   | [g ⊢ fs_kpref F1 I1] ⇒ let [g ⊢ fs_kpref F2 I2] = [g ⊢ F2] in
-    let [g ⊢ reffs] = unique_fstep [g ⊢ F1] [g ⊢ F2] in
+    let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ F1] [g ⊢ F2] in
     let refnq [g ⊢ I1] = unique_neq [g ⊢ I1] [g ⊢ I2] in [g ⊢ reffs]
   | [g ⊢ fs_suml F1' D1] ⇒
     (case [g ⊢ F2] of
-       | [g ⊢ fs_suml F2' D2] ⇒ let [g ⊢ reffs] = unique_fstep [g ⊢ F1'] [g ⊢ F2'] in
+       | [g ⊢ fs_suml F2' D2] ⇒ let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ F1'] [g ⊢ F2'] in
          let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ reffs]
        | [g ⊢ fs_sumr F2' D2] ⇒ impossible target_is_not_std [g ⊢ F1'] [g ⊢ D2])
   | [g ⊢ fs_sumr F1' D1] ⇒
     (case [g ⊢ F2] of
        | [g ⊢ fs_suml F2' D2] ⇒ impossible target_is_not_std [g ⊢ F1'] [g ⊢ D2]
-       | [g ⊢ fs_sumr F2' D2] ⇒ let [g ⊢ reffs] = unique_fstep [g ⊢ F1'] [g ⊢ F2'] in
+       | [g ⊢ fs_sumr F2' D2] ⇒ let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ F1'] [g ⊢ F2'] in
          let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ reffs])
   | [g ⊢ fs_parl F1' N1] ⇒ (case [g ⊢ F2] of
-       | [g ⊢ fs_parl F2' N2] ⇒ let [g ⊢ reffs] = unique_fstep [g ⊢ F1'] [g ⊢ F2'] in
+       | [g ⊢ fs_parl F2' N2] ⇒ let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ F1'] [g ⊢ F2'] in
          let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ reffs]
        | [g ⊢ fs_parr F2' N2] ⇒ impossible target_is_not_source [g ⊢ fw F2']
        | [g ⊢ fs_synl FL2 FR2] ⇒ impossible target_is_not_source [g ⊢ fw FR2]
        | [g ⊢ fs_synr FL2 FR2] ⇒ impossible target_is_not_source [g ⊢ fw FR2])
   | [g ⊢ fs_parr F1' N1] ⇒ (case [g ⊢ F2] of
        | [g ⊢ fs_parl F2' N2] ⇒ impossible target_is_not_source [g ⊢ fw F2']
-       | [g ⊢ fs_parr F2' N2] ⇒ let [g ⊢ reffs] = unique_fstep [g ⊢ F1'] [g ⊢ F2'] in
+       | [g ⊢ fs_parr F2' N2] ⇒ let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ F1'] [g ⊢ F2'] in
          let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ reffs]
        | [g ⊢ fs_synl FL2 FR2] ⇒ impossible target_is_not_source [g ⊢ fw FL2]
        | [g ⊢ fs_synr FL2 FR2] ⇒ impossible target_is_not_source [g ⊢ fw FL2])
   | [g ⊢ fs_synl FL1 FR1] ⇒ (case [g ⊢ F2] of
        | [g ⊢ fs_parl F2' N2] ⇒ impossible target_is_not_source [g ⊢ fw FR1]
        | [g ⊢ fs_parr F2' N2] ⇒ impossible target_is_not_source [g ⊢ fw FL1]
-       | [g ⊢ fs_synl FL2 FR2] ⇒ let [g ⊢ reffs] = unique_fstep [g ⊢ FL1] [g ⊢ FL2] in
-         let [g ⊢ reffs] = unique_fstep [g ⊢ FR1] [g ⊢ FR2] in [g ⊢ reffs]
-       | [g ⊢ fs_synr FL2 FR2] ⇒ impossible unique_fstep [g ⊢ FL1] [g ⊢ FL2])
+       | [g ⊢ fs_synl FL2 FR2] ⇒ let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2] in
+         let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ FR1] [g ⊢ FR2] in [g ⊢ reffs]
+       | [g ⊢ fs_synr FL2 FR2] ⇒ impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2])
   | [g ⊢ fs_synr FL1 FR1] ⇒ (case [g ⊢ F2] of
        | [g ⊢ fs_parl F2' N2] ⇒ impossible target_is_not_source [g ⊢ fw FR1]
        | [g ⊢ fs_parr F2' N2] ⇒ impossible target_is_not_source [g ⊢ fw FL1]
-       | [g ⊢ fs_synl FL2 FR2] ⇒ impossible unique_fstep [g ⊢ FL1] [g ⊢ FL2]
-       | [g ⊢ fs_synr FL2 FR2] ⇒ let [g ⊢ reffs] = unique_fstep [g ⊢ FL1] [g ⊢ FL2] in
-         let [g ⊢ reffs] = unique_fstep [g ⊢ FR1] [g ⊢ FR2] in [g ⊢ reffs])
+       | [g ⊢ fs_synl FL2 FR2] ⇒ impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+       | [g ⊢ fs_synr FL2 FR2] ⇒ let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2] in
+         let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ FR1] [g ⊢ FR2] in [g ⊢ reffs])
   | [g ⊢ fs_nu \a.F1'] ⇒ let [g ⊢ fs_nu \a.F2'] = [g ⊢ F2] in
-    let [g,a:names ⊢ reffs] = unique_fstep [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffs];
+    let [g,a:names ⊢ reffs] = ccsk_unique_fstep [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffs];
 
-% Uniqueness of the derivation of bstep X' T X
-rec unique_bstep: (g:ctx) {B1:[g ⊢ bstep X' T1 X]} {B2:[g ⊢ bstep X' T2 X]} [g ⊢ eqbs B1 B2] =
-/ total b1 (unique_bstep _ _ _ _ _ b1 _) /
+% Uniqueness of the derivation of bstep X' KL X
+rec ccsk_unique_bstep: (g:ctx) {B1:[g ⊢ bstep X' KL1 X]} {B2:[g ⊢ bstep X' KL2 X]} [g ⊢ eqbs B1 B2] =
+/ total b1 (ccsk_unique_bstep _ _ _ _ _ b1 _) /
 mlam B1 B2 ⇒ case [_ ⊢ B1] of
   | [g ⊢ bs_pref D1] ⇒ let [g ⊢ bs_pref D2] = [g ⊢ B2] in
     let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ refbs]
   | [g ⊢ bs_kpref B1 I1] ⇒ let [g ⊢ bs_kpref B2 I2] = [g ⊢ B2] in
-    let [g ⊢ refbs] = unique_bstep [g ⊢ B1] [g ⊢ B2] in
+    let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ B1] [g ⊢ B2] in
     let refnq [g ⊢ I1] = unique_neq [g ⊢ I1] [g ⊢ I2] in [g ⊢ refbs]
   | [g ⊢ bs_suml B1' D1] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bs_suml B2' D2] ⇒ let [g ⊢ refbs] = unique_bstep [g ⊢ B1'] [g ⊢ B2'] in
+       | [g ⊢ bs_suml B2' D2] ⇒ let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ B1'] [g ⊢ B2'] in
          let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ refbs]
        | [g ⊢ bs_sumr B2' D2] ⇒ impossible source_is_not_std [g ⊢ B1'] [g ⊢ D2])
   | [g ⊢ bs_sumr B1' D1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bs_suml B2' D2] ⇒ impossible source_is_not_std [g ⊢ B1'] [g ⊢ D2]
-       | [g ⊢ bs_sumr B2' D2] ⇒ let [g ⊢ refbs] = unique_bstep [g ⊢ B1'] [g ⊢ B2'] in
+       | [g ⊢ bs_sumr B2' D2] ⇒ let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ B1'] [g ⊢ B2'] in
          let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ refbs])
   | [g ⊢ bs_parl B1' N1] ⇒ (case [g ⊢ B2] of
-       | [g ⊢ bs_parl B2' N2] ⇒ let [g ⊢ refbs] = unique_bstep [g ⊢ B1'] [g ⊢ B2'] in
+       | [g ⊢ bs_parl B2' N2] ⇒ let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ B1'] [g ⊢ B2'] in
          let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ refbs]
        | [g ⊢ bs_parr B2' N2] ⇒ impossible target_is_not_source [g ⊢ bw B2']
        | [g ⊢ bs_synl BL2 BR2] ⇒ impossible target_is_not_source [g ⊢ bw BR2]
        | [g ⊢ bs_synr BL2 BR2] ⇒ impossible target_is_not_source [g ⊢ bw BR2])
   | [g ⊢ bs_parr B1' N1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bs_parl B2' N2] ⇒ impossible target_is_not_source [g ⊢ bw B2']
-       | [g ⊢ bs_parr B2' N2] ⇒ let [g ⊢ refbs] = unique_bstep [g ⊢ B1'] [g ⊢ B2'] in
+       | [g ⊢ bs_parr B2' N2] ⇒ let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ B1'] [g ⊢ B2'] in
          let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ refbs]
        | [g ⊢ bs_synl BL2 BR2] ⇒ impossible target_is_not_source [g ⊢ bw BL2]
        | [g ⊢ bs_synr BL2 BR2] ⇒ impossible target_is_not_source [g ⊢ bw BL2])
   | [g ⊢ bs_synl BL1 BR1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bs_parl B2' N2] ⇒ impossible target_is_not_source [g ⊢ bw BR1]
        | [g ⊢ bs_parr B2' N2] ⇒ impossible target_is_not_source [g ⊢ bw BL1]
-       | [g ⊢ bs_synl BL2 BR2] ⇒ let [g ⊢ refbs] = unique_bstep [g ⊢ BL1] [g ⊢ BL2] in
-         let [g ⊢ refbs] = unique_bstep [g ⊢ BR1] [g ⊢ BR2] in [g ⊢ refbs]
-       | [g ⊢ bs_synr BL2 BR2] ⇒ impossible unique_bstep [g ⊢ BL1] [g ⊢ BL2])
+       | [g ⊢ bs_synl BL2 BR2] ⇒ let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ BL1] [g ⊢ BL2] in
+         let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ BR1] [g ⊢ BR2] in [g ⊢ refbs]
+       | [g ⊢ bs_synr BL2 BR2] ⇒ impossible ccsk_unique_bstep [g ⊢ BL1] [g ⊢ BL2])
   | [g ⊢ bs_synr BL1 BR1] ⇒ (case [g ⊢ B2] of
        | [g ⊢ bs_parl B2' N2] ⇒ impossible target_is_not_source [g ⊢ bw BR1]
        | [g ⊢ bs_parr B2' N2] ⇒ impossible target_is_not_source [g ⊢ bw BL1]
-       | [g ⊢ bs_synl BL2 BR2] ⇒ impossible unique_bstep [g ⊢ BL1] [g ⊢ BL2]
-       | [g ⊢ bs_synr BL2 BR2] ⇒ let [g ⊢ refbs] = unique_bstep [g ⊢ BL1] [g ⊢ BL2] in
-         let [g ⊢ refbs] = unique_bstep [g ⊢ BR1] [g ⊢ BR2] in [g ⊢ refbs])
+       | [g ⊢ bs_synl BL2 BR2] ⇒ impossible ccsk_unique_bstep [g ⊢ BL1] [g ⊢ BL2]
+       | [g ⊢ bs_synr BL2 BR2] ⇒ let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ BL1] [g ⊢ BL2] in
+         let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ BR1] [g ⊢ BR2] in [g ⊢ refbs])
   | [g ⊢ bs_nu \a.B1'] ⇒ let [g ⊢ bs_nu \a.B2'] = [g ⊢ B2] in
-    let [g,a:names ⊢ refbs] = unique_bstep [g,a:names ⊢ B1'] [g,a:names ⊢ B2'] in [g ⊢ refbs];
+    let [g,a:names ⊢ refbs] = ccsk_unique_bstep [g,a:names ⊢ B1'] [g,a:names ⊢ B2'] in [g ⊢ refbs];
+
+
+% Given two processes X and X', there cannot be both a forward closed transition and backward transition between them
+rec no_fstep_and_bstep: (g:ctx) [g ⊢ ccsk.fstep X KL1 X'] → [g ⊢ ccsk.bstep X KL2 X'] → [g ⊢ false] =
+/ total f (no_fstep_and_bstep _ _ _ _ _ f _) /
+fn f,b ⇒ case f of
+  | [g ⊢ fs_pref _] ⇒ impossible b
+  | [g ⊢ fs_kpref F _] ⇒ let [g ⊢ bs_kpref B _] = b in
+    impossible no_fstep_and_bstep [g ⊢ F] [g ⊢ B]
+  | [g ⊢ fs_suml F _] ⇒ (case b of
+       | [g ⊢ bs_suml B _] ⇒ impossible no_fstep_and_bstep [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bs_sumr B _] ⇒ impossible target_is_not_source [g ⊢ fw F])
+  | [g ⊢ fs_sumr F _] ⇒ (case b of
+       | [g ⊢ bs_suml B _] ⇒ impossible target_is_not_source [g ⊢ fw F]
+       | [g ⊢ bs_sumr B _] ⇒ impossible no_fstep_and_bstep [g ⊢ F] [g ⊢ B])
+  | [g ⊢ fs_parl F _] ⇒ (case b of
+       | [g ⊢ bs_parl B _] ⇒ impossible no_fstep_and_bstep [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bs_parr B _] ⇒ impossible target_is_not_source [g ⊢ fw F]
+       | [g ⊢ bs_synl _ BR] ⇒ impossible target_is_not_source [g ⊢ bw BR]
+       | [g ⊢ bs_synr _ BR] ⇒ impossible target_is_not_source [g ⊢ bw BR])
+  | [g ⊢ fs_parr F _] ⇒ (case b of
+       | [g ⊢ bs_parl B _] ⇒ impossible target_is_not_source [g ⊢ fw F]
+       | [g ⊢ bs_parr B _] ⇒ impossible no_fstep_and_bstep [g ⊢ F] [g ⊢ B]
+       | [g ⊢ bs_synl BL _] ⇒ impossible target_is_not_source [g ⊢ bw BL]
+       | [g ⊢ bs_synr BL _] ⇒ impossible target_is_not_source [g ⊢ bw BL])
+  | [g ⊢ fs_synl FL FR] ⇒ (case b of
+       | [g ⊢ bs_parl B _] ⇒ impossible no_fstep_and_bstep [g ⊢ FL] [g ⊢ B]
+       | [g ⊢ bs_parr B _] ⇒ impossible no_fstep_and_bstep [g ⊢ FR] [g ⊢ B]
+       | [g ⊢ bs_synl BL _] ⇒ impossible no_fstep_and_bstep [g ⊢ FL] [g ⊢ BL]
+       | [g ⊢ bs_synr BL _] ⇒ impossible no_fstep_and_bstep [g ⊢ FL] [g ⊢ BL])
+  | [g ⊢ fs_synr FL FR] ⇒ (case b of
+       | [g ⊢ bs_parl B _] ⇒ impossible no_fstep_and_bstep [g ⊢ FL] [g ⊢ B]
+       | [g ⊢ bs_parr B _] ⇒ impossible no_fstep_and_bstep [g ⊢ FR] [g ⊢ B]
+       | [g ⊢ bs_synl BL _] ⇒ impossible no_fstep_and_bstep [g ⊢ FL] [g ⊢ BL]
+       | [g ⊢ bs_synr BL _] ⇒ impossible no_fstep_and_bstep [g ⊢ FL] [g ⊢ BL])
+  | [g ⊢ fs_nu \a.F] ⇒ let [g ⊢ bs_nu \a.B] = b in
+    impossible no_fstep_and_bstep [_ ⊢ F] [_ ⊢ B]
+;
+
+% Uniqueness of the derivation of step X KL X'
+rec ccsk_unique_step: (g:ctx) {S1:[g ⊢ ccsk.step X KL1 X']} {S2:[g ⊢ ccsk.step X KL2 X']} [g ⊢ eqs S1 S2] =
+/ total s1 (ccsk_unique_step _ _ _ _ _ s1 _) /
+mlam S1 S2 ⇒ case [_ ⊢ S1] of
+  | [g ⊢ fw F1] ⇒ (case [g ⊢ S2] of
+        | [g ⊢ fw F2] ⇒ let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ F1] [g ⊢ F2] in [g ⊢ refs]
+        | [g ⊢ bw B2] ⇒ impossible no_fstep_and_bstep [g ⊢ F1] [g ⊢ B2])
+  | [g ⊢ bw B1] ⇒ (case [g ⊢ S2] of
+        | [g ⊢ fw F2] ⇒ impossible no_fstep_and_bstep [g ⊢ F2] [g ⊢ B1]
+        | [g ⊢ bw B2] ⇒ let [g ⊢ refbs] = ccsk_unique_bstep [g ⊢ B1] [g ⊢ B2] in [g ⊢ refs])
+;

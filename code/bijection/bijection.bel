@@ -109,7 +109,7 @@ rec inverse_fc_two: (g:ctx) (F1:[g ⊢ ccsk.fstep X T1 X']) (F2:[g ⊢ ccskp.fst
 / total f1 (inverse_fc_two _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ en_fc F1 F2 _ _] = d1 in
 let [g ⊢ fg_fc F2 F3 _ _] = d2 in
-unique_fstep [g ⊢ F1] [g ⊢ F3]
+ccsk_unique_fstep [g ⊢ F1] [g ⊢ F3]
 ;
 
 % forget_fo ∘ enrich_fo = id.
@@ -118,7 +118,7 @@ rec inverse_fo_two: (g:ctx) (F1:[g ⊢ ccsk.fstep X T1 X']) (F2:[g ⊢ ccskp.fst
 / total f1 (inverse_fo_two _ _ _ _ _ _ f1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ en_fo F1 F2 \_._] = d1 in
 let [g ⊢ fg_fo F2 F3 \_._] = d2 in
-unique_fstep [g ⊢ F1] [g ⊢ F3]
+ccsk_unique_fstep [g ⊢ F1] [g ⊢ F3]
 ;
 
 % forget_bc ∘ enrich_bc = id.
@@ -127,7 +127,7 @@ rec inverse_bc_two: (g:ctx) (B1:[g ⊢ ccsk.bstep X T1 X']) (B2:[g ⊢ ccskp.bst
 / total b1 (inverse_bc_two _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ en_bc B1 B2 _ _] = d1 in
 let [g ⊢ fg_bc B2 B3 _ _] = d2 in
-unique_bstep [g ⊢ B1] [g ⊢ B3]
+ccsk_unique_bstep [g ⊢ B1] [g ⊢ B3]
 ;
 
 % forget_bo ∘ enrich_bo = id.
@@ -136,7 +136,7 @@ rec inverse_bo_two: (g:ctx) (B1:[g ⊢ ccsk.bstep X T1 X']) (B2:[g ⊢ ccskp.bst
 / total b1 (inverse_bo_two _ _ _ _ _ _ b1 _ _ _ _) /
 fn d1,d2 ⇒ let [g ⊢ en_bo B1 B2 \_._] = d1 in
 let [g ⊢ fg_bo B2 B3 \_._] = d2 in
-unique_bstep [g ⊢ B1] [g ⊢ B3]
+ccsk_unique_bstep [g ⊢ B1] [g ⊢ B3]
 ;
 
 

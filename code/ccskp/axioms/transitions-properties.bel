@@ -90,7 +90,7 @@ fn hf,hb ⇒ case hf of
 rec injective_forw_to_comb: (g:ctx) (F1:[g ⊢ fstep X T Y]) (F2:[g ⊢ fstep X T Y])
   (S:[g ⊢ step X T Y]) [g ⊢ forw_to_comb F1 S] → [g ⊢ forw_to_comb F2 S] → [g ⊢ eqf F1 F2] =
 / total f1 (injective_forw_to_comb _ _ _ _ f1 _ _ _ _) /
-fn hf1,hf2 ⇒ unique_fstep_ccskp [_ ⊢ _] [_ ⊢ _]
+fn hf1,hf2 ⇒ unique_fstep [_ ⊢ _] [_ ⊢ _]
 ;
 
 % Injectivity of back_to_comb: given two backward transitions B1 and B2,
@@ -98,7 +98,7 @@ fn hf1,hf2 ⇒ unique_fstep_ccskp [_ ⊢ _] [_ ⊢ _]
 rec injective_back_to_comb: (g:ctx) (B1:[g ⊢ bstep X T Y]) (B2:[g ⊢ bstep X T Y])
   (S:[g ⊢ step X T Y]) [g ⊢ back_to_comb B1 S] → [g ⊢ back_to_comb B2 S] → [g ⊢ eqb B1 B2] =
 / total b1 (injective_back_to_comb _ _ _ _ b1 _ _ _ _) /
-fn hb1,hb2 ⇒ unique_bstep_ccskp [_ ⊢ _] [_ ⊢ _]
+fn hb1,hb2 ⇒ unique_bstep [_ ⊢ _] [_ ⊢ _]
 ;
 
 
@@ -111,6 +111,7 @@ LF inv_tr: step X T1 X' → step Y T2 Y' → type =
 ;
 
 % We show that, thanks to the loop lemma, inv_tr is a function and, in particular, an involution (inv_tr ∘ inv_tr = id).
+% Additionally, we show that t and inv_tr(t) have opposite directions.
 
 % Existential type denoting existence of an inverse transition
 LF ex_inv: step X T X' → type =
@@ -145,14 +146,85 @@ fn d1,d2 ⇒ let [g ⊢ it S1 S2] = d1 in
 let [g ⊢ it S2 S3] = d2 in unique_step [g ⊢ S1] [g ⊢ S3]
 ;
 
-
-
 % Type family relating two combined transitions having the same direction
 LF same_direction: step X1 T1 Y1 → step X2 T2 Y2 → type =
   | sdf: forw_to_comb F1 S1 → forw_to_comb F2 S2 → same_direction S1 S2
   | sdb: back_to_comb B1 S1 → back_to_comb B2 S2 → same_direction S1 S2
 ;
 
+% Type family relating two combined transitions having opposite directions
+LF opp_direction: step X1 T1 Y1 → step X2 T2 Y2 → type =
+  | odfb: forw_to_comb F1 S1 → back_to_comb B2 S2 → opp_direction S1 S2
+  | odbf: back_to_comb B1 S1 → forw_to_comb F2 S2 → opp_direction S1 S2
+;
+
+% Type family relating couples of combined transitions with same or opposite directions
+LF ex_same_or_opp_direction: step X1 T1 Y1 → step X2 T2 Y2 → type =
+  | or_sd: same_direction S1 S2 → ex_same_or_opp_direction S1 S2
+  | or_od: opp_direction S1 S2 → ex_same_or_opp_direction S1 S2
+;
+
+% Given two combined transitions, they either have the same direction or opposite directions.
+rec same_or_opp_direction: (g:ctx) {S1:[g ⊢ step X1 T1 X1']} {S2:[g ⊢ step X2 T2 X2']}
+  [g ⊢ ex_same_or_opp_direction S1 S2] =
+/ total s1 (same_or_opp_direction _ _ _ _ _ _ _ s1 _ ) /
+mlam S1,S2 ⇒ case [_ ⊢ S1] of
+  | [g ⊢ sc (fwc F1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ [g ⊢ or_sd (sdf (ftc_cl F1) (ftc_cl F2))]
+       | [g ⊢ so (fwo F2)] ⇒ [g ⊢ or_sd (sdf (ftc_cl F1) (ftc_op F2))]
+       | [g ⊢ sc (bwc B2)] ⇒ [g ⊢ or_od (odfb (ftc_cl F1) (btc_cl B2))]
+       | [g ⊢ so (bwo B2)] ⇒ [g ⊢ or_od (odfb (ftc_cl F1) (btc_op B2))])
+  | [g ⊢ so (fwo F1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ [g ⊢ or_sd (sdf (ftc_op F1) (ftc_cl F2))]
+       | [g ⊢ so (fwo F2)] ⇒ [g ⊢ or_sd (sdf (ftc_op F1) (ftc_op F2))]
+       | [g ⊢ sc (bwc B2)] ⇒ [g ⊢ or_od (odfb (ftc_op F1) (btc_cl B2))]
+       | [g ⊢ so (bwo B2)] ⇒ [g ⊢ or_od (odfb (ftc_op F1) (btc_op B2))])
+  | [g ⊢ sc (bwc B1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ [g ⊢ or_od (odbf (btc_cl B1) (ftc_cl F2))]
+       | [g ⊢ so (fwo F2)] ⇒ [g ⊢ or_od (odbf (btc_cl B1) (ftc_op F2))]
+       | [g ⊢ sc (bwc B2)] ⇒ [g ⊢ or_sd (sdb (btc_cl B1) (btc_cl B2))]
+       | [g ⊢ so (bwo B2)] ⇒ [g ⊢ or_sd (sdb (btc_cl B1) (btc_op B2))])
+  | [g ⊢ so (bwo B1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ [g ⊢ or_od (odbf (btc_op B1) (ftc_cl F2))]
+       | [g ⊢ so (fwo F2)] ⇒ [g ⊢ or_od (odbf (btc_op B1) (ftc_op F2))]
+       | [g ⊢ sc (bwc B2)] ⇒ [g ⊢ or_sd (sdb (btc_op B1) (btc_cl B2))]
+       | [g ⊢ so (bwo B2)] ⇒ [g ⊢ or_sd (sdb (btc_op B1) (btc_op B2))])
+;
+
+% Given two combined transitions, they cannot both have the same direction and opposite directions.
+rec not_same_and_opp_direction: (g:ctx) (S1:[g ⊢ step X1 T1 X1']) (S2:[g ⊢ step X2 T2 X2'])
+  [g ⊢ same_direction S1 S2] → [g ⊢ opp_direction S1 S2] → [g ⊢ false] =
+/ total sd (not_same_and_opp_direction _ _ _ _ _ _ _ _ _ sd _) /
+fn sd,od ⇒ case sd of
+  | [g ⊢ sdf (ftc_cl F1) (ftc_cl F2)] ⇒ (case od of
+       | [g ⊢ odfb _ BC2] ⇒ impossible [g ⊢ BC2]
+       | [g ⊢ odbf BC1 _] ⇒ impossible [g ⊢ BC1])
+  | [g ⊢ sdf (ftc_cl F1) (ftc_op F2)] ⇒ (case od of
+       | [g ⊢ odfb _ BC2] ⇒ impossible [g ⊢ BC2]
+       | [g ⊢ odbf BC1 _] ⇒ impossible [g ⊢ BC1])
+  | [g ⊢ sdf (ftc_op F1) (ftc_cl F2)] ⇒ (case od of
+       | [g ⊢ odfb _ BC2] ⇒ impossible [g ⊢ BC2]
+       | [g ⊢ odbf BC1 _] ⇒ impossible [g ⊢ BC1])
+  | [g ⊢ sdf (ftc_op F1) (ftc_op F2)] ⇒ (case od of
+       | [g ⊢ odfb _ BC2] ⇒ impossible [g ⊢ BC2]
+       | [g ⊢ odbf BC1 _] ⇒ impossible [g ⊢ BC1])
+  | [g ⊢ sdb (btc_cl B1) (btc_cl B2)] ⇒ (case od of
+       | [g ⊢ odfb FC1 _] ⇒ impossible [g ⊢ FC1]
+       | [g ⊢ odbf _ FC2] ⇒ impossible [g ⊢ FC2])
+  | [g ⊢ sdb (btc_cl B1) (btc_op B2)] ⇒ (case od of
+       | [g ⊢ odfb FC1 _] ⇒ impossible [g ⊢ FC1]
+       | [g ⊢ odbf _ FC2] ⇒ impossible [g ⊢ FC2])
+  | [g ⊢ sdb (btc_op B1) (btc_cl B2)] ⇒ (case od of
+       | [g ⊢ odfb FC1 _] ⇒ impossible [g ⊢ FC1]
+       | [g ⊢ odbf _ FC2] ⇒ impossible [g ⊢ FC2])
+  | [g ⊢ sdb (btc_op B1) (btc_op B2)] ⇒ (case od of
+       | [g ⊢ odfb FC1 _] ⇒ impossible [g ⊢ FC1]
+       | [g ⊢ odbf _ FC2] ⇒ impossible [g ⊢ FC2])
+;
+
+% Given a combined transition t, t and inv_tr(t) have opposite directions.
+% We postpone the proof of this result to the end of the file, in order to exploit one of the lemmas
+% that will be proved below.
 
 
 % Auxiliary lemmas for BTI
@@ -813,4 +885,26 @@ fn bs1,bs2 ⇒ case bs1 of
     let [g ⊢ bc F2] = bs2 in impossible no_composable_bw_tr_with_same_key [g ⊢ bc F1] [g ⊢ bc F2] [g ⊢ key_cl H] [g ⊢ key_cl H]
   | [g ⊢ bo F1]:[g ⊢ bstep _ (p_op (open \a.T)) _] ⇒ let [g,a:names ⊢ ex_k H] = total_key [_ ⊢ T] in
     let [g ⊢ bo F2] = bs2 in impossible no_composable_bw_tr_with_same_key [g ⊢ bo F1] [g ⊢ bo F2] [g ⊢ key_op \a.H] [g ⊢ key_op \a.H]
+;
+
+
+
+% Given a combined transition t, t and inv_tr(t) have opposite directions.
+rec inv_tr_have_opp_direction: (g:ctx) (S1:[g ⊢ step X1 T1 X1']) (S2:[g ⊢ step X2 T2 X2'])
+  [g ⊢ inv_tr S1 S2] → [g ⊢ opp_direction S1 S2] =
+/ total hr (inv_tr_have_opp_direction _ _ _ _ _ _ _ _ _ hr) /
+fn hr ⇒ let [g ⊢ it S1 S2] = hr in
+case [_ ⊢ S1] of
+  | [g ⊢ sc (fwc F1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ impossible no_composable_fw_tr_with_same_label [g ⊢ fc F1] [g ⊢ fc F2]
+       | [g ⊢ sc (bwc B2)] ⇒ [g ⊢ odfb (ftc_cl F1) (btc_cl B2)])
+  | [g ⊢ so (fwo F1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ so (fwo F2)] ⇒ impossible no_composable_fw_tr_with_same_label [g ⊢ fo F1] [g ⊢ fo F2]
+       | [g ⊢ so (bwo B2)] ⇒ [g ⊢ odfb (ftc_op F1) (btc_op B2)])
+  | [g ⊢ sc (bwc B1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ sc (fwc F2)] ⇒ [g ⊢ odbf (btc_cl B1) (ftc_cl F2)]
+       | [g ⊢ sc (bwc B2)] ⇒ impossible no_composable_bw_tr_with_same_label [g ⊢ bc B1] [g ⊢ bc B2])
+  | [g ⊢ so (bwo B1)] ⇒ (case [g ⊢ S2] of
+       | [g ⊢ so (fwo F2)] ⇒ [g ⊢ odbf (btc_op B1) (ftc_op F2)]
+       | [g ⊢ so (bwo B2)] ⇒ impossible no_composable_bw_tr_with_same_label [g ⊢ bo B1] [g ⊢ bo B2])
 ;

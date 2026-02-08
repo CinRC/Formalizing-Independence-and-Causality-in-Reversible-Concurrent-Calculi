@@ -414,8 +414,8 @@ mlam B1 B2 ⇒ case [_ ⊢ B1] of
 
 
 % Uniqueness of the derivation of fstep X T X'
-rec unique_fstep_ccskp: (g:ctx) {F1:[g ⊢ fstep X T1 X']} {F2:[g ⊢ fstep X T2 X']} [g ⊢ eqf F1 F2] =
-/ total f1 (unique_fstep_ccskp _ _ _ _ _ f1 _) /
+rec unique_fstep: (g:ctx) {F1:[g ⊢ fstep X T1 X']} {F2:[g ⊢ fstep X T2 X']} [g ⊢ eqf F1 F2] =
+/ total f1 (unique_fstep _ _ _ _ _ f1 _) /
 mlam FS1 FS2 ⇒ case [_ ⊢ FS1] of
   | [g ⊢ fc F1] ⇒ (case [g ⊢ FS2] of
         | [g ⊢ fc F2] ⇒ let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F1] [g ⊢ F2] in [g ⊢ reff]
@@ -426,8 +426,8 @@ mlam FS1 FS2 ⇒ case [_ ⊢ FS1] of
 ;
 
 % Uniqueness of the derivation of bstep X' T X
-rec unique_bstep_ccskp: (g:ctx) {B1:[g ⊢ bstep X' T1 X]} {B2:[g ⊢ bstep X' T2 X]} [g ⊢ eqb B1 B2] =
-/ total b1 (unique_bstep_ccskp _ _ _ _ _ b1 _) /
+rec unique_bstep: (g:ctx) {B1:[g ⊢ bstep X' T1 X]} {B2:[g ⊢ bstep X' T2 X]} [g ⊢ eqb B1 B2] =
+/ total b1 (unique_bstep _ _ _ _ _ b1 _) /
 mlam BS1 BS2 ⇒ case [_ ⊢ BS1] of
   | [g ⊢ bc B1] ⇒ (case [g ⊢ BS2] of
         | [g ⊢ bc B2] ⇒ let [g ⊢ refbc] = unique_bstep_cl [g ⊢ B1] [g ⊢ B2] in [g ⊢ refb]

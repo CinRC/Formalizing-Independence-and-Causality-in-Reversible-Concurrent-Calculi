@@ -2,11 +2,13 @@
 
 % Propagation of coinitial independence (PCI):
 % Given t:step X T1 Y, u:step X T2 Z, u':step Y T2 W and t':step Z T1 W,
+% where (t,t') and (u,u') have same direction,
 % if t and u are independent, then u' and inv_tr(t) are independent.
 rec pci: (g:ctx) (T:[g ⊢ step X T1 Y]) (U:[g ⊢ step X T2 Z]) (U':[g ⊢ step Y T2 W])
-  (T':[g ⊢ step Z T1 W]) (S:[g ⊢ step Y T1 X]) [g ⊢ indep_tr T U] → [g ⊢ inv_tr T S] → [g ⊢ indep_tr U' S] =
+  (T':[g ⊢ step Z T1 W]) (S:[g ⊢ step Y T1 X]) [g ⊢ same_direction T T'] →
+  [g ⊢ same_direction U U'] → [g ⊢ indep_tr T U] → [g ⊢ inv_tr T S] → [g ⊢ indep_tr U' S] =
 / total (pci _ _ _ _ _ _ _ t _ _ _ _ _ _) /
-fn i,d ⇒ let [g ⊢ ind_tr I _] = i in
+fn sd1,sd2,i,d ⇒ let [g ⊢ ind_tr I _] = i in
 let [g ⊢ it T S] = d in 
 let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in [g ⊢ ind_tr I' (ct _ _ (st_s* S))]
 ;
