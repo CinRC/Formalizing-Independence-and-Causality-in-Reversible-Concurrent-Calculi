@@ -373,6 +373,90 @@ let [g ⊢ ex_iv (it T+ RT'+)] = total_inv [g ⊢ T+] in
 let [g ⊢ refst] = unique_step [g ⊢ RT+] [g ⊢ RT'+] in [g ⊢ it T+ RT+]
 ;
 
+
+LF diamond_pr_lab_equality: fstep_cl X T1 Y → fstep_cl Y T2 Z → fstep_cl X T3 W → fstep_cl W T4 Z → type =
+  | eq_so: eqplc T1 T3 → eqplc T2 T4 →
+    diamond_pr_lab_equality (F1:fstep_cl X T1 Y) (F2:fstep_cl Y T2 Z) (F3:fstep_cl X T3 W) (F4:fstep_cl W T4 Z)
+;
+
+rec diamonds_have_same_pr_labels: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
+  {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ indep_cl T1 T3] →
+  [g ⊢ diamond_pr_lab_equality F1 F2 F3 F4] =
+/ total f1 (diamonds_have_same_pr_labels _ _ _ _ _ _ _ _ _ f1 _ _ _ _) /
+mlam F1,F2,F3,F4 ⇒ fn i ⇒ case [_ ⊢ F1] of
+  | [g ⊢ fc_pref _] ⇒ impossible i
+  | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+    let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+    let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in 
+    let [g ⊢ eq_so refplc refplc] = diamonds_have_same_pr_labels [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] i in
+    [g ⊢ eq_so refplc refplc]
+  | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fc_suml F2' _] ⇒ (case [g ⊢ F3] of
+            | [g ⊢ fc_suml F3' _] ⇒ let [g ⊢ i_c1l I] = i in (case [g ⊢ F4] of
+                 | [g ⊢ fc_suml F4' _] ⇒ let [g ⊢ eq_so refplc refplc] = diamonds_have_same_pr_labels
+                   [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] [g ⊢ I] in [g ⊢ eq_so refplc refplc]
+                 | [g ⊢ fc_sumr _ D4] ⇒ impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4])
+            | [g ⊢ fc_sumr _ _] ⇒ impossible i)
+       | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
+  | [g ⊢ fc_sumr F1' D1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
+       | [g ⊢ fc_sumr F2' _] ⇒ (case [g ⊢ F3] of
+            | [g ⊢ fc_suml _ _] ⇒ impossible i
+            | [g ⊢ fc_sumr F3' _] ⇒ let [g ⊢ i_c1r I] = i in (case [g ⊢ F4] of
+                 | [g ⊢ fc_suml _ D4] ⇒ impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4]
+                 | [g ⊢ fc_sumr F4' _] ⇒ let [g ⊢ eq_so refplc refplc] = diamonds_have_same_pr_labels
+                   [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] [g ⊢ I] in [g ⊢ eq_so refplc refplc])))
+  | [g ⊢ fc_parl F1' H1 N1] ⇒ (case [g ⊢ F3] of
+       | [g ⊢ fc_parl F3' H3 N3] ⇒ let [g ⊢ i_p1l I] = i in (case [g ⊢ F2] of
+            | [g ⊢ fc_parl F2' H2 N2] ⇒ (case [g ⊢ F4] of
+                 | [g ⊢ fc_parl F4' H4 N4] ⇒ let [g ⊢ eq_so refplc refplc] = diamonds_have_same_pr_labels
+                   [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] [g ⊢ I] in [g ⊢ eq_so refplc refplc]
+                 | [g ⊢ fc_parr F4' H4 N4] ⇒ impossible target_is_not_source_fc [g ⊢ F4']
+                 | [g ⊢ fc_synl FL4 LL4 HL4 FR4 LR4 HR4] ⇒ impossible target_is_not_source_fc [g ⊢ FR4]
+                 | [g ⊢ fc_synr FL4 LL4 HL4 FR4 LR4 HR4] ⇒ impossible target_is_not_source_fc [g ⊢ FR4])
+            | [g ⊢ fc_parr F2' H2 N2] ⇒ (case [g ⊢ F4] of
+                 | [g ⊢ fc_parl F4' H4 N4] ⇒ impossible target_is_not_source_fc [g ⊢ F2']
+                 | [g ⊢ fc_parr F4' H4 N4] ⇒ 
+                   let [g ⊢ V1] = valid_in_fstep_cl [g ⊢ F1'] in
+                   let [g ⊢ V3] = valid_in_fstep_cl [g ⊢ F3'] in 
+                   let [g ⊢ NQ] = indep_impl_diff_keys [g ⊢ V1] [g ⊢ V3] [g ⊢ I] [g ⊢ H1] [g ⊢ H3] in 
+                   let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F1'] [g ⊢ F3'] in 
+                   let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H3] in impossible irreflexive_neq [g ⊢ NQ]
+                 | [g ⊢ fc_synl FL4 LL4 HL4 FR4 LR4 HR4] ⇒ 
+                   let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F2'] [g ⊢ FR4] in 
+                   let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR4] in
+                   impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N2]
+                 | [g ⊢ fc_synr FL4 LL4 HL4 FR4 LR4 HR4] ⇒
+                   let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F2'] [g ⊢ FR4] in 
+                   let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR4] in
+                   impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N2])
+            | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ ?
+            | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ ?)
+       | [g ⊢ fc_parr F3' H3 N3] ⇒ let [g ⊢ i_p2l H1' H3' NQ] = i in ?
+       | [g ⊢ fc_synl FL3 LL3 HL3 FR3 LR3 HR3] ⇒ let [g ⊢ i_s1l I] = i in ?
+       | [g ⊢ fc_synr FL3 LL3 HL3 FR3 LR3 HR3] ⇒ let [g ⊢ i_s1l I] = i in ?)
+  | [g ⊢ fc_parr F1' H1 N1] ⇒ ?
+  | [g ⊢ fc_synl FL1 LL1 HL1 FR1 LR1 HR1] ⇒ ?
+  | [g ⊢ fc_synr FL1 LL1 HL1 FR1 LR1 HR1] ⇒ ?
+  | [g ⊢ fc_nu \a.F1'] ⇒ ?
+;
+
+%{
+     (case [g ⊢ F2] of
+       | [g ⊢ fc_parl F2' H2 N2] ⇒ ?
+       | [g ⊢ fc_parr F2' H2 N2] ⇒ ?
+       | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ ?
+       | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ ?)
+}%
+%{
+  | [g ⊢ fw (fo_nu_cl (\a.O1) (\a.L1) (\a.F1))] ⇒ ?
+  | [g ⊢ fw (fo_kpref F1 (\a.H1) I1)] ⇒ ?
+  | [g ⊢ fw (fo_suml F1 D1)] ⇒ ?
+  | [g ⊢ fw (fo_sumr F1 D1)] ⇒ ?
+  | [g ⊢ fw (fo_parl F1 (\a.H1) N1)] ⇒ ?
+  | [g ⊢ fw (fc_parr F1 (\a.H1) N1)] ⇒ ?
+  | [g ⊢ fw (fo_nu_op \a.F1)] ⇒ ?}%
+
 % Propagation of coinitial independence (PCI):
 % Given t:step X KL1 Y, u:step X KL2 Z, u':step Y KL2 W and t':step Z KL1 W,
 % where (t,t') and (u,u') have same direction,
