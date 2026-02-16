@@ -373,7 +373,7 @@ let [g ⊢ ex_iv (it T+ RT'+)] = total_inv [g ⊢ T+] in
 let [g ⊢ refst] = unique_step [g ⊢ RT+] [g ⊢ RT'+] in [g ⊢ it T+ RT+]
 ;
 
-
+%{
 LF diamond_pr_lab_equality: fstep_cl X T1 Y → fstep_cl Y T2 Z → fstep_cl X T3 W → fstep_cl W T4 Z → type =
   | eq_so: eqplc T1 T3 → eqplc T2 T4 →
     diamond_pr_lab_equality (F1:fstep_cl X T1 Y) (F2:fstep_cl Y T2 Z) (F3:fstep_cl X T3 W) (F4:fstep_cl W T4 Z)
@@ -440,7 +440,7 @@ mlam F1,F2,F3,F4 ⇒ fn i ⇒ case [_ ⊢ F1] of
   | [g ⊢ fc_synr FL1 LL1 HL1 FR1 LR1 HR1] ⇒ ?
   | [g ⊢ fc_nu \a.F1'] ⇒ ?
 ;
-
+}%
 %{
      (case [g ⊢ F2] of
        | [g ⊢ fc_parl F2' H2 N2] ⇒ ?
@@ -482,4 +482,432 @@ let [g ⊢ it T+ RT+] = [g ⊢ HR+] in
 let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in ?}%
 % Needed: show that T+ and T'+, obtained enriching transitions with same keyed label, have same proof label
 % Usually not true, but it may be true in the case of diamonds
+;
+
+
+
+rec aux1: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
+  {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
+  [g ⊢ key T4 K[]] → [g ⊢ eqplc T1 T4] =
+/ total f1 (aux1 _ _ _ _ _ _ _ _ _ _ f1 _ _ _ _ _) /
+mlam F1,F2,F3,F4 ⇒ fn h1,h4 ⇒ let [g ⊢ F1]:[g ⊢ fstep_cl X T1 Y] = [_ ⊢ F1] in
+let [g ⊢ F4]:[g ⊢ fstep_cl W T4 Z] = [g ⊢ F4] in
+case [g ⊢ T1] of
+  | [g ⊢ pr_base A M[]] ⇒ let [g ⊢ key_base] = h1 in (case [g ⊢ T4] of
+       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in
+         (case [g ⊢ F1] of
+           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_pref _] = [g ⊢ F3] in 
+             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
+             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl key_base]
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             let [g,a:names ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_base] in [g ⊢ refplc])
+       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_pref _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
+             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_suml H4)]
+           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_suml H4[..]])
+       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_pref _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
+             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_sumr H4)]
+           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_sumr H4[..]])
+       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_pref _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
+             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_parl H4)]
+           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_parl H4[..]])
+       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_pref _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
+             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_parr H4)]
+           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_parr H4[..]])
+       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_pref _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
+             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_sync HL4)]
+           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_sync HL4[..]]))
+  | [g ⊢ pr_suml T1'] ⇒ let [g ⊢ key_suml H1] = h1 in (case [g ⊢ T4] of
+       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
+           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
+           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
+                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
+                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
+           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
+             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
+             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_base])
+       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml F2' _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml F3' _] ⇒ let [g ⊢ fc_suml F4' _] = [g ⊢ F4] in
+                       let [g ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
+                     | [g ⊢ fc_sumr F3' _] ⇒ let [g ⊢ fc_suml _ D4] = [g ⊢ F4] in
+                       impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4])
+                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             let [g,a:names ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_suml H4[..]] in [g ⊢ refplc])
+       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml F2' _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml F3' _] ⇒ let [g ⊢ fc_sumr _ D4] = [g ⊢ F4] in
+                       impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4]
+                     | [g ⊢ fc_sumr _ _] ⇒ let [g ⊢ fc_sumr _ D4] = [g ⊢ F4] in
+                       impossible target_is_not_std_fc [g ⊢ F2'] [g ⊢ D4])
+                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_sumr H4[..]])
+       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml _ _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
+                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4])
+                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_parl H4[..]])
+       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml _ _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
+                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4])
+                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_parr H4[..]])
+       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml _ _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
+                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4])
+                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_sync HL4[..]]))
+  | [g ⊢ pr_sumr T1'] ⇒ let [g ⊢ key_sumr H1] = h1 in (case [g ⊢ T4] of
+       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
+           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
+           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
+                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
+                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
+           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
+             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
+             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_base])
+       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
+                | [g ⊢ fc_sumr F2' _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml _ _] ⇒ let [g ⊢ fc_suml _ D4] = [g ⊢ F4] in
+                       impossible target_is_not_std_fc [g ⊢ F2'] [g ⊢ D4]
+                     | [g ⊢ fc_sumr F3' _] ⇒ let [g ⊢ fc_suml _ D4] = [g ⊢ F4] in
+                       impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4]))
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_suml H4[..]])
+       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
+                | [g ⊢ fc_sumr F2' _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml F3' _] ⇒ let [g ⊢ fc_sumr _ D4] = [g ⊢ F4] in
+                       impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4]
+                     | [g ⊢ fc_sumr F3' _] ⇒ let [g ⊢ fc_sumr F4' _] = [g ⊢ F4] in
+                       let [g ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]))
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             let [g,a:names ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_sumr H4[..]] in [g ⊢ refplc])
+       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
+                | [g ⊢ fc_sumr _ _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
+                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4]))
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_parl H4[..]])
+       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
+                | [g ⊢ fc_sumr _ _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
+                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4]))
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_parr H4[..]])
+       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
+                | [g ⊢ fc_sumr _ _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
+                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4]))
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_sync HL4[..]]))
+  | [g ⊢ pr_parl T1'] ⇒ let [g ⊢ key_parl H1] = h1 in (case [g ⊢ T4] of
+       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
+           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
+           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
+                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
+                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
+           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
+             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
+             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_base])
+       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_suml H4[..]])
+       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_sumr H4[..]])
+       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_parl F1' H1' N1] ⇒ (case [g ⊢ F2] of
+                | [g ⊢ fc_parl F2' _ _] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_parl F3' _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       let [g ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
+                     | [g ⊢ fc_parr F3' _ _] ⇒ let [g ⊢ fc_parl _ _ _] = [g ⊢ F4] in
+                       impossible target_is_not_source_fc [g ⊢ F3']
+                     | [g ⊢ fc_synl _ _ _ FR3 _ _] ⇒ let [g ⊢ fc_parl _ _ _] = [g ⊢ F4] in
+                       impossible target_is_not_source_fc [g ⊢ FR3]
+                     | [g ⊢ fc_synr _ _ _ FR3 _ _] ⇒ let [g ⊢ fc_parl _ _ _] = [g ⊢ F4] in
+                       impossible target_is_not_source_fc [g ⊢ FR3])
+                | [g ⊢ fc_parr F2' H2 N2] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl _ _ _] = [g ⊢ F4] in
+                       impossible target_is_not_source_fc [g ⊢ F2']
+                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F1'] [g ⊢ F4'] in [g ⊢ refplc]
+                     | [g ⊢ fc_synl FL3 _ HL3 FR3 _ HR3] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F2'] [g ⊢ FR3] in
+                       let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR3] in
+                       impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ F4'] [g ⊢ N2])
+                     | [g ⊢ fc_synr FL3 _ HL3 FR3 _ HR3] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F2'] [g ⊢ FR3] in
+                       let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR3] in
+                       impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ F4'] [g ⊢ N2]))
+                | [g ⊢ fc_synl FL2 _ HL2 FR2 _ HR2] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_parl F3' _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       impossible target_is_not_source_fc [g ⊢ FR2]
+                     | [g ⊢ fc_parr F3' H3 N3] ⇒ let [g ⊢ fc_parl F4' H4' _] = [g ⊢ F4] in
+                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FR2] [g ⊢ F3'] in
+                       let [g ⊢ refk]:[g ⊢ eqk N[] N[]] = functional_key [g ⊢ HR2] [g ⊢ H3] in
+                       let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ H4] [g ⊢ H4'] in
+                       (case dec_eq_keys [g] [⊢ K] [⊢ N] of
+                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1'] [g ⊢ fc FL2] [g ⊢ key_cl H1] [g ⊢ key_cl HL2]
+                          | [g ⊢ c_neq I] ⇒ impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ F4'] [g ⊢ H4] [g ⊢ N3] [g ⊢ I]))
+                     | [g ⊢ fc_synl FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       let [g ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
+                     | [g ⊢ fc_synr FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       let [g ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc])
+                | [g ⊢ fc_synr FL2 _ HL2 FR2 _ HR2] ⇒ (case [g ⊢ F3] of
+                     | [g ⊢ fc_parl F3' _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       impossible target_is_not_source_fc [g ⊢ FR2]
+                     | [g ⊢ fc_parr F3' H3 N3] ⇒ let [g ⊢ fc_parl F4' H4' _] = [g ⊢ F4] in
+                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FR2] [g ⊢ F3'] in
+                       let [g ⊢ refk]:[g ⊢ eqk N[] N[]] = functional_key [g ⊢ HR2] [g ⊢ H3] in
+                       let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ H4] [g ⊢ H4'] in
+                       (case dec_eq_keys [g] [⊢ K] [⊢ N] of
+                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1'] [g ⊢ fc FL2] [g ⊢ key_cl H1] [g ⊢ key_cl HL2]
+                          | [g ⊢ c_neq I] ⇒ impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ F4'] [g ⊢ H4] [g ⊢ N3] [g ⊢ I]))
+                     | [g ⊢ fc_synl FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       let [g ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
+                     | [g ⊢ fc_synr FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
+                       let [g ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]))
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             let [g,a:names ⊢ refplc] = aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_parl H4[..]] in [g ⊢ refplc])
+       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in ?
+       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in ?)
+  | [g ⊢ pr_parr T1'] ⇒ let [g ⊢ key_parr H1] = h1 in ?%{(case [g ⊢ T4] of
+       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
+           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
+           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
+                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
+                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
+           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
+             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
+             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_base])
+       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_suml H4[..]])
+       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_sumr H4[..]])
+       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in ?
+       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in ?
+       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in ?)}%
+  | [g ⊢ pr_sync TL1 TR1] ⇒ let [g ⊢ key_sync HL1] = h1 in ?%{(case [g ⊢ T4] of
+       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
+           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
+           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
+                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
+                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
+           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
+             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
+             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_base])
+       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
+           | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_suml H4[..]])
+       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
+           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
+             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
+             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible aux1 [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
+           | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
+           | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F3] of
+                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
+                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
+           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
+             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
+             impossible aux1 [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_sumr H4[..]])
+       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in ?
+       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in ?
+       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in ?)}%
 ;
