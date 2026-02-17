@@ -457,38 +457,6 @@ mlam F1,F2,F3,F4 ⇒ fn i ⇒ case [_ ⊢ F1] of
   | [g ⊢ fw (fc_parr F1 (\a.H1) N1)] ⇒ ?
   | [g ⊢ fw (fo_nu_op \a.F1)] ⇒ ?}%
 
-% Propagation of coinitial independence (PCI):
-% Given t:step X KL1 Y, u:step X KL2 Z, u':step Y KL2 W and t':step Z KL1 W,
-% where (t,t') and (u,u') have same direction,
-% if t and u are independent, then u' and inv_tr(t) are independent.
-rec ccsk_pci: (g:ctx) (T:[g ⊢ ccsk.step X KL1 Y]) (U:[g ⊢ ccsk.step X KL2 Z])
-  (U':[g ⊢ ccsk.step Y KL2 W]) (T':[g ⊢ ccsk.step Z KL1 W]) (RT:[g ⊢ ccsk.step Y KL1 X])
-  [g ⊢ ccsk_same_direction T T'] → [g ⊢ ccsk_same_direction U U'] → [g ⊢ ccsk_indep_tr T U] → 
-  [g ⊢ ccsk_inv_tr T RT] → [g ⊢ ccsk_indep_tr U' RT] =
-/ total (ccsk_pci _ _ _ _ _ _ _ t _ _ _ _ _ _) /
-?%{fn sdt,sdu,i,hr ⇒ let [g ⊢ ccsk_ind_tr ENT ENU I _] = i in
-let [g ⊢ ENT]:[g ⊢ enrich T T+] = [g ⊢ ENT] in
-let [g ⊢ ENU]:[g ⊢ enrich U U+] = [g ⊢ ENU] in
-let [g ⊢ _]:[g ⊢ ccsk_same_direction T T'] = sdt in
-let [g ⊢ _]:[g ⊢ ccsk_same_direction U U'] = sdu in
-let {ENT':[g ⊢ enrich T' T'+]}[g ⊢ ex_en ENT'] = total_enrich [g ⊢ T'] in
-let {ENU':[g ⊢ enrich U' U'+]}[g ⊢ ex_en ENU'] = total_enrich [g ⊢ U'] in
-let [g ⊢ SDT+]:[g ⊢ same_direction T+ T'+] = sdir_ccsk_to_ccskp sdt [g ⊢ ENT] [g ⊢ ENT'] in
-let [g ⊢ SDU+]:[g ⊢ same_direction U+ U'+] = sdir_ccsk_to_ccskp sdu [g ⊢ ENU] [g ⊢ ENU'] in
-let [g ⊢ ccsk_it T RT] = hr in
-let {ENRT:[g ⊢ enrich RT RT+]}[g ⊢ ex_en ENRT] = total_enrich [g ⊢ RT] in
-let [g ⊢ HR+]:[g ⊢ inv_tr T+ RT+] = inv_ccsk_to_ccskp hr [g ⊢ ENT] [g ⊢ ENRT] in
-let [g ⊢ it T+ RT+] = [g ⊢ HR+] in
-let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in ?}%
-% Needed: show that T+ and T'+, obtained enriching transitions with same keyed label, have same proof label
-% Usually not true, but it may be true in the case of diamonds
-;
-
-
-
-
-
-
 
 
 rec key_in_source_of_fstep_cl: (g:ctx) [g ⊢ fstep_cl X T Y] → [g ⊢ key T K[]] → [g ⊢ notin K[] X] =
@@ -1880,4 +1848,150 @@ case [g ⊢ T1] of
              let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
              let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
              let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_sync HL4[..]] in [g ⊢ refplc]))
+;
+
+
+rec unique_pr_labels_in_diamonds_fcfo: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_op Y T2 Z]}
+  {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
+  [g ⊢ key T4 K[]] → [g ⊢ eqplc T1 T4] =
+?
+;
+
+rec unique_pr_labels_in_diamonds_fofc: (g:ctx) {F1:[g ⊢ fstep_op X (open \a.T1) Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
+  {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_op W (open \a.T4) Z]} [g,a:names ⊢ key T1 K[]] →
+  [g,a:names ⊢ key T4 K[]] → [g,a:names ⊢ eqplc T1 T4] =
+?
+;
+
+rec unique_pr_labels_in_diamonds_fofo: (g:ctx) {F1:[g ⊢ fstep_op X (open \a.T1) Y]} {F2:[g ⊢ fstep_op Y T2 Z]}
+  {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_op W (open \a.T4) Z]} [g,a:names ⊢ key T1 K[]] →
+  [g,a:names ⊢ key T4 K[]] → [g,a:names ⊢ eqplc T1 T4] =
+?
+;
+
+rec unique_pr_labels_in_diamonds: (g:ctx) {S1:[g ⊢ step X T1 Y]} {S2:[g ⊢ step Y T2 Z]}
+  {S3:[g ⊢ step X T3 W]} {S4:[g ⊢ step W T4 Z]} [g ⊢ same_direction S1 S4] →
+  [g ⊢ same_direction S3 S2] → [g ⊢ key_pl T1 K[]] → [g ⊢ key_pl T4 K[]] → [g ⊢ eqpl T1 T4] =
+/ total s1 (unique_pr_labels_in_diamonds _ _ _ _ _ _ _ _ _ _ s1 _ _ _ _ _ _ _) /
+mlam S1,S2,S3,S4 ⇒ fn sd1,sd2,h1,h4 ⇒ case sd1 of
+  | [g ⊢ sdf (ftc_cl F1) (ftc_cl F4)] ⇒ let [g ⊢ key_cl H1] = h1 in
+    let [g ⊢ key_cl H4] = h4 in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+  | [g ⊢ sdf (ftc_cl F1) (ftc_op F4)] ⇒ let [g ⊢ key_cl H1] = h1 in
+    let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+  | [g ⊢ sdf (ftc_op F1) (ftc_cl F4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
+    let [g ⊢ key_cl H4] = h4 in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+  | [g ⊢ sdf (ftc_op F1) (ftc_op F4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
+    let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+  | [g ⊢ sdb (btc_cl B1) (btc_cl B4)] ⇒ let [g ⊢ key_cl H1] = h1 in
+    let [g ⊢ key_cl H4] = h4 in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+  | [g ⊢ sdb (btc_cl B1) (btc_op B4)] ⇒ let [g ⊢ key_cl H1] = h1 in
+    let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+  | [g ⊢ sdb (btc_op B1) (btc_cl B4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
+    let [g ⊢ key_cl H4] = h4 in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+  | [g ⊢ sdb (btc_op B1) (btc_op B4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
+    let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+;
+
+
+rec enrich_preserves_key: (g:ctx) (S:[g ⊢ ccsk.step X (ccsk.kl_base A K) Y]) (S+:[g ⊢ ccskp.step X T Y])
+ [g ⊢ enrich S S+] → [g ⊢ key_pl T K] =
+ ?
+ ;
+
+% Propagation of coinitial independence (PCI):
+% Given t:step X KL1 Y, u:step X KL2 Z, u':step Y KL2 W and t':step Z KL1 W,
+% where (t,t') and (u,u') have same direction,
+% if t and u are independent, then u' and inv_tr(t) are independent.
+rec ccsk_pci: (g:ctx) (T:[g ⊢ ccsk.step X KL1 Y]) (U:[g ⊢ ccsk.step X KL2 Z])
+  (U':[g ⊢ ccsk.step Y KL2 W]) (T':[g ⊢ ccsk.step Z KL1 W]) (RT:[g ⊢ ccsk.step Y KL1 X])
+  [g ⊢ ccsk_same_direction T T'] → [g ⊢ ccsk_same_direction U U'] → [g ⊢ ccsk_indep_tr T U] → 
+  [g ⊢ ccsk_inv_tr T RT] → [g ⊢ ccsk_indep_tr U' RT] =
+/ total (ccsk_pci _ _ _ _ _ _ _ t _ _ _ _ _ _) /
+fn sdt,sdu,i,hr ⇒ let [g ⊢ ccsk_ind_tr ENT ENU I _] = i in
+let [g ⊢ ENT]:[g ⊢ enrich T T+] = [g ⊢ ENT] in
+let [g ⊢ ENU]:[g ⊢ enrich U U+] = [g ⊢ ENU] in
+let [g ⊢ _]:[g ⊢ ccsk_same_direction T T'] = sdt in
+let [g ⊢ _]:[g ⊢ ccsk_same_direction U U'] = sdu in
+let {ENT':[g ⊢ enrich T' T'+]}[g ⊢ ex_en ENT'] = total_enrich [g ⊢ T'] in
+let {ENU':[g ⊢ enrich U' U'+]}[g ⊢ ex_en ENU'] = total_enrich [g ⊢ U'] in
+let [g ⊢ SDT+]:[g ⊢ same_direction T+ T'+] = sdir_ccsk_to_ccskp sdt [g ⊢ ENT] [g ⊢ ENT'] in
+let [g ⊢ SDU+]:[g ⊢ same_direction U+ U'+] = sdir_ccsk_to_ccskp sdu [g ⊢ ENU] [g ⊢ ENU'] in
+let [g ⊢ ccsk_it T RT] = hr in
+let {ENRT:[g ⊢ enrich RT RT+]}[g ⊢ ex_en ENRT] = total_enrich [g ⊢ RT] in
+let [g ⊢ HR+]:[g ⊢ inv_tr T+ RT+] = inv_ccsk_to_ccskp hr [g ⊢ ENT] [g ⊢ ENRT] in
+let [g ⊢ it T+ RT+] = [g ⊢ HR+] in
+let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in
+let [g ⊢ _]:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ T] in
+let [g ⊢ _]:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ U] in
+let [g ⊢ HT] = enrich_preserves_key [g ⊢ ENT] in
+let [g ⊢ HU] = enrich_preserves_key [g ⊢ ENU] in
+let [g ⊢ HT'] = enrich_preserves_key [g ⊢ ENT'] in
+let [g ⊢ HU'] = enrich_preserves_key [g ⊢ ENU'] in
+let [g ⊢ refpl] = unique_pr_labels_in_diamonds [_ ⊢ T+] [_ ⊢ U'+] [_ ⊢ U+] [_ ⊢ T'+] [_ ⊢ SDT+] [_ ⊢ SDU+] [_ ⊢ HT] [_ ⊢ HT'] in
+let [g ⊢ refpl] = unique_pr_labels_in_diamonds [_ ⊢ U+] [_ ⊢ T'+] [_ ⊢ T+] [_ ⊢ U'+] [_ ⊢ SDU+] [_ ⊢ SDT+] [_ ⊢ HU] [_ ⊢ HU'] in
+[g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
 ;
