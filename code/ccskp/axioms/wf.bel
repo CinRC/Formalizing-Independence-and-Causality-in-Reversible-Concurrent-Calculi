@@ -3,13 +3,13 @@
 % A binary relation < on a set X is well-founded if it contains no infinite descending chains  ... x_{n+1} < x_n < ... < x_1 < x_0.
 % Constructively, well-foundedness is typically defined via the inductive predicate of accessibility:
 % An element x of X is accessible if every element x' < x is accessible.
-% In other words, if x is accessible, then each chain ending with x_0 is finite.
+% In other words, if x is accessible, then each descending chain ending with x_0 is finite.
 % Well-foundedness of < is shown by proving that every element in X is accessible.
 % (Cf. e.g. the definitions of well-foundedness in Rocq and Agda, or “POPLMark reloaded: Mechanizing proofs by logical relations”
 % by A. Abel et al., doi:10.1017/S0956796819000170)
 
 % In our setting, X is the set of all processes and < is defined by:
-% P < Q iff there exists a combined transition t: P --[α]--> Q.
+% P < Q iff there exists a forward transition t: P --[α]--> Q.
 % To prove well-foundedness, we show that each process is accessible.
 
 % Type family encoding accessibility of CCSKP processes
