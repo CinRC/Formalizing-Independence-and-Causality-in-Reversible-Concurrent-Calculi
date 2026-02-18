@@ -1869,6 +1869,24 @@ rec unique_pr_labels_in_diamonds_fofo: (g:ctx) {F1:[g ⊢ fstep_op X (open \a.T1
 ?
 ;
 
+rec compat_pr_labels_in_diamonds_ccoc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
+  {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
+  [g ⊢ key T4 K[]] → [g ⊢ false] =
+?
+;
+%{
+rec compat_pr_labels_in_diamonds_ccoc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
+  {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
+  [g ⊢ key T2 M[]] → [g ⊢ key T3 M[]] → [g ⊢ key T4 K[]] → [g ⊢ false] =
+?
+;}%
+
+rec compat_pr_labels_in_diamonds_cocc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_op Y T2 Z]}
+  {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
+  [g ⊢ key T4 K[]] → [g ⊢ false] =
+?
+;
+
 rec unique_pr_labels_in_diamonds: (g:ctx) {S1:[g ⊢ step X T1 Y]} {S2:[g ⊢ step Y T2 Z]}
   {S3:[g ⊢ step X T3 W]} {S4:[g ⊢ step W T4 Z]} [g ⊢ same_direction S1 S4] →
   [g ⊢ same_direction S3 S2] → [g ⊢ key_pl T1 K[]] → [g ⊢ key_pl T4 K[]] → [g ⊢ eqpl T1 T4] =
@@ -1877,13 +1895,17 @@ mlam S1,S2,S3,S4 ⇒ fn sd1,sd2,h1,h4 ⇒ case sd1 of
   | [g ⊢ sdf (ftc_cl F1) (ftc_cl F4)] ⇒ let [g ⊢ key_cl H1] = h1 in
     let [g ⊢ key_cl H4] = h4 in (case sd2 of
        | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ impossible compat_pr_labels_in_diamonds_cocc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4]
+       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ impossible compat_pr_labels_in_diamonds_ccoc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4]
        | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
+         let [g ⊢ F3] = loop_lemma_two_cl [g ⊢ B3] in
+         let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F4] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl]
        | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
        | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
+         let [g ⊢ F3] = loop_lemma_two_op [g ⊢ B3] in
+         let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F4] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl])
   | [g ⊢ sdf (ftc_cl F1) (ftc_op F4)] ⇒ let [g ⊢ key_cl H1] = h1 in
     let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
        | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
@@ -1906,24 +1928,34 @@ mlam S1,S2,S3,S4 ⇒ fn sd1,sd2,h1,h4 ⇒ case sd1 of
        | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
   | [g ⊢ sdf (ftc_op F1) (ftc_op F4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
     let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
        | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
        | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofo [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
+         let [g ⊢ F3] = loop_lemma_two_cl [g ⊢ B3] in
+         let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofc [_ ⊢ F4] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl]
        | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
        | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
+         let [g ⊢ F3] = loop_lemma_two_op [g ⊢ B3] in
+         let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofo [_ ⊢ F4] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl])
   | [g ⊢ sdb (btc_cl B1) (btc_cl B4)] ⇒ let [g ⊢ key_cl H1] = h1 in
-    let [g ⊢ key_cl H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+    let [g ⊢ key_cl H4] = h4 in
+    let [g ⊢ F1] = loop_lemma_two_cl [g ⊢ B1] in
+    let [g ⊢ F4] = loop_lemma_two_cl [g ⊢ B4] in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
        | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
        | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F1] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
+         let [g ⊢ F3] = loop_lemma_two_cl [g ⊢ B3] in 
+         let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F4] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl]
        | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
        | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
+         let [g ⊢ F3] = loop_lemma_two_op [g ⊢ B3] in
+         let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F4] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl])
   | [g ⊢ sdb (btc_cl B1) (btc_op B4)] ⇒ let [g ⊢ key_cl H1] = h1 in
     let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
        | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
@@ -1945,22 +1977,33 @@ mlam S1,S2,S3,S4 ⇒ fn sd1,sd2,h1,h4 ⇒ case sd1 of
        | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
        | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
   | [g ⊢ sdb (btc_op B1) (btc_op B4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
-    let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
+    let [g ⊢ key_op \a.H4] = h4 in
+    let [g ⊢ F1] = loop_lemma_two_op [g ⊢ B1] in
+    let [g ⊢ F4] = loop_lemma_two_op [g ⊢ B4] in (case sd2 of
+       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofc [_ ⊢ F1] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
        | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
        | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
+       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofo [_ ⊢ F1] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
+       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
+         let [g ⊢ F3] = loop_lemma_two_cl [g ⊢ B3] in
+         let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofc [_ ⊢ F4] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl]
        | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
        | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
+       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
+         let [g ⊢ F3] = loop_lemma_two_op [g ⊢ B3] in
+         let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofo [_ ⊢ F4] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl])
 ;
 
 
 rec enrich_preserves_key: (g:ctx) (S:[g ⊢ ccsk.step X (ccsk.kl_base A K) Y]) (S+:[g ⊢ ccskp.step X T Y])
- [g ⊢ enrich S S+] → [g ⊢ key_pl T K] =
- ?
- ;
+  [g ⊢ enrich S S+] → [g ⊢ key_pl T K] =
+/ total en (enrich_preserves_key _ _ _ _ _ _ _ _ en) /
+fn en ⇒ case en of
+  | [g ⊢ enfc (en_fc _ _ _ H)] ⇒ [g ⊢ key_cl H]
+  | [g ⊢ enfo (en_fo _ _ \a.H)] ⇒ [g ⊢ key_op \a.H]
+  | [g ⊢ enbc (en_bc _ _ _ H)] ⇒ [g ⊢ key_cl H]
+  | [g ⊢ enbo (en_bo _ _ \a.H)] ⇒ [g ⊢ key_op \a.H]
+;
 
 % Propagation of coinitial independence (PCI):
 % Given t:step X KL1 Y, u:step X KL2 Z, u':step Y KL2 W and t':step Z KL1 W,
