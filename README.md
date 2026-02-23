@@ -252,3 +252,5 @@ opam install --deps-only ./beluga.opam
     * `independence.bel`: … independent proof labels
 
 The `.github\workflows\` repository contains workflows used to build automatically the code and run the tests.
+The `beluga_cloc_config.txt` file is a configuration file for [cloc](https://github.com/AlDanial/cloc) to count lines of code.
+
