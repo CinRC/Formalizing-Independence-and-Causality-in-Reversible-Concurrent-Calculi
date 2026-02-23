@@ -1,4 +1,5 @@
 beluga
-    filter remove_matches ^%
+    filter remove_between_general %{ %}
+    filter remove_matches ^\s*%
     extension bel
     3rd_gen_scale 5.00
