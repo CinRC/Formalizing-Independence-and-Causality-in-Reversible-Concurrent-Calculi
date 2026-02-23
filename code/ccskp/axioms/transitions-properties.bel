@@ -227,7 +227,7 @@ fn sd,od ⇒ case sd of
 % that will be proved below.
 
 
-% Auxiliary lemmas for BTI
+%%% Auxiliary lemmas for BTI
 
 % If a key K does not occur in a process, and such process makes a backward closed transition
 % labelled by T, then K is different from key(T).
@@ -373,7 +373,7 @@ fn i ⇒ case i of
 
 
 
-% Auxiliary lemmas for SP
+%%% Auxiliary lemmas for SP
 
 % If a process X makes a closed forward transition F into the process X',
 % and a key K does not occur in X' (i.e., notin K X' holds), then K does
@@ -556,7 +556,6 @@ fn i ⇒ case i of
   | [g,a:names ⊢ i_s3 I1 I2] ⇒ let [g,a:names,b:names ⊢ I1'] = ind_rename [_ ⊢ I1] in
     let [g,a:names,b:names ⊢ I2'] = ind_rename [_ ⊢ I2] in [_ ⊢ i_s3 I1' I2']
 ;
-
 
 
 %%% Auxiliary lemmas for IRE
@@ -886,8 +885,6 @@ fn bs1,bs2 ⇒ case bs1 of
   | [g ⊢ bo F1]:[g ⊢ bstep _ (p_op (open \a.T)) _] ⇒ let [g,a:names ⊢ ex_k H] = total_key [_ ⊢ T] in
     let [g ⊢ bo F2] = bs2 in impossible no_composable_bw_tr_with_same_key [g ⊢ bo F1] [g ⊢ bo F2] [g ⊢ key_op \a.H] [g ⊢ key_op \a.H]
 ;
-
-
 
 % Given a combined transition t, t and inv_tr(t) have opposite directions.
 rec inv_tr_have_opp_direction: (g:ctx) (S1:[g ⊢ step X1 T1 X1']) (S2:[g ⊢ step X2 T2 X2'])
