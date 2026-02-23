@@ -1,0 +1,4 @@
+beluga
+    filter remove_matches ^%
+    extension bel
+    3rd_gen_scale 5.00
