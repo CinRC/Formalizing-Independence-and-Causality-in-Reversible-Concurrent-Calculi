@@ -492,6 +492,100 @@ fn f,h ⇒ case f of
 ;
 
 
+% Given a forward closed transition F: X --[A K]--> Y, the target process Y contains the key K.
+% More precisely, we prove that notin K Y gives a contradiction.
+rec key_in_target_of_fstep: (g:ctx) [g ⊢ ccsk.fstep X (kl_base A K[]) Y] → [g ⊢ notin K[] Y] → [g ⊢ false] =
+/ total f (key_in_target_of_fstep _ _ _ _ _ f _) /
+fn f,n ⇒ case f of
+  | [g ⊢ fs_pref _] ⇒ let [g ⊢ not_kpref I _] = n in impossible irreflexive_neq [g ⊢ I]
+  | [g ⊢ fs_kpref F _] ⇒ let [g ⊢ not_kpref _ N] = n in
+    impossible key_in_target_of_fstep [g ⊢ F] [g ⊢ N]
+  | [g ⊢ fs_suml F D] ⇒ let [g ⊢ not_sum N _] = n in
+    impossible key_in_target_of_fstep [g ⊢ F] [g ⊢ N]
+  | [g ⊢ fs_sumr F D] ⇒ let [g ⊢ not_sum _ N] = n in
+    impossible key_in_target_of_fstep [g ⊢ F] [g ⊢ N]
+  | [g ⊢ fs_parl F _] ⇒ let [g ⊢ not_par N _] = n in
+    impossible key_in_target_of_fstep [g ⊢ F] [g ⊢ N]
+  | [g ⊢ fs_parr F _] ⇒ let [g ⊢ not_par _ N] = n in
+    impossible key_in_target_of_fstep [g ⊢ F] [g ⊢ N]
+  | [g ⊢ fs_synl F _] ⇒ let [g ⊢ not_par N _] = n in
+    impossible key_in_target_of_fstep [g ⊢ F] [g ⊢ N]
+  | [g ⊢ fs_synr F _] ⇒ let [g ⊢ not_par N _] = n in
+    impossible key_in_target_of_fstep [g ⊢ F] [g ⊢ N]
+  | [g ⊢ fs_nu \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    impossible key_in_target_of_fstep [_ ⊢ F] [_ ⊢ N]
+;
+
+rec unique_diamonds_ff: (g:ctx) {T:[g ⊢ ccsk.fstep X KL1 Y]} {U:[g ⊢ ccsk.fstep X KL2 Z]}
+  {U1:[g ⊢ ccsk.fstep Y KL2 W1]} {T1:[g ⊢ ccsk.fstep Z KL1 W1]}
+  {U2:[g ⊢ ccsk.fstep Y KL2 W2]} {T2:[g ⊢ ccsk.fstep Z KL1 W2]}
+  [g ⊢ eqp W1 W2] =
+/ total t (unique_diamonds_ff _ _ _ _ _ _ _ _ t _ _ _ _ _) /
+mlam T,U,U1,T1,U2,T2 ⇒ case [_ ⊢ T] of
+  | [g ⊢ fs_pref _] ⇒ let [g ⊢ fs_pref _] = [g ⊢ U] in
+    let [g ⊢ fs_kpref FU1 N] = [g ⊢ U1] in
+    let [g ⊢ fs_kpref FT1 _] = [g ⊢ T1] in
+    impossible irreflexive_neq [g ⊢ N]
+  | [g ⊢ fs_kpref FT _] ⇒ let [g ⊢ fs_kpref FU _] = [g ⊢ U] in
+    let [g ⊢ fs_kpref FU1 _] = [g ⊢ U1] in
+    let [g ⊢ fs_kpref FT1 _] = [g ⊢ T1] in
+    let [g ⊢ fs_kpref FU2 _] = [g ⊢ U2] in
+    let [g ⊢ fs_kpref FT2 _] = [g ⊢ T2] in
+    let [g ⊢ refp] = unique_diamonds_ff [g ⊢ FT] [g ⊢ FU] [g ⊢ FU1] [g ⊢ FT1] [g ⊢ FU2] [g ⊢ FT2] in [g ⊢ refp]
+  | [g ⊢ fs_suml FT _] ⇒ (case [g ⊢ U] of
+      | [g ⊢ fs_suml FU _] ⇒ (case [g ⊢ U1] of
+           | [g ⊢ fs_suml FU1 _] ⇒ (case [g ⊢ T1] of
+                | [g ⊢ fs_suml FT1 _] ⇒ (case [g ⊢ U2] of
+                     | [g ⊢ fs_suml FU2 _] ⇒ (case [g ⊢ T2] of
+                          | [g ⊢ fs_suml FT2 _] ⇒ let [g ⊢ refp] = unique_diamonds_ff [g ⊢ FT] [g ⊢ FU] [g ⊢ FU1] [g ⊢ FT1] [g ⊢ FU2] [g ⊢ FT2] in [g ⊢ refp]
+                          | [g ⊢ fs_sumr FT2 DT2] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DT2])
+                     | [g ⊢ fs_sumr FU2 DU2] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU2])
+                          | [g ⊢ fs_sumr FT2 DT2] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DT2])
+           | [g ⊢ fs_sumr FU1 DU1] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU1])
+      | [g ⊢ fs_sumr FU DU] ⇒ ?)
+  | [g ⊢ fs_sumr FT _] ⇒ ?
+  | [g ⊢ fs_parl FT NT] ⇒ (case [g ⊢ U] of
+       | [g ⊢ fs_parl FU NU] ⇒ (case [g ⊢ U1] of
+            | [g ⊢ fs_parl FU1 NU1] ⇒ ?%inductive case and impossible cases
+            | [g ⊢ fs_parr FU1 NU1] ⇒ (case [g ⊢ T1] of
+                 | [g ⊢ fs_parl FT1 NT1] ⇒ impossible target_is_not_source [g ⊢ fw FU1]
+                 | [g ⊢ fs_parr FT1 NT1] ⇒ impossible key_in_target_of_fstep [g ⊢ FT] [g ⊢ NT1]
+                 | [g ⊢ fs_synl FLT1 FRT1] ⇒ ?%impossible
+                 | [g ⊢ fs_synr FLT1 FRT1] ⇒ ?)%impossible
+            | [g ⊢ fs_synl FLU1 FRU1] ⇒ ?%maybe inductive case and impossible cases
+            | [g ⊢ fs_synr FLU1 FRU1] ⇒ ?)
+       | [g ⊢ fs_parr FU NU] ⇒ (case [g ⊢ U1] of
+            | [g ⊢ fs_parl FU1 NU1] ⇒ ?
+            | [g ⊢ fs_parr FU1 NU1] ⇒ (case [g ⊢ T1] of
+                 | [g ⊢ fs_parl FT1 NT1] ⇒ (case [g ⊢ U2] of
+                      | [g ⊢ fs_parl FU2 NU2] ⇒ ?
+                      | [g ⊢ fs_parr FU2 NU2] ⇒ (case [g ⊢ T2] of
+                           | [g ⊢ fs_parl FT2 NT2] ⇒ [g ⊢ refp]
+                           | [g ⊢ fs_parr FT2 NT2] ⇒ ?
+                           | [g ⊢ fs_synl FLT2 FRT2] ⇒ ?
+                           | [g ⊢ fs_synr FLT2 FRT2] ⇒ ?)
+                      | [g ⊢ fs_synl FLU2 FRU2] ⇒ ?
+                      | [g ⊢ fs_synr FLU2 FRU2] ⇒ ?)
+                 | [g ⊢ fs_parr FT1 NT1] ⇒ ?
+                 | [g ⊢ fs_synl FLT1 FRT1] ⇒ ?
+                 | [g ⊢ fs_synr FLT1 FRT1] ⇒ ?)
+            | [g ⊢ fs_synl FLU1 FRU1] ⇒ ?
+            | [g ⊢ fs_synr FLU1 FRU1] ⇒ ?)
+       | [g ⊢ fs_synl FLU FRU] ⇒ ?
+       | [g ⊢ fs_synr FLU FRU] ⇒ ?)
+  | [g ⊢ fs_parr FT _] ⇒ ?
+  | [g ⊢ fs_synl FLT FRT] ⇒ ?
+  | [g ⊢ fs_synr FLT FRT] ⇒ ?
+  | [g ⊢ fs_nu \a.FT] ⇒ ?
+;
+%{
+(case [g ⊢ U] of
+       | [g ⊢ fs_parl FU NU] ⇒ ?
+       | [g ⊢ fs_parr FU NU] ⇒ ?
+       | [g ⊢ fs_synl FLU FRU] ⇒ ?
+       | [g ⊢ fs_synr FLU FRU] ⇒ ?)
+}%
+%{
 
 rec unique_pr_labels_in_diamonds_fcfc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
   {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
@@ -1873,14 +1967,14 @@ rec compat_pr_labels_in_diamonds_ccoc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:
   {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
   [g ⊢ key T4 K[]] → [g ⊢ false] =
 ?
-;
+;}%
 %{
 rec compat_pr_labels_in_diamonds_ccoc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
   {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
   [g ⊢ key T2 M[]] → [g ⊢ key T3 M[]] → [g ⊢ key T4 K[]] → [g ⊢ false] =
 ?
 ;}%
-
+%{
 rec compat_pr_labels_in_diamonds_cocc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_op Y T2 Z]}
   {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
   [g ⊢ key T4 K[]] → [g ⊢ false] =
@@ -2037,4 +2131,4 @@ let [g ⊢ HU'] = enrich_preserves_key [g ⊢ ENU'] in
 let [g ⊢ refpl] = unique_pr_labels_in_diamonds [_ ⊢ T+] [_ ⊢ U'+] [_ ⊢ U+] [_ ⊢ T'+] [_ ⊢ SDT+] [_ ⊢ SDU+] [_ ⊢ HT] [_ ⊢ HT'] in
 let [g ⊢ refpl] = unique_pr_labels_in_diamonds [_ ⊢ U+] [_ ⊢ T'+] [_ ⊢ T+] [_ ⊢ U'+] [_ ⊢ SDU+] [_ ⊢ SDT+] [_ ⊢ HU] [_ ⊢ HU'] in
 [g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
-;
+;}%
