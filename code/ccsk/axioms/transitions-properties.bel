@@ -606,46 +606,60 @@ rec ccsk_pci: (g:ctx) (T:[g ⊢ ccsk.step X KL1 Y]) (U:[g ⊢ ccsk.step X KL2 Z]
   [g ⊢ ccsk_same_direction T T'] → [g ⊢ ccsk_same_direction U U'] → [g ⊢ ccsk_indep_tr T U] → 
   [g ⊢ ccsk_inv_tr T RT] → [g ⊢ ccsk_indep_tr U' RT] =
 / total (ccsk_pci _ _ _ _ _ _ _ t _ _ _ _ _ _) /
-fn sdt,sdu,i,hr ⇒ let [g ⊢ ccsk_ind_tr ENT ENU I _] = i in
+fn sdt,sdu,i,hr ⇒ 
+% Inversion on i: ENT and ENU map t and u to their enriched versions t+ and u+; I denotes independence of t+ and u+
+let [g ⊢ ccsk_ind_tr ENT ENU I _] = i in
+% t,u,u' and t' are not explicit parameters of the function ccsk_pci.
+% We give an explicit annotation of the types of ENT and ENU, to obtain explicit names T+ and U+ for t+ and u+
 let [g ⊢ ENT]:[g ⊢ enrich T T+] = [g ⊢ ENT] in
 let [g ⊢ ENU]:[g ⊢ enrich U U+] = [g ⊢ ENU] in
+% Same as before, to have T' and U' for t' and u'
 let [g ⊢ _]:[g ⊢ ccsk_same_direction T T'] = sdt in
 let [g ⊢ _]:[g ⊢ ccsk_same_direction U U'] = sdu in
+% We apply the map from ccsk to ccskp to obtain T'+ and U'+, enriched transitions of T' and U'.
+% Unfortunately, we cannot yet state that their proof labels are the same as those of T+ and U+ and conclude 
 let {ENT':[g ⊢ enrich T' T'+]}[g ⊢ ex_en ENT'] = total_enrich [g ⊢ T'] in
 let {ENU':[g ⊢ enrich U' U'+]}[g ⊢ ex_en ENU'] = total_enrich [g ⊢ U'] in
+% We apply the auxiliary lemma sdir_ccsk_to_ccskp to infer that T+ and T'+ have same direction. Same for U+ and U'+
 let [g ⊢ SDT+]:[g ⊢ same_direction T+ T'+] = sdir_ccsk_to_ccskp sdt [g ⊢ ENT] [g ⊢ ENT'] in
 let [g ⊢ SDU+]:[g ⊢ same_direction U+ U'+] = sdir_ccsk_to_ccskp sdu [g ⊢ ENU] [g ⊢ ENU'] in
+% Inversion on hr to obtain RT, the reverse transition of T
 let [g ⊢ ccsk_it T RT] = hr in
+% Map from ccsk to ccskp to enrich RT
 let {ENRT:[g ⊢ enrich RT RT+]}[g ⊢ ex_en ENRT] = total_enrich [g ⊢ RT] in
+% Auxiliary lemmas to infer that RT+, the enriched transition of the reverse transition of T, is the reverse of the enriched transition of T
 let [g ⊢ HR+]:[g ⊢ inv_tr T+ RT+] = inv_ccsk_to_ccskp hr [g ⊢ ENT] [g ⊢ ENRT] in
 let [g ⊢ it T+ RT+] = [g ⊢ HR+] in
+% Symmetry of independence relation
 let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in
-let [g ⊢ _]:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ T] in
-let [g ⊢ _]:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ U] in
-let [g ⊢ HT] = enrich_preserves_key [g ⊢ ENT] in
-let [g ⊢ HU] = enrich_preserves_key [g ⊢ ENU] in
-let [g ⊢ HT'] = enrich_preserves_key [g ⊢ ENT'] in
-let [g ⊢ HU'] = enrich_preserves_key [g ⊢ ENU'] in
+% Square lemma on T+,U+, to obtain a second pair of transitions U''+,T''+ closing the square.
+% Such transitions have the same proof labels as T+,U+. In the following, we want to prove
+% that U''+,T''+ coincide with U'+ and T'+
 let [g ⊢ sq U''+ T''+ SDT'+ SDU'+] = sp [g ⊢ T+] [g ⊢ U+] [g ⊢ ind_tr I (ct _ _ (st_s* U+))] in
+% Map from ccskp to ccsk to forget U''+,T''+,T+ and U+. We denote U'',T'' the "forgotten" versions of the first two
 let {FGT'':[g ⊢ forget T''+ T'']}[g ⊢ ex_fg FGT''] = total_forget [g ⊢ T''+] in
-let {FGU'':[g ⊢ forget U''+ U'']}[g ⊢ ex_fg FGU''] = total_forget [g ⊢ U''+] in 
-let [g ⊢ T'']:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ T''] in
-let [g ⊢ U'']:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ U''] in
+let {FGU'':[g ⊢ forget U''+ U'']}[g ⊢ ex_fg FGU''] = total_forget [g ⊢ U''+] in
 let [g ⊢ ex_fg FGT] = total_forget [g ⊢ T+] in
 let [g ⊢ ex_fg FGU] = total_forget [g ⊢ U+] in
-let [g ⊢ ex_fg FGU'] = total_forget [g ⊢ U'+] in
-let [g ⊢ ex_fg FGT'] = total_forget [g ⊢ T'+] in
+% Bijection between ccsk and ccskp, to infer that forget(enrich(T))=T and forget(enrich(U))=U
 let [g ⊢ refs] = inverse_two [g ⊢ ENT] [g ⊢ FGT] in
 let [g ⊢ refs] = inverse_two [g ⊢ ENU] [g ⊢ FGU] in
-let [g ⊢ refs] = inverse_two [g ⊢ ENU'] [g ⊢ FGU'] in
-let [g ⊢ refs] = inverse_two [g ⊢ ENT'] [g ⊢ FGT'] in
+% Auxiliary lemma to infer that T and T'' have the same keys. Same for U and U''
 let [g ⊢ refkl] = injective_forget_on_labels [g ⊢ FGT] [g ⊢ FGT''] in
 let [g ⊢ refkl] = injective_forget_on_labels [g ⊢ FGU] [g ⊢ FGU''] in
+% We apply the auxiliary lemma sdir_ccskp_to_ccsk to infer that T and T'' have same direction. Same for U and U''
 let [g ⊢ SDU'] = sdir_ccskp_to_ccsk [g ⊢ SDU'+] [g ⊢ FGU] [g ⊢ FGU''] in
 let [g ⊢ SDT'] = sdir_ccskp_to_ccsk [g ⊢ SDT'+] [g ⊢ FGT] [g ⊢ FGT''] in
+% Auxiliary lemma unique_diamonds, to prove that the two diamonds formed by T and U
+% with the pairs (U',T') and (U'',T'') have the same target process.
+% As a consequence, also the two enriched diamonds have the same target process
 let [g ⊢ refp] = unique_diamonds [g ⊢ T] [g ⊢ U] [g ⊢ U'] [g ⊢ T'] [g ⊢ U''] [g ⊢ T''] sdt sdu [_ ⊢ SDT'] [_ ⊢ SDU'] in
+% For the uniqueness of ccskp transitions sharing the same source and target,
+% we obtain that U''+,T''+ coincide with U'+ and T'+
 let [g ⊢ refst] = unique_step [g ⊢ T'+] [g ⊢ T''+] in
-let [g ⊢ refst] = unique_step [g ⊢ U'+] [g ⊢ U''+] in [g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
+let [g ⊢ refst] = unique_step [g ⊢ U'+] [g ⊢ U''+] in
+% We conclude by observing that I' is the required witness of the independence of U' and RT
+[g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
 ;
 
 %{
