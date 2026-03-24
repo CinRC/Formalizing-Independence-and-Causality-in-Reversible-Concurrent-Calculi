@@ -578,6 +578,76 @@ mlam T,U,U1,T1,U2,T2 ⇒ case [_ ⊢ T] of
   | [g ⊢ fs_synr FLT FRT] ⇒ ?
   | [g ⊢ fs_nu \a.FT] ⇒ ?
 ;
+
+rec unique_diamonds: (g:ctx) {T:[g ⊢ ccsk.step X KL1 Y]} {U:[g ⊢ ccsk.step X KL2 Z]}
+  {U1:[g ⊢ ccsk.step Y KL2 W1]} {T1:[g ⊢ ccsk.step Z KL1 W1]}
+  {U2:[g ⊢ ccsk.step Y KL2 W2]} {T2:[g ⊢ ccsk.step Z KL1 W2]}
+  [g ⊢ ccsk_same_direction T T1] → [g ⊢ ccsk_same_direction U U1] →
+  [g ⊢ ccsk_same_direction T T2] → [g ⊢ ccsk_same_direction U U2] → [g ⊢ eqp W1 W2] =
+?
+;
+
+rec enrich_preserves_key: (g:ctx) (S:[g ⊢ ccsk.step X (ccsk.kl_base A K) Y]) (S+:[g ⊢ ccskp.step X T Y])
+  [g ⊢ enrich S S+] → [g ⊢ key_pl T K] =
+/ total en (enrich_preserves_key _ _ _ _ _ _ _ _ en) /
+fn en ⇒ case en of
+  | [g ⊢ enfc (en_fc _ _ _ H)] ⇒ [g ⊢ key_cl H]
+  | [g ⊢ enfo (en_fo _ _ \a.H)] ⇒ [g ⊢ key_op \a.H]
+  | [g ⊢ enbc (en_bc _ _ _ H)] ⇒ [g ⊢ key_cl H]
+  | [g ⊢ enbo (en_bo _ _ \a.H)] ⇒ [g ⊢ key_op \a.H]
+;
+
+% Propagation of coinitial independence (PCI):
+% Given t:step X KL1 Y, u:step X KL2 Z, u':step Y KL2 W and t':step Z KL1 W,
+% where (t,t') and (u,u') have same direction,
+% if t and u are independent, then u' and inv_tr(t) are independent.
+rec ccsk_pci: (g:ctx) (T:[g ⊢ ccsk.step X KL1 Y]) (U:[g ⊢ ccsk.step X KL2 Z])
+  (U':[g ⊢ ccsk.step Y KL2 W]) (T':[g ⊢ ccsk.step Z KL1 W]) (RT:[g ⊢ ccsk.step Y KL1 X])
+  [g ⊢ ccsk_same_direction T T'] → [g ⊢ ccsk_same_direction U U'] → [g ⊢ ccsk_indep_tr T U] → 
+  [g ⊢ ccsk_inv_tr T RT] → [g ⊢ ccsk_indep_tr U' RT] =
+/ total (ccsk_pci _ _ _ _ _ _ _ t _ _ _ _ _ _) /
+fn sdt,sdu,i,hr ⇒ let [g ⊢ ccsk_ind_tr ENT ENU I _] = i in
+let [g ⊢ ENT]:[g ⊢ enrich T T+] = [g ⊢ ENT] in
+let [g ⊢ ENU]:[g ⊢ enrich U U+] = [g ⊢ ENU] in
+let [g ⊢ _]:[g ⊢ ccsk_same_direction T T'] = sdt in
+let [g ⊢ _]:[g ⊢ ccsk_same_direction U U'] = sdu in
+let {ENT':[g ⊢ enrich T' T'+]}[g ⊢ ex_en ENT'] = total_enrich [g ⊢ T'] in
+let {ENU':[g ⊢ enrich U' U'+]}[g ⊢ ex_en ENU'] = total_enrich [g ⊢ U'] in
+let [g ⊢ SDT+]:[g ⊢ same_direction T+ T'+] = sdir_ccsk_to_ccskp sdt [g ⊢ ENT] [g ⊢ ENT'] in
+let [g ⊢ SDU+]:[g ⊢ same_direction U+ U'+] = sdir_ccsk_to_ccskp sdu [g ⊢ ENU] [g ⊢ ENU'] in
+let [g ⊢ ccsk_it T RT] = hr in
+let {ENRT:[g ⊢ enrich RT RT+]}[g ⊢ ex_en ENRT] = total_enrich [g ⊢ RT] in
+let [g ⊢ HR+]:[g ⊢ inv_tr T+ RT+] = inv_ccsk_to_ccskp hr [g ⊢ ENT] [g ⊢ ENRT] in
+let [g ⊢ it T+ RT+] = [g ⊢ HR+] in
+let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in
+let [g ⊢ _]:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ T] in
+let [g ⊢ _]:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ U] in
+let [g ⊢ HT] = enrich_preserves_key [g ⊢ ENT] in
+let [g ⊢ HU] = enrich_preserves_key [g ⊢ ENU] in
+let [g ⊢ HT'] = enrich_preserves_key [g ⊢ ENT'] in
+let [g ⊢ HU'] = enrich_preserves_key [g ⊢ ENU'] in
+let [g ⊢ sq U''+ T''+ SDT'+ SDU'+] = sp [g ⊢ T+] [g ⊢ U+] [g ⊢ ind_tr I (ct _ _ (st_s* U+))] in
+let {FGT'':[g ⊢ forget T''+ T'']}[g ⊢ ex_fg FGT''] = total_forget [g ⊢ T''+] in
+let {FGU'':[g ⊢ forget U''+ U'']}[g ⊢ ex_fg FGU''] = total_forget [g ⊢ U''+] in 
+let [g ⊢ T'']:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ T''] in
+let [g ⊢ U'']:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ U''] in
+let [g ⊢ ex_fg FGT] = total_forget [g ⊢ T+] in
+let [g ⊢ ex_fg FGU] = total_forget [g ⊢ U+] in
+let [g ⊢ ex_fg FGU'] = total_forget [g ⊢ U'+] in
+let [g ⊢ ex_fg FGT'] = total_forget [g ⊢ T'+] in
+let [g ⊢ refs] = inverse_two [g ⊢ ENT] [g ⊢ FGT] in
+let [g ⊢ refs] = inverse_two [g ⊢ ENU] [g ⊢ FGU] in
+let [g ⊢ refs] = inverse_two [g ⊢ ENU'] [g ⊢ FGU'] in
+let [g ⊢ refs] = inverse_two [g ⊢ ENT'] [g ⊢ FGT'] in
+let [g ⊢ refkl] = injective_forget_on_labels [g ⊢ FGT] [g ⊢ FGT''] in
+let [g ⊢ refkl] = injective_forget_on_labels [g ⊢ FGU] [g ⊢ FGU''] in
+let [g ⊢ SDU'] = sdir_ccskp_to_ccsk [g ⊢ SDU'+] [g ⊢ FGU] [g ⊢ FGU''] in
+let [g ⊢ SDT'] = sdir_ccskp_to_ccsk [g ⊢ SDT'+] [g ⊢ FGT] [g ⊢ FGT''] in
+let [g ⊢ refp] = unique_diamonds [g ⊢ T] [g ⊢ U] [g ⊢ U'] [g ⊢ T'] [g ⊢ U''] [g ⊢ T''] sdt sdu [_ ⊢ SDT'] [_ ⊢ SDU'] in
+let [g ⊢ refst] = unique_step [g ⊢ T'+] [g ⊢ T''+] in
+let [g ⊢ refst] = unique_step [g ⊢ U'+] [g ⊢ U''+] in [g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
+;
+
 %{
 (case [g ⊢ U] of
        | [g ⊢ fs_parl FU NU] ⇒ ?
