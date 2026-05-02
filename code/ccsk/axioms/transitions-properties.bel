@@ -458,7 +458,7 @@ mlam F1,F2,F3,F4 ⇒ fn i ⇒ case [_ ⊢ F1] of
   | [g ⊢ fw (fo_nu_op \a.F1)] ⇒ ?}%
 
 
-
+%{
 rec key_in_source_of_fstep_cl: (g:ctx) [g ⊢ fstep_cl X T Y] → [g ⊢ key T K[]] → [g ⊢ notin K[] X] =
 / total f (key_in_source_of_fstep_cl _ _ _ _ _ f _) /
 fn f,h ⇒ case f of
@@ -489,7 +489,8 @@ fn f,h ⇒ case f of
     let [g ⊢ N2] = key_in_source_of_fstep_cl [g ⊢ FR] [g ⊢ HR] in [g ⊢ not_par N1 N2]
   | [g ⊢ fc_nu \a.F] ⇒ let [g ⊢ H] = h in
     let [g,a:names ⊢ N] = key_in_source_of_fstep_cl [_ ⊢ F] [_ ⊢ H[..]] in [g ⊢ not_nu \a.N]
-;
+; 
+}%
 
 
 % Given a forward closed transition F: X --[A K]--> Y, the target process Y contains the key K.
@@ -540,10 +541,28 @@ mlam T,U,U1,T1,U2,T2 ⇒ case [_ ⊢ T] of
                           | [g ⊢ fs_suml FT2 _] ⇒ let [g ⊢ refp] = unique_diamonds_ff [g ⊢ FT] [g ⊢ FU] [g ⊢ FU1] [g ⊢ FT1] [g ⊢ FU2] [g ⊢ FT2] in [g ⊢ refp]
                           | [g ⊢ fs_sumr FT2 DT2] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DT2])
                      | [g ⊢ fs_sumr FU2 DU2] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU2])
-                          | [g ⊢ fs_sumr FT2 DT2] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DT2])
-           | [g ⊢ fs_sumr FU1 DU1] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU1])
-      | [g ⊢ fs_sumr FU DU] ⇒ ?)
-  | [g ⊢ fs_sumr FT _] ⇒ ?
+                | [g ⊢ fs_sumr _ DT1] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DT1])
+           | [g ⊢ fs_sumr _ DU1] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU1])
+      | [g ⊢ fs_sumr FU DU] ⇒ (case [g ⊢ U1] of
+           | [g ⊢ fs_suml FU1 DU1] ⇒ (case [g ⊢ T1] of
+                     | [g ⊢ fs_suml _ _] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DU1]
+                     | [g ⊢ fs_sumr _ _] ⇒ impossible target_is_not_std [g ⊢ FU1] [g ⊢ DU])
+           | [g ⊢ fs_sumr _ DU1] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU1]))
+  | [g ⊢ fs_sumr FT _] ⇒ (case [g ⊢ U] of
+      | [g ⊢ fs_suml FU DU] ⇒ (case [g ⊢ U1] of
+           | [g ⊢ fs_suml _ DU1] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU1]
+           | [g ⊢ fs_sumr FU1 DU1] ⇒ (case [g ⊢ T1] of
+                     | [g ⊢ fs_suml _ _] ⇒ impossible target_is_not_std [g ⊢ FU1] [g ⊢ DU]
+                     | [g ⊢ fs_sumr _ _] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DU1]))
+      | [g ⊢ fs_sumr FU _] ⇒ (case [g ⊢ U1] of
+           | [g ⊢ fs_suml _ DU1] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU1]
+           | [g ⊢ fs_sumr FU1 _] ⇒ (case [g ⊢ T1] of
+                | [g ⊢ fs_suml FT1 DT1] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DT1]
+                | [g ⊢ fs_sumr FT1 _] ⇒ (case [g ⊢ U2] of
+                     | [g ⊢ fs_suml FU2 DU2] ⇒ impossible target_is_not_std [g ⊢ FT] [g ⊢ DU2]
+                     | [g ⊢ fs_sumr FU2 _] ⇒ (case [g ⊢ T2] of
+                          | [g ⊢ fs_suml FT2 DT2] ⇒ impossible target_is_not_std [g ⊢ FU] [g ⊢ DT2]
+                          | [g ⊢ fs_sumr FT2 _] ⇒ let [g ⊢ refp] = unique_diamonds_ff [g ⊢ FT] [g ⊢ FU] [g ⊢ FU1] [g ⊢ FT1] [g ⊢ FU2] [g ⊢ FT2] in [g ⊢ refp])))))
   | [g ⊢ fs_parl FT NT] ⇒ (case [g ⊢ U] of
        | [g ⊢ fs_parl FU NU] ⇒ (case [g ⊢ U1] of
             | [g ⊢ fs_parl FU1 NU1] ⇒ ?%inductive case and impossible cases
@@ -576,7 +595,12 @@ mlam T,U,U1,T1,U2,T2 ⇒ case [_ ⊢ T] of
   | [g ⊢ fs_parr FT _] ⇒ ?
   | [g ⊢ fs_synl FLT FRT] ⇒ ?
   | [g ⊢ fs_synr FLT FRT] ⇒ ?
-  | [g ⊢ fs_nu \a.FT] ⇒ ?
+  | [g ⊢ fs_nu \a.FT] ⇒ let [g ⊢ fs_nu \a.FU] = [g ⊢ U] in
+    let [g ⊢ fs_nu \a.FU1] = [g ⊢ U1] in
+    let [g ⊢ fs_nu \a.FT1] = [g ⊢ T1] in
+    let [g ⊢ fs_nu \a.FU2] = [g ⊢ U2] in
+    let [g ⊢ fs_nu \a.FT2] = [g ⊢ T2] in
+    let [g,a:names ⊢ refp] = unique_diamonds_ff [_ ⊢ FT] [_ ⊢ FU] [_ ⊢ FU1] [_ ⊢ FT1] [_ ⊢ FU2] [_ ⊢ FT2] in [g ⊢ refp]
 ;
 
 rec unique_diamonds: (g:ctx) {T:[g ⊢ ccsk.step X KL1 Y]} {U:[g ⊢ ccsk.step X KL2 Z]}
