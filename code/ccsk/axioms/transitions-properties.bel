@@ -493,7 +493,7 @@ fn f,h ⇒ case f of
 }%
 
 
-% Given a forward closed transition F: X --[A K]--> Y, the target process Y contains the key K.
+% Given a forward transition F: X --[A K]--> Y, the target process Y contains the key K.
 % More precisely, we prove that notin K Y gives a contradiction.
 rec key_in_target_of_fstep: (g:ctx) [g ⊢ ccsk.fstep X (kl_base A K[]) Y] → [g ⊢ notin K[] Y] → [g ⊢ false] =
 / total f (key_in_target_of_fstep _ _ _ _ _ f _) /
@@ -517,6 +517,8 @@ fn f,n ⇒ case f of
     impossible key_in_target_of_fstep [_ ⊢ F] [_ ⊢ N]
 ;
 
+
+%{
 rec unique_diamonds_ff: (g:ctx) {T:[g ⊢ ccsk.fstep X KL1 Y]} {U:[g ⊢ ccsk.fstep X KL2 Z]}
   {U1:[g ⊢ ccsk.fstep Y KL2 W1]} {T1:[g ⊢ ccsk.fstep Z KL1 W1]}
   {U2:[g ⊢ ccsk.fstep Y KL2 W2]} {T2:[g ⊢ ccsk.fstep Z KL1 W2]}
@@ -619,8 +621,9 @@ fn en ⇒ case en of
   | [g ⊢ enfo (en_fo _ _ \a.H)] ⇒ [g ⊢ key_op \a.H]
   | [g ⊢ enbc (en_bc _ _ _ H)] ⇒ [g ⊢ key_cl H]
   | [g ⊢ enbo (en_bo _ _ \a.H)] ⇒ [g ⊢ key_op \a.H]
-;
+;}%
 
+%{
 % Propagation of coinitial independence (PCI):
 % Given t:step X KL1 Y, u:step X KL2 Z, u':step Y KL2 W and t':step Z KL1 W,
 % where (t,t') and (u,u') have same direction,
@@ -685,1558 +688,159 @@ let [g ⊢ refst] = unique_step [g ⊢ U'+] [g ⊢ U''+] in
 % We conclude by observing that I' is the required witness of the independence of U' and RT
 [g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
 ;
-
-%{
-(case [g ⊢ U] of
-       | [g ⊢ fs_parl FU NU] ⇒ ?
-       | [g ⊢ fs_parr FU NU] ⇒ ?
-       | [g ⊢ fs_synl FLU FRU] ⇒ ?
-       | [g ⊢ fs_synr FLU FRU] ⇒ ?)
 }%
+
+% If a process X makes a forward transition F into the process X',
+% and a key K does not occur in X' (i.e., notin K X' holds), then K does
+% not occur in X as well (notin K X).
+rec notin_propagates_to_source: (g:ctx) [g ⊢ ccsk.fstep X T X'] →
+   [g ⊢ notin K[] X'] → [g ⊢ notin K[] X] =
+/ total f (notin_propagates_to_source _ _ _ _ _ f _) /
+fn f,n ⇒ case f of
+  | [g ⊢ fs_pref _] ⇒ let [g ⊢ not_kpref _ N] = n in [g ⊢ not_pref N]
+  | [g ⊢ fs_kpref F _] ⇒ let [g ⊢ not_kpref I N] = n in
+    let [g ⊢ N'] = notin_propagates_to_source [g ⊢ F] [g ⊢ N] in [g ⊢ not_kpref I N']
+  | [g ⊢ fs_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source [g ⊢ F1] [g ⊢ N1] in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fs_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_source [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fs_parl F1 _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source [g ⊢ F1] [g ⊢ N1] in [g ⊢ not_par N1' N2]
+  | [g ⊢ fs_parr F2 _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_source [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1 N2']
+  | [g ⊢ fs_synl F1 F2] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source [g ⊢ F1] [g ⊢ N1] in
+    let [g ⊢ N2'] = notin_propagates_to_source [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1' N2']
+  | [g ⊢ fs_synr F1 F2] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_source [g ⊢ F1] [g ⊢ N1] in
+    let [g ⊢ N2'] = notin_propagates_to_source [g ⊢ F2] [g ⊢ N2] in [g ⊢ not_par N1' N2']
+  | [g ⊢ fs_nu \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g,a:names ⊢ N'] = notin_propagates_to_source [_ ⊢ F] [_ ⊢ N] in [g ⊢ not_nu \a.N']
+;
+
+% If a process X makes a forward transition F via the keyed label A[M]
+% into the process X', a key K does not occur in X (i.e., notin K X holds),
+% and M is different from K, then K does not occur in X' (notin K X').
+rec notin_propagates_to_target: (g:ctx) [g ⊢ ccsk.fstep X (kl_base A M[]) X'] →
+  [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
+/ total f (notin_propagates_to_target _ _ _ _ _ _ f _ _) /
+fn f,n,i ⇒ case f of
+  | [g ⊢ fs_pref _] ⇒ let [g ⊢ not_pref N] = n in
+    let [g ⊢ I] = symmetric_neq i in [g ⊢ not_kpref I N]
+  | [g ⊢ fs_kpref F _] ⇒ let [g ⊢ not_kpref I' N] = n in
+    let [g ⊢ N'] = notin_propagates_to_target [g ⊢ F] [g ⊢ N] i in [g ⊢ not_kpref I' N']
+  | [g ⊢ fs_suml F1 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_target [g ⊢ F1] [g ⊢ N1] i in [g ⊢ not_sum N1' N2]
+  | [g ⊢ fs_sumr F2 _] ⇒ let [g ⊢ not_sum N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_target [g ⊢ F2] [g ⊢ N2] i in [g ⊢ not_sum N1 N2']
+  | [g ⊢ fs_parl F1 _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_target [g ⊢ F1] [g ⊢ N1] i in [g ⊢ not_par N1' N2]
+  | [g ⊢ fs_parr F2 _] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N2'] = notin_propagates_to_target [g ⊢ F2] [g ⊢ N2] i in [g ⊢ not_par N1 N2']
+  | [g ⊢ fs_synl F1 F2] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_target [g ⊢ F1] [g ⊢ N1] i in
+    let [g ⊢ N2'] = notin_propagates_to_target [g ⊢ F2] [g ⊢ N2] i in [g ⊢ not_par N1' N2']
+  | [g ⊢ fs_synr F1 F2] ⇒ let [g ⊢ not_par N1 N2] = n in
+    let [g ⊢ N1'] = notin_propagates_to_target [g ⊢ F1] [g ⊢ N1] i in
+    let [g ⊢ N2'] = notin_propagates_to_target [g ⊢ F2] [g ⊢ N2] i in [g ⊢ not_par N1' N2']
+  | [g ⊢ fs_nu \a.F] ⇒ let [g ⊢ not_nu \a.N] = n in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ N'] = notin_propagates_to_target [_ ⊢ F] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
+;
+
+rec unique_diamonds_ff: (g:ctx) {F1:[g ⊢ ccsk.fstep X (kl_base A K[]) Z1]} {F2:[g ⊢ ccsk.fstep X (kl_base A K[]) Z2]}
+  {G1:[g ⊢ ccsk.fstep Y (kl_base B M[]) Z1]} {G2:[g ⊢ ccsk.fstep Y (kl_base B M[]) Z2]} [g ⊢ neq K[] M[]] → [g ⊢ eqp Z1 Z2] =
+/ total t1 (unique_diamonds_ff _ _ _ _ _ _ _ _ _ t1 _ _ _ _) /
+mlam F1,F2,G1,G2 ⇒ fn i ⇒ case [_ ⊢ F1] of
+  | [g ⊢ fs_pref DF1] ⇒ (case [g ⊢ G1] of
+       | [g ⊢ fs_pref _] ⇒ impossible irreflexive_neq i
+       | [g ⊢ fs_kpref G1' _] ⇒ impossible target_is_not_std [g ⊢ G1'] [g ⊢ DF1])
+  | [g ⊢ fs_kpref F1' _] ⇒ (case [g ⊢ G1] of
+       | [g ⊢ fs_pref DG1] ⇒ impossible target_is_not_std [g ⊢ F1'] [g ⊢ DG1]
+       | [g ⊢ fs_kpref G1' _] ⇒ let [g ⊢ fs_kpref F2' _] = [g ⊢ F2] in
+         let [g ⊢ fs_kpref G2' _] = [g ⊢ G2] in 
+         let [g ⊢ refp] = unique_diamonds_ff [g ⊢ F1'] [g ⊢ F2'] [g ⊢ G1'] [g ⊢ G2'] i in [g ⊢ refp])
+  | [g ⊢ fs_suml FL1 DF1] ⇒ (case [g ⊢ G1] of
+       | [g ⊢ fs_suml GL1 _] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fs_suml FL2 DF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 _] ⇒ 
+                   let [g ⊢ refp] = unique_diamonds_ff [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_sumr GR2 _] ⇒ impossible target_is_not_std [g ⊢ GR2] [g ⊢ DF2])
+            | [g ⊢ fs_sumr FR2 DF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 _] ⇒ impossible target_is_not_std [g ⊢ GL2] [g ⊢ DF2]
+                 | [g ⊢ fs_sumr GR2 _] ⇒ let [g ⊢ I]:[g ⊢ neq K[] M[]] = i in
+                   let [g ⊢ N] = no_key_in_std [⊢ M] [g ⊢ DF2] in 
+                   let [g ⊢ N'] = notin_propagates_to_target [g ⊢ FL1] [g ⊢ N] [g ⊢ I] in
+                   impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ N']))
+       | [g ⊢ fs_sumr GR1 _] ⇒ impossible target_is_not_std [g ⊢ GR1] [g ⊢ DF1])
+  | [g ⊢ fs_sumr FR1 DF1] ⇒ (case [g ⊢ G1] of
+       | [g ⊢ fs_suml GL1 _] ⇒ impossible target_is_not_std [g ⊢ GL1] [g ⊢ DF1]
+       | [g ⊢ fs_sumr GR1 _] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fs_suml FL2 DF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 _] ⇒ let [g ⊢ I]:[g ⊢ neq K[] M[]] = i in
+                   let [g ⊢ N] = no_key_in_std [⊢ M] [g ⊢ DF2] in 
+                   let [g ⊢ N'] = notin_propagates_to_target [g ⊢ FR1] [g ⊢ N] [g ⊢ I] in
+                   impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ N']
+                 | [g ⊢ fs_sumr GR2 _] ⇒ impossible target_is_not_std [g ⊢ GR2] [g ⊢ DF2])
+            | [g ⊢ fs_sumr FR2 DF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 _] ⇒ impossible target_is_not_std [g ⊢ GL2] [g ⊢ DF2]
+                 | [g ⊢ fs_sumr GR2 _] ⇒ 
+                   let [g ⊢ refp] = unique_diamonds_ff [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp])))
+  | [g ⊢ fs_parl FL1 NF1] ⇒ (case [g ⊢ G1] of
+       | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fs_parl FL2 _] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 _] ⇒ 
+                   let [g ⊢ refp] = unique_diamonds_ff [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 _] ⇒ impossible target_is_not_source [g ⊢ fw GR2]
+                 | [g ⊢ fs_synl _ GR2] ⇒ impossible target_is_not_source [g ⊢ fw GR2]
+                 | [g ⊢ fs_synr _ GR2] ⇒ impossible target_is_not_source [g ⊢ fw GR2])
+            | [g ⊢ fs_parr FR2 NF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl _ _] ⇒ impossible target_is_not_source [g ⊢ fw FR2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 _] ⇒ let [g ⊢ N] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF2] in
+                   let [g ⊢ N'] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ N] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 _] ⇒ let [g ⊢ N] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF2] in
+                   let [g ⊢ N'] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ N] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N'])
+            | [g ⊢ fs_synl FL2 FR2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ NF1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N])
+            | [g ⊢ fs_synr FL2 FR2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ NF1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]))
+       | [g ⊢ fs_parr GR1 NG1] ⇒ ?
+       | [g ⊢ fs_synl GL1 GR1] ⇒ ?
+       | [g ⊢ fs_synr GL1 GR1] ⇒ ?)
+  | [g ⊢ fs_parr FR1 NF1] ⇒ ?
+  | [g ⊢ fs_synl FL1 FR1] ⇒ ?
+  | [g ⊢ fs_synr FL1 FR1] ⇒ ?
+  | [g ⊢ fs_nu \a.F1'] ⇒ ?
+;
+
 %{
+(case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ ?
+       | [g ⊢ fs_parr FR2 NF2] ⇒ ?
+       | [g ⊢ fs_synl FL2 FR2] ⇒ ?
+       | [g ⊢ fs_synr FL2 FR2] ⇒ ?)
 
-rec unique_pr_labels_in_diamonds_fcfc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
-  {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
-  [g ⊢ key T4 K[]] → [g ⊢ eqplc T1 T4] =
-/ total {x f1} (unique_pr_labels_in_diamonds_fcfc _ x _ _ _ _ _ _ _ _ f1 _ _ _ _ _) /
-mlam F1,F2,F3,F4 ⇒ fn h1,h4 ⇒ let [g ⊢ F1]:[g ⊢ fstep_cl X T1 Y] = [_ ⊢ F1] in
-let [g ⊢ F4]:[g ⊢ fstep_cl W T4 Z] = [g ⊢ F4] in
-case [g ⊢ T1] of
-  | [g ⊢ pr_base A M[]] ⇒ let [g ⊢ key_base] = h1 in (case [g ⊢ T4] of
-       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in
-         (case [g ⊢ F1] of
-           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_pref _] = [g ⊢ F3] in 
-             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
-             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl key_base]
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_base] in [g ⊢ refplc])
-       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_pref _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
-             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_suml H4)]
-           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_suml H4[..]])
-       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_pref _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
-             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_sumr H4)]
-           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_sumr H4[..]])
-       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_pref _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
-             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_parl H4)]
-           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_parl H4[..]])
-       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_pref _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
-             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_parr H4)]
-           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_parr H4[..]])
-       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_pref _] ⇒ let [g ⊢ fc_kpref _ _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_pref _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref _ _ _] = [g ⊢ F4] in
-             impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl key_base] [g ⊢ key_cl (key_sync HL4)]
-           | [g ⊢ fc_kpref F1' H1' N1] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_base] [_ ⊢ key_sync HL4[..]]))
-  | [g ⊢ pr_suml T1'] ⇒ let [g ⊢ key_suml H1] = h1 in (case [g ⊢ T4] of
-       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
-           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
-           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
-                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
-                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
-           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
-             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
-             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_base])
-       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml F2' _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml F3' _] ⇒ let [g ⊢ fc_suml F4' _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
-                     | [g ⊢ fc_sumr F3' _] ⇒ let [g ⊢ fc_suml _ D4] = [g ⊢ F4] in
-                       impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4])
-                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_suml H4[..]] in [g ⊢ refplc])
-       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml F2' _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml F3' _] ⇒ let [g ⊢ fc_sumr _ D4] = [g ⊢ F4] in
-                       impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4]
-                     | [g ⊢ fc_sumr _ _] ⇒ let [g ⊢ fc_sumr _ D4] = [g ⊢ F4] in
-                       impossible target_is_not_std_fc [g ⊢ F2'] [g ⊢ D4])
-                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_sumr H4[..]])
-       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
-                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4])
-                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_parl H4[..]])
-       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
-                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4])
-                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_parr H4[..]])
-       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_suml F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
-                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4])
-                | [g ⊢ fc_sumr _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_suml H1[..]] [_ ⊢ key_sync HL4[..]]))
-  | [g ⊢ pr_sumr T1'] ⇒ let [g ⊢ key_sumr H1] = h1 in (case [g ⊢ T4] of
-       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
-           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
-           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
-                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
-                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
-           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
-             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
-             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_base])
-       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
-                | [g ⊢ fc_sumr F2' _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml _ _] ⇒ let [g ⊢ fc_suml _ D4] = [g ⊢ F4] in
-                       impossible target_is_not_std_fc [g ⊢ F2'] [g ⊢ D4]
-                     | [g ⊢ fc_sumr F3' _] ⇒ let [g ⊢ fc_suml _ D4] = [g ⊢ F4] in
-                       impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4]))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_suml H4[..]])
-       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
-                | [g ⊢ fc_sumr F2' _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml F3' _] ⇒ let [g ⊢ fc_sumr _ D4] = [g ⊢ F4] in
-                       impossible target_is_not_std_fc [g ⊢ F3'] [g ⊢ D4]
-                     | [g ⊢ fc_sumr F3' _] ⇒ let [g ⊢ fc_sumr F4' _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_sumr H4[..]] in [g ⊢ refplc])
-       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
-                | [g ⊢ fc_sumr _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
-                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4]))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_parl H4[..]])
-       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
-                | [g ⊢ fc_sumr _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
-                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4]))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_parr H4[..]])
-       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_sumr F1' _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_suml _ D2] ⇒ impossible target_is_not_std_fc [g ⊢ F1'] [g ⊢ D2]
-                | [g ⊢ fc_sumr _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_suml _ _] ⇒ impossible [g ⊢ F4]
-                     | [g ⊢ fc_sumr _ _] ⇒ impossible [g ⊢ F4]))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sumr H1[..]] [_ ⊢ key_sync HL4[..]]))
-  | [g ⊢ pr_parl T1'] ⇒ let [g ⊢ key_parl H1] = h1 in (case [g ⊢ T4] of
-       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
-           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
-           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
-                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
-                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
-           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
-             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
-             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_base])
-       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_suml H4[..]])
-       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_sumr H4[..]])
-       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parl F1' H1' N1] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_parl F2' _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl F3' _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
-                     | [g ⊢ fc_parr F3' _ _] ⇒ let [g ⊢ fc_parl _ _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ F3']
-                     | [g ⊢ fc_synl _ _ _ FR3 _ _] ⇒ let [g ⊢ fc_parl _ _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ FR3]
-                     | [g ⊢ fc_synr _ _ _ FR3 _ _] ⇒ let [g ⊢ fc_parl _ _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ FR3])
-                | [g ⊢ fc_parr F2' H2 N2] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl _ _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ F2']
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F1'] [g ⊢ F4'] in [g ⊢ refplc]
-                     | [g ⊢ fc_synl FL3 _ HL3 FR3 _ HR3] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F2'] [g ⊢ FR3] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR3] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ F4'] [g ⊢ N2])
-                     | [g ⊢ fc_synr FL3 _ HL3 FR3 _ HR3] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F2'] [g ⊢ FR3] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HR3] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ F4'] [g ⊢ N2]))
-                | [g ⊢ fc_synl FL2 _ HL2 FR2 _ HR2] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl F3' _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ FR2]
-                     | [g ⊢ fc_parr F3' H3 N3] ⇒ let [g ⊢ fc_parl F4' H4' _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FR2] [g ⊢ F3'] in
-                       let [g ⊢ refk]:[g ⊢ eqk N[] N[]] = functional_key [g ⊢ HR2] [g ⊢ H3] in
-                       let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1'] [g ⊢ fc FL2] [g ⊢ key_cl H1] [g ⊢ key_cl HL2]
-                          | [g ⊢ c_neq I] ⇒ impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ F4'] [g ⊢ H4] [g ⊢ N3] [g ⊢ I]))
-                     | [g ⊢ fc_synl FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
-                     | [g ⊢ fc_synr FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc])
-                | [g ⊢ fc_synr FL2 _ HL2 FR2 _ HR2] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl F3' _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ FR2]
-                     | [g ⊢ fc_parr F3' H3 N3] ⇒ let [g ⊢ fc_parl F4' H4' _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FR2] [g ⊢ F3'] in
-                       let [g ⊢ refk]:[g ⊢ eqk N[] N[]] = functional_key [g ⊢ HR2] [g ⊢ H3] in
-                       let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1'] [g ⊢ fc FL2] [g ⊢ key_cl H1] [g ⊢ key_cl HL2]
-                          | [g ⊢ c_neq I] ⇒ impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ F4'] [g ⊢ H4] [g ⊢ N3] [g ⊢ I]))
-                     | [g ⊢ fc_synl FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
-                     | [g ⊢ fc_synr FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_parl H4[..]] in [g ⊢ refplc])
-       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parl F1' H1' N1] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ F4']
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F4'] [g ⊢ H4] [g ⊢ N1]
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F4'] [g ⊢ H4] [g ⊢ N1]
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F4'] [g ⊢ H4] [g ⊢ N1])
-                | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] [g ⊢ N4]
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] [g ⊢ N4]
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] [g ⊢ N4]
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] [g ⊢ N4])
-                | [g ⊢ fc_synl FL2 _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4]))
-                | [g ⊢ fc_synr FL2 _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_parr H4[..]])
-       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parl F1' H1' N1] ⇒ let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ H1] [g ⊢ H1'] in
-             (case [g ⊢ F2] of
-                | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] [g ⊢ N1]
-                          | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] [g ⊢ N1])
-                     | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] [g ⊢ N1]
-                          | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] [g ⊢ N1])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] [g ⊢ N1]
-                          | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] [g ⊢ N1])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] [g ⊢ N1]
-                          | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] [g ⊢ N1]))
-                | [g ⊢ fc_parr F2' H2 _] ⇒ let [g ⊢ H2]:[g ⊢ key _ N[]] = [g ⊢ H2] in
-                  (case dec_eq_keys [g] [⊢ N] [⊢ K] of
-                     | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_parl H1)] [g ⊢ key_cl (key_parr H2)]
-                     | [g ⊢ c_neq I] ⇒ (case [g ⊢ F3] of
-                          | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I]))))
-                | [g ⊢ fc_synl _ _ HL2 FR2 _ HR2] ⇒ let [g ⊢ HR2]:[g ⊢ key _ N[]] = [g ⊢ HR2] in
-                  (case dec_eq_keys [g] [⊢ N] [⊢ K] of
-                     | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_parl H1)] [g ⊢ key_cl (key_sync HL2)]
-                     | [g ⊢ c_neq I] ⇒ (case [g ⊢ F3] of
-                          | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I]))))
-                | [g ⊢ fc_synr _ _ HL2 FR2 _ HR2] ⇒ let [g ⊢ HR2]:[g ⊢ key _ N[]] = [g ⊢ HR2] in
-                  (case dec_eq_keys [g] [⊢ N] [⊢ K] of
-                     | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_parl H1)] [g ⊢ key_cl (key_sync HL2)]
-                     | [g ⊢ c_neq I] ⇒ (case [g ⊢ F3] of
-                          | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_target_fc [g ⊢ FR2] [g ⊢ HR2] [g ⊢ N1] [g ⊢ I])))))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parl H1[..]] [_ ⊢ key_sync HL4[..]]))
-  | [g ⊢ pr_parr T1'] ⇒ let [g ⊢ key_parr H1] = h1 in (case [g ⊢ T4] of
-       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
-           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
-           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
-                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
-                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
-           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
-             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
-             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_base])
-       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_suml H4[..]])
-       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_sumr H4[..]])
-       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parr F1' H1' N1] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] [g ⊢ N4]
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] [g ⊢ N4]
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] [g ⊢ N4]
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] [g ⊢ N4])
-                | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ H1] [g ⊢ H1'] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F4'] [g ⊢ H4] [g ⊢ N1]
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ F4']
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F4'] [g ⊢ H4] [g ⊢ N1]
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' _ _] = [g ⊢ F4] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F4'] [g ⊢ H4] [g ⊢ N1])
-                | [g ⊢ fc_synl _ _ _ FR2 _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4]))
-                | [g ⊢ fc_synr _ _ _ FR2 _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ F1'] [g ⊢ H1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_parl H4[..]])
-       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parr F1' H1' N1] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_parl F2' H2 N2] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F1'] [g ⊢ F4'] in [g ⊢ refplc]
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr _ _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ F2']
-                     | [g ⊢ fc_synl FL3 _ HL3 FR3 _ HR3] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F2'] [g ⊢ FL3] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HL3] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ F4'] [g ⊢ N2])
-                     | [g ⊢ fc_synr FL3 _ HL3 FR3 _ HR3] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ F2'] [g ⊢ FL3] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H2] [g ⊢ HL3] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ F4'] [g ⊢ N2]))
-                | [g ⊢ fc_parr F2' _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl F3' _ _] ⇒ let [g ⊢ fc_parr _ _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ F3']
-                     | [g ⊢ fc_parr F3' _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
-                     | [g ⊢ fc_synl FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ FL3]
-                     | [g ⊢ fc_synr FL3 _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ FL3])
-                | [g ⊢ fc_synl FL2 _ HL2 FR2 _ HR2] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl F3' H3 N3] ⇒ let [g ⊢ fc_parr F4' H4' _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FL2] [g ⊢ F3'] in
-                       let [g ⊢ refk]:[g ⊢ eqk N[] N[]] = functional_key [g ⊢ HL2] [g ⊢ H3] in
-                       let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1'] [g ⊢ fc FR2] [g ⊢ key_cl H1] [g ⊢ key_cl HR2]
-                          | [g ⊢ c_neq I] ⇒ impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ F4'] [g ⊢ H4] [g ⊢ N3] [g ⊢ I]))
-                     | [g ⊢ fc_parr F3' _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ FL2]
-                     | [g ⊢ fc_synl _ _ _ FR3 _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ FR2] [_ ⊢ FR3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
-                     | [g ⊢ fc_synr _ _ _ FR3 _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ FR2] [_ ⊢ FR3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc])
-                | [g ⊢ fc_synr FL2 _ HL2 FR2 _ HR2] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl F3' H3 N3] ⇒ let [g ⊢ fc_parr F4' H4' _] = [g ⊢ F4] in
-                       let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FL2] [g ⊢ F3'] in
-                       let [g ⊢ refk]:[g ⊢ eqk N[] N[]] = functional_key [g ⊢ HL2] [g ⊢ H3] in
-                       let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1'] [g ⊢ fc FR2] [g ⊢ key_cl H1] [g ⊢ key_cl HR2]
-                          | [g ⊢ c_neq I] ⇒ impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ F4'] [g ⊢ H4] [g ⊢ N3] [g ⊢ I]))
-                     | [g ⊢ fc_parr F3' _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       impossible target_is_not_source_fc [g ⊢ FL2]
-                     | [g ⊢ fc_synl _ _ _ FR3 _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ FR2] [_ ⊢ FR3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]
-                     | [g ⊢ fc_synr _ _ _ FR3 _ _] ⇒ let [g ⊢ fc_parr F4' _ _] = [g ⊢ F4] in
-                       let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ FR2] [_ ⊢ FR3] [_ ⊢ F4'] [g ⊢ H1] [g ⊢ H4] in [g ⊢ refplc]))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_parr H4[..]] in [g ⊢ refplc])
-       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_parr F1' H1' N1] ⇒ let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ H1] [g ⊢ H1'] in
-             (case [g ⊢ F2] of
-                | [g ⊢ fc_parl F2' H2 _] ⇒ let [g ⊢ H2]:[g ⊢ key _ N[]] = [g ⊢ H2] in
-                  (case dec_eq_keys [g] [⊢ N] [⊢ K] of
-                     | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_parr H1)] [g ⊢ key_cl (key_parl H2)]
-                     | [g ⊢ c_neq I] ⇒ (case [g ⊢ F3] of
-                          | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ F2'] [g ⊢ H2] [g ⊢ N1] [g ⊢ I]))))
-                | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N1]
-                          | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N1])
-                     | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N1]
-                          | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N1])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N1]
-                          | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N1])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N1]
-                          | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] [g ⊢ N1]))
-                | [g ⊢ fc_synl FL2 _ HL2 _ _ HR2] ⇒ let [g ⊢ HL2]:[g ⊢ key _ N[]] = [g ⊢ HL2] in
-                  (case dec_eq_keys [g] [⊢ N] [⊢ K] of
-                     | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_parr H1)] [g ⊢ key_cl (key_sync HL2)]
-                     | [g ⊢ c_neq I] ⇒ (case [g ⊢ F3] of
-                          | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I]))))
-                | [g ⊢ fc_synr FL2 _ HL2 _ _ HR2] ⇒ let [g ⊢ HL2]:[g ⊢ key _ N[]] = [g ⊢ HL2] in
-                  (case dec_eq_keys [g] [⊢ N] [⊢ K] of
-                     | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_parr H1)] [g ⊢ key_cl (key_sync HL2)]
-                     | [g ⊢ c_neq I] ⇒ (case [g ⊢ F3] of
-                          | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I]))
-                          | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] [g ⊢ N1] [g ⊢ I])))))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_parr H1[..]] [_ ⊢ key_sync HL4[..]]))
-  | [g ⊢ pr_sync TL1 TR1] ⇒ let [g ⊢ key_sync HL1] = h1 in (case [g ⊢ T4] of
-       | [g ⊢ pr_base B N[]] ⇒ let [g ⊢ key_base] = h4 in (case [g ⊢ F4] of
-           | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F3]
-           | [g ⊢ fc_kpref F4' _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_pref _] ⇒ impossible [g ⊢ F1]
-                | [g ⊢ fc_kpref F3' _ _] ⇒ let [g ⊢ fc_kpref F1' _ _] = [g ⊢ F1] in
-                  let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4)
-           | [g ⊢ fc_nu \a.F4'] ⇒ let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in
-             let [g ⊢ fc_nu \a.F1'] = [g ⊢ F1] in 
-             let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_base])
-       | [g ⊢ pr_suml T4'] ⇒ let [g ⊢ key_suml H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
-           | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_suml H4[..]])
-       | [g ⊢ pr_sumr T4'] ⇒ let [g ⊢ key_sumr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
-           | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                | [g ⊢ fc_parl _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_parr _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible [g ⊢ F4]
-                | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible [g ⊢ F4])
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_sumr H4[..]])
-       | [g ⊢ pr_parl T4'] ⇒ let [g ⊢ key_parl H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_synl _ _ HL1' FR1 _ HR1] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL1] [g ⊢ HL1'] in
-             (case [g ⊢ F2] of
-                | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N4]
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N4]
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N4]
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N4])
-                | [g ⊢ fc_parr F2' _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4]))
-                | [g ⊢ fc_synl _ _ _ FR2 _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4]))
-                | [g ⊢ fc_synr _ _ _ FR2 _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])))
-           | [g ⊢ fc_synr _ _ HL1' FR1 _ HR1] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL1] [g ⊢ HL1'] in
-             (case [g ⊢ F2] of
-                | [g ⊢ fc_parl _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N4]
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N4]
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N4]
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N4])
-                | [g ⊢ fc_parr F2' _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4]))
-                | [g ⊢ fc_synl _ _ _ FR2 _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4]))
-                | [g ⊢ fc_synr _ _ _ FR2 _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parl _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FR1] [g ⊢ HR1] (notin_propagates_to_source_fc [g ⊢ FR2] [g ⊢ N4])))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_parl H4[..]])
-       | [g ⊢ pr_parr T4'] ⇒ let [g ⊢ key_parr H4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in impossible unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_synl FL1 _ HL1' _ _ _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_parl F2' _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4]))
-                | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N4]
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N4]
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N4]
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N4])
-                | [g ⊢ fc_synl FL2 _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4]))
-                | [g ⊢ fc_synr FL2 _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])))
-           | [g ⊢ fc_synr FL1 _ HL1' _ _ _] ⇒ (case [g ⊢ F2] of
-                | [g ⊢ fc_parl F2' _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ F2'] [g ⊢ N4]))
-                | [g ⊢ fc_parr _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N4]
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N4]
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N4]
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr F4' H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N4])
-                | [g ⊢ fc_synl FL2 _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4]))
-                | [g ⊢ fc_synr FL2 _ _ _ _ _] ⇒ (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synl _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])
-                     | [g ⊢ fc_synr _ _ _ _ _ _] ⇒ let [g ⊢ fc_parr _ H4' N4] = [g ⊢ F4] in
-                       let [g ⊢ refk] = functional_key [g ⊢ H4] [g ⊢ H4'] in
-                       impossible key_in_target_of_fstep_cl [g ⊢ FL1] [g ⊢ HL1] (notin_propagates_to_source_fc [g ⊢ FL2] [g ⊢ N4])))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             impossible unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_parr H4[..]])
-       | [g ⊢ pr_sync TL4 TR4] ⇒ let [g ⊢ key_sync HL4] = h4 in (case [g ⊢ F1] of
-           | [g ⊢ fc_kpref F1' _ _] ⇒ let [g ⊢ fc_kpref F2' _ _] = [g ⊢ F2] in
-             let [g ⊢ fc_kpref F3' _ _] = [g ⊢ F3] in
-             let [g ⊢ fc_kpref F4' _ _] = [g ⊢ F4] in unique_pr_labels_in_diamonds_fcfc [g ⊢ F1'] [g ⊢ F2'] [g ⊢ F3'] [g ⊢ F4'] h1 h4
-           | [g ⊢ fc_synl FL1 LL1 HL1' FR1 LR1 HR1] ⇒ let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ HL1] [g ⊢ HL1'] in
-             (case [g ⊢ F2] of
-                | [g ⊢ fc_parl F2' H2 _] ⇒ let [g ⊢ H2]:[g ⊢ key _ N[]] = [g ⊢ H2] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl F3' _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ _ FR4 _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FR1] [g ⊢ FR4] in [g ⊢ refplc]
-                          | [g ⊢ fc_synr FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4])
-                     | [g ⊢ fc_parr _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_parl H2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ N]) [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ N]) [g ⊢ I])))
-                     | [g ⊢ fc_synl _ _ HL3 FR3 _ HR3] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                       (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ FR4] (notin_propagates_to_target_fc [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N] [g ⊢ I])))
-                          | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ FR4] (notin_propagates_to_target_fc [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N] [g ⊢ I]))))
-                     | [g ⊢ fc_synr _ _ HL3 FR3 _ HR3] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                       (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ FR4] (notin_propagates_to_target_fc [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N] [g ⊢ I])))
-                          | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ FR4] (notin_propagates_to_target_fc [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N] [g ⊢ I])))))
-                | [g ⊢ fc_parr F2' H2 N2] ⇒ let [g ⊢ H2]:[g ⊢ key _ N[]] = [g ⊢ H2] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_parr H2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ N]) [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ N]) [g ⊢ I])))
-                     | [g ⊢ fc_parr F3' _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FR1] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ FR4] [g ⊢ HR1] [g ⊢ HR4] in
-                            let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FL1] [g ⊢ FL4] in [g ⊢ refplc]
-                          | [g ⊢ fc_synr _ _ HL4' FR4 LR4 HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FR1] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ FR4] [g ⊢ HR1] [g ⊢ HR4] in
-                            impossible functional_lab [g ⊢ LR1] [g ⊢ LR4])
-                     | [g ⊢ fc_synl FL3 _ HL3 _ _ _] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                       (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N] [g ⊢ I])))
-                          | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N] [g ⊢ I]))))
-                     | [g ⊢ fc_synr FL3 _ HL3 _ _ _] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                       (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N] [g ⊢ I])))
-                          | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N] [g ⊢ I])))))
-                | [g ⊢ fc_synl FL2 LL2 HL2 FR2 _ HR2] ⇒ let [g ⊢ HL2]:[g ⊢ key _ N[]] = [g ⊢ HL2] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_sync HL2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NR2] = key_in_source_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ NR2]) [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NR2] = key_in_source_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ NR2]) [g ⊢ I])))
-                     | [g ⊢ fc_parr _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_sync HL2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NL2] = key_in_source_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ NL2]) [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NL2] = key_in_source_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ NL2]) [g ⊢ I])))
-                     | [g ⊢ fc_synl FL3 _ _ FR3 _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FR1] [_ ⊢ FR2] [_ ⊢ FR3] [_ ⊢ FR4] [g ⊢ HR1] [g ⊢ HR4] in [g ⊢ refplc]
-                          | [g ⊢ fc_synr FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4])
-                     | [g ⊢ fc_synr FL3 LL3 HL3 FR3 _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                            let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ N] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL3] [_ ⊢ FL4] [_ ⊢ FL1] [_ ⊢ FL2] [g ⊢ HL3] [g ⊢ HL2] in
-                                 impossible functional_lab [g ⊢ LL2] [g ⊢ LL3]
-                               | [g ⊢ c_neq I1] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                                    | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                                    | [g ⊢ c_neq I2] ⇒ let [g ⊢ NQ] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                      impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ NQ] [g ⊢ I2]) [g ⊢ I1]))))
-                          | [g ⊢ fc_synr FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4]))
-                | [g ⊢ fc_synr FL2 LL2 HL2 FR2 _ HR2] ⇒ let [g ⊢ HL2]:[g ⊢ key _ N[]] = [g ⊢ HL2] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_sync HL2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NR2] = key_in_source_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ NR2]) [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NR2] = key_in_source_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ NR2]) [g ⊢ I])))
-                     | [g ⊢ fc_parr _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_sync HL2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NL2] = key_in_source_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ NL2]) [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NL2] = key_in_source_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ NL2]) [g ⊢ I])))
-                     | [g ⊢ fc_synl FL3 LL3 HL3 FR3 _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                            let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ N] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL3] [_ ⊢ FL4] [_ ⊢ FL1] [_ ⊢ FL2] [g ⊢ HL3] [g ⊢ HL2] in
-                                 impossible functional_lab [g ⊢ LL2] [g ⊢ LL3]
-                               | [g ⊢ c_neq I1] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                                    | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                                    | [g ⊢ c_neq I2] ⇒ let [g ⊢ NQ] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                      impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ NQ] [g ⊢ I2]) [g ⊢ I1]))))
-                          | [g ⊢ fc_synr FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4])
-                     | [g ⊢ fc_synr FL3 _ _ FR3 _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FR1] [_ ⊢ FR2] [_ ⊢ FR3] [_ ⊢ FR4] [g ⊢ HR1] [g ⊢ HR4] in [g ⊢ refplc]
-                          | [g ⊢ fc_synr FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4])))
-           | [g ⊢ fc_synr FL1 LL1 HL1' FR1 LR1 HR1] ⇒ let [g ⊢ refk]:[g ⊢ eqk K[] K[]] = functional_key [g ⊢ HL1] [g ⊢ HL1'] in
-             (case [g ⊢ F2] of
-                | [g ⊢ fc_parl F2' H2 _] ⇒ let [g ⊢ H2]:[g ⊢ key _ N[]] = [g ⊢ H2] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl F3' _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4]
-                          | [g ⊢ fc_synr FL4 _ _ FR4 _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FR1] [g ⊢ FR4] in [g ⊢ refplc])
-                     | [g ⊢ fc_parr _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_parl H2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ N]) [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ N]) [g ⊢ I])))
-                     | [g ⊢ fc_synl _ _ HL3 FR3 _ HR3] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                       (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ FR4] (notin_propagates_to_target_fc [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N] [g ⊢ I])))
-                          | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ FR4] (notin_propagates_to_target_fc [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N] [g ⊢ I]))))
-                     | [g ⊢ fc_synr _ _ HL3 FR3 _ HR3] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                       (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ FR4] (notin_propagates_to_target_fc [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N] [g ⊢ I])))
-                          | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR3] [g ⊢ HR3] (notin_propagates_to_source_fc [g ⊢ FR4] (notin_propagates_to_target_fc [g ⊢ FR1] [g ⊢ HR1] [g ⊢ N] [g ⊢ I])))))
-                | [g ⊢ fc_parr F2' H2 N2] ⇒ let [g ⊢ H2]:[g ⊢ key _ N[]] = [g ⊢ H2] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_parr H2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ N]) [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ F2'] [g ⊢ H2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ N]) [g ⊢ I])))
-                     | [g ⊢ fc_parr F3' _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl _ _ HL4' FR4 LR4 HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FR1] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ FR4] [g ⊢ HR1] [g ⊢ HR4] in
-                            impossible functional_lab [g ⊢ LR1] [g ⊢ LR4]
-                          | [g ⊢ fc_synr FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FR1] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ FR4] [g ⊢ HR1] [g ⊢ HR4] in
-                            let [g ⊢ reffc] = unique_fstep_cl [g ⊢ FL1] [g ⊢ FL4] in [g ⊢ refplc])
-                     | [g ⊢ fc_synl FL3 _ HL3 _ _ _] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                       (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N] [g ⊢ I])))
-                          | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N] [g ⊢ I]))))
-                     | [g ⊢ fc_synr FL3 _ HL3 _ _ _] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                       (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N] [g ⊢ I])))
-                          | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                               | [g ⊢ c_neq I] ⇒ let [g ⊢ N] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ N] [g ⊢ I])))))
-                | [g ⊢ fc_synl FL2 LL2 HL2 FR2 _ HR2] ⇒ let [g ⊢ HL2]:[g ⊢ key _ N[]] = [g ⊢ HL2] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_sync HL2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NR2] = key_in_source_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ NR2]) [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NR2] = key_in_source_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ NR2]) [g ⊢ I])))
-                     | [g ⊢ fc_parr _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_sync HL2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NL2] = key_in_source_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ NL2]) [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NL2] = key_in_source_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ NL2]) [g ⊢ I])))
-                     | [g ⊢ fc_synl FL3 _ _ FR3 _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4]
-                          | [g ⊢ fc_synr FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FR1] [_ ⊢ FR2] [_ ⊢ FR3] [_ ⊢ FR4] [g ⊢ HR1] [g ⊢ HR4] in [g ⊢ refplc])
-                     | [g ⊢ fc_synr FL3 LL3 HL3 FR3 _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4]
-                          | [g ⊢ fc_synr FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                            let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ N] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL3] [_ ⊢ FL4] [_ ⊢ FL1] [_ ⊢ FL2] [g ⊢ HL3] [g ⊢ HL2] in
-                                 impossible functional_lab [g ⊢ LL2] [g ⊢ LL3]
-                               | [g ⊢ c_neq I1] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                                    | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                                    | [g ⊢ c_neq I2] ⇒ let [g ⊢ NQ] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                      impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ NQ] [g ⊢ I2]) [g ⊢ I1]))))))
-                | [g ⊢ fc_synr FL2 LL2 HL2 FR2 _ HR2] ⇒ let [g ⊢ HL2]:[g ⊢ key _ N[]] = [g ⊢ HL2] in
-                  (case [g ⊢ F3] of
-                     | [g ⊢ fc_parl _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_sync HL2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NR2] = key_in_source_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ NR2]) [g ⊢ I])
-                               | [g ⊢ fc_synr _ _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NR2] = key_in_source_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FR2] [g ⊢ HR2] (notin_propagates_to_target_fc [g ⊢ FR4] [g ⊢ HR4] (notin_propagates_to_source_fc [g ⊢ FR1] [g ⊢ NR2]) [g ⊢ I])))
-                     | [g ⊢ fc_parr _ _ _] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ N] of
-                          | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F1] [g ⊢ fc F2] [g ⊢ key_cl (key_sync HL1)] [g ⊢ key_cl (key_sync HL2)]
-                          | [g ⊢ c_neq I] ⇒ (case [g ⊢ F4] of
-                               | [g ⊢ fc_synl FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NL2] = key_in_source_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ NL2]) [g ⊢ I])
-                               | [g ⊢ fc_synr FL4 _ HL4' _ _ _] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                                 let [g ⊢ NL2] = key_in_source_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] in
-                                 impossible key_in_target_of_fstep_cl [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL4] [g ⊢ HL4] (notin_propagates_to_source_fc [g ⊢ FL1] [g ⊢ NL2]) [g ⊢ I])))
-                     | [g ⊢ fc_synl FL3 LL3 HL3 FR3 _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4]
-                          | [g ⊢ fc_synr FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ HL3]:[g ⊢ key _ M[]] = [g ⊢ HL3] in
-                            let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            (case dec_eq_keys [g] [⊢ N] [⊢ M] of
-                               | [g ⊢ c_eq] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL3] [_ ⊢ FL4] [_ ⊢ FL1] [_ ⊢ FL2] [g ⊢ HL3] [g ⊢ HL2] in
-                                 impossible functional_lab [g ⊢ LL2] [g ⊢ LL3]
-                               | [g ⊢ c_neq I1] ⇒ (case dec_eq_keys [g] [⊢ K] [⊢ M] of
-                                    | [g ⊢ c_eq] ⇒ impossible no_composable_fw_tr_with_same_key [g ⊢ fc F3] [g ⊢ fc F4] [g ⊢ key_cl (key_sync HL3)] [g ⊢ key_cl (key_sync HL4)]
-                                    | [g ⊢ c_neq I2] ⇒ let [g ⊢ NQ] = key_in_source_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] in
-                                      impossible key_in_target_of_fstep_cl [g ⊢ FL3] [g ⊢ HL3] (notin_propagates_to_source_fc [g ⊢ FL4] (notin_propagates_to_target_fc [g ⊢ FL2] [g ⊢ HL2] (notin_propagates_to_target_fc [g ⊢ FL1] [g ⊢ HL1] [g ⊢ NQ] [g ⊢ I2]) [g ⊢ I1])))))
-                     | [g ⊢ fc_synr FL3 _ _ FR3 _ _] ⇒ (case [g ⊢ F4] of
-                          | [g ⊢ fc_synl FL4 LL4 _ _ _ _] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            impossible functional_lab [g ⊢ LL1] [g ⊢ LL4]
-                          | [g ⊢ fc_synr FL4 _ HL4' FR4 _ HR4] ⇒ let [g ⊢ refk] = functional_key [g ⊢ HL4] [g ⊢ HL4'] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ FL3] [_ ⊢ FL4] [g ⊢ HL1] [g ⊢ HL4] in
-                            let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ FR1] [_ ⊢ FR2] [_ ⊢ FR3] [_ ⊢ FR4] [g ⊢ HR1] [g ⊢ HR4] in [g ⊢ refplc])))
-           | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
-             let [g ⊢ fc_nu \a.F3'] = [g ⊢ F3] in 
-             let [g ⊢ fc_nu \a.F4'] = [g ⊢ F4] in
-             let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ F3'] [_ ⊢ F4'] [_ ⊢ key_sync HL1[..]] [_ ⊢ key_sync HL4[..]] in [g ⊢ refplc]))
-;
+(case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ ?
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ ?
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ ?
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ ?)
 
+}%
 
-rec unique_pr_labels_in_diamonds_fcfo: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_op Y T2 Z]}
-  {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
-  [g ⊢ key T4 K[]] → [g ⊢ eqplc T1 T4] =
-?
-;
-
-rec unique_pr_labels_in_diamonds_fofc: (g:ctx) {F1:[g ⊢ fstep_op X (open \a.T1) Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
-  {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_op W (open \a.T4) Z]} [g,a:names ⊢ key T1 K[]] →
-  [g,a:names ⊢ key T4 K[]] → [g,a:names ⊢ eqplc T1 T4] =
-?
-;
-
-rec unique_pr_labels_in_diamonds_fofo: (g:ctx) {F1:[g ⊢ fstep_op X (open \a.T1) Y]} {F2:[g ⊢ fstep_op Y T2 Z]}
-  {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_op W (open \a.T4) Z]} [g,a:names ⊢ key T1 K[]] →
-  [g,a:names ⊢ key T4 K[]] → [g,a:names ⊢ eqplc T1 T4] =
-?
-;
-
-rec compat_pr_labels_in_diamonds_ccoc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
-  {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
-  [g ⊢ key T4 K[]] → [g ⊢ false] =
-?
-;}%
-%{
-rec compat_pr_labels_in_diamonds_ccoc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_cl Y T2 Z]}
-  {F3:[g ⊢ fstep_op X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
-  [g ⊢ key T2 M[]] → [g ⊢ key T3 M[]] → [g ⊢ key T4 K[]] → [g ⊢ false] =
-?
-;}%
-%{
-rec compat_pr_labels_in_diamonds_cocc: (g:ctx) {F1:[g ⊢ fstep_cl X T1 Y]} {F2:[g ⊢ fstep_op Y T2 Z]}
-  {F3:[g ⊢ fstep_cl X T3 W]} {F4:[g ⊢ fstep_cl W T4 Z]} [g ⊢ key T1 K[]] →
-  [g ⊢ key T4 K[]] → [g ⊢ false] =
-?
-;
-
-rec unique_pr_labels_in_diamonds: (g:ctx) {S1:[g ⊢ step X T1 Y]} {S2:[g ⊢ step Y T2 Z]}
-  {S3:[g ⊢ step X T3 W]} {S4:[g ⊢ step W T4 Z]} [g ⊢ same_direction S1 S4] →
-  [g ⊢ same_direction S3 S2] → [g ⊢ key_pl T1 K[]] → [g ⊢ key_pl T4 K[]] → [g ⊢ eqpl T1 T4] =
-/ total s1 (unique_pr_labels_in_diamonds _ _ _ _ _ _ _ _ _ _ s1 _ _ _ _ _ _ _) /
-mlam S1,S2,S3,S4 ⇒ fn sd1,sd2,h1,h4 ⇒ case sd1 of
-  | [g ⊢ sdf (ftc_cl F1) (ftc_cl F4)] ⇒ let [g ⊢ key_cl H1] = h1 in
-    let [g ⊢ key_cl H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ impossible compat_pr_labels_in_diamonds_cocc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4]
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ impossible compat_pr_labels_in_diamonds_ccoc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4]
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
-         let [g ⊢ F3] = loop_lemma_two_cl [g ⊢ B3] in
-         let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F4] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
-         let [g ⊢ F3] = loop_lemma_two_op [g ⊢ B3] in
-         let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F4] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl])
-  | [g ⊢ sdf (ftc_cl F1) (ftc_op F4)] ⇒ let [g ⊢ key_cl H1] = h1 in
-    let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
-  | [g ⊢ sdf (ftc_op F1) (ftc_cl F4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
-    let [g ⊢ key_cl H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
-  | [g ⊢ sdf (ftc_op F1) (ftc_op F4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
-    let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofc [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofo [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
-         let [g ⊢ F3] = loop_lemma_two_cl [g ⊢ B3] in
-         let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofc [_ ⊢ F4] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
-         let [g ⊢ F3] = loop_lemma_two_op [g ⊢ B3] in
-         let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofo [_ ⊢ F4] [_ ⊢ F2] [_ ⊢ F3] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl])
-  | [g ⊢ sdb (btc_cl B1) (btc_cl B4)] ⇒ let [g ⊢ key_cl H1] = h1 in
-    let [g ⊢ key_cl H4] = h4 in
-    let [g ⊢ F1] = loop_lemma_two_cl [g ⊢ B1] in
-    let [g ⊢ F4] = loop_lemma_two_cl [g ⊢ B4] in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F1] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F1] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
-         let [g ⊢ F3] = loop_lemma_two_cl [g ⊢ B3] in 
-         let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfc [_ ⊢ F4] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
-         let [g ⊢ F3] = loop_lemma_two_op [g ⊢ B3] in
-         let [g ⊢ refplc] = unique_pr_labels_in_diamonds_fcfo [_ ⊢ F4] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl])
-  | [g ⊢ sdb (btc_cl B1) (btc_op B4)] ⇒ let [g ⊢ key_cl H1] = h1 in
-    let [g ⊢ key_op \a.H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
-  | [g ⊢ sdb (btc_op B1) (btc_cl B4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
-    let [g ⊢ key_cl H4] = h4 in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ ?)
-  | [g ⊢ sdb (btc_op B1) (btc_op B4)] ⇒ let [g ⊢ key_op \a.H1] = h1 in
-    let [g ⊢ key_op \a.H4] = h4 in
-    let [g ⊢ F1] = loop_lemma_two_op [g ⊢ B1] in
-    let [g ⊢ F4] = loop_lemma_two_op [g ⊢ B4] in (case sd2 of
-       | [g ⊢ sdf (ftc_cl F3) (ftc_cl F2)] ⇒ let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofc [_ ⊢ F1] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdf (ftc_cl F3) (ftc_op F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_cl F2)] ⇒ ?
-       | [g ⊢ sdf (ftc_op F3) (ftc_op F2)] ⇒ let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofo [_ ⊢ F1] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F4] [_ ⊢ H1] [_ ⊢ H4] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_cl B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_cl [g ⊢ B2] in
-         let [g ⊢ F3] = loop_lemma_two_cl [g ⊢ B3] in
-         let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofc [_ ⊢ F4] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl]
-       | [g ⊢ sdb (btc_cl B3) (btc_op B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_cl B2)] ⇒ ?
-       | [g ⊢ sdb (btc_op B3) (btc_op B2)] ⇒ let [g ⊢ F2] = loop_lemma_two_op [g ⊢ B2] in
-         let [g ⊢ F3] = loop_lemma_two_op [g ⊢ B3] in
-         let [g,a:names ⊢ refplc] = unique_pr_labels_in_diamonds_fofo [_ ⊢ F4] [_ ⊢ F3] [_ ⊢ F2] [_ ⊢ F1] [_ ⊢ H4] [_ ⊢ H1] in [_ ⊢ refpl])
-;
-
-
-rec enrich_preserves_key: (g:ctx) (S:[g ⊢ ccsk.step X (ccsk.kl_base A K) Y]) (S+:[g ⊢ ccskp.step X T Y])
-  [g ⊢ enrich S S+] → [g ⊢ key_pl T K] =
-/ total en (enrich_preserves_key _ _ _ _ _ _ _ _ en) /
-fn en ⇒ case en of
-  | [g ⊢ enfc (en_fc _ _ _ H)] ⇒ [g ⊢ key_cl H]
-  | [g ⊢ enfo (en_fo _ _ \a.H)] ⇒ [g ⊢ key_op \a.H]
-  | [g ⊢ enbc (en_bc _ _ _ H)] ⇒ [g ⊢ key_cl H]
-  | [g ⊢ enbo (en_bo _ _ \a.H)] ⇒ [g ⊢ key_op \a.H]
-;
-
-% Propagation of coinitial independence (PCI):
-% Given t:step X KL1 Y, u:step X KL2 Z, u':step Y KL2 W and t':step Z KL1 W,
-% where (t,t') and (u,u') have same direction,
-% if t and u are independent, then u' and inv_tr(t) are independent.
-rec ccsk_pci: (g:ctx) (T:[g ⊢ ccsk.step X KL1 Y]) (U:[g ⊢ ccsk.step X KL2 Z])
-  (U':[g ⊢ ccsk.step Y KL2 W]) (T':[g ⊢ ccsk.step Z KL1 W]) (RT:[g ⊢ ccsk.step Y KL1 X])
-  [g ⊢ ccsk_same_direction T T'] → [g ⊢ ccsk_same_direction U U'] → [g ⊢ ccsk_indep_tr T U] → 
-  [g ⊢ ccsk_inv_tr T RT] → [g ⊢ ccsk_indep_tr U' RT] =
-/ total (ccsk_pci _ _ _ _ _ _ _ t _ _ _ _ _ _) /
-fn sdt,sdu,i,hr ⇒ let [g ⊢ ccsk_ind_tr ENT ENU I _] = i in
-let [g ⊢ ENT]:[g ⊢ enrich T T+] = [g ⊢ ENT] in
-let [g ⊢ ENU]:[g ⊢ enrich U U+] = [g ⊢ ENU] in
-let [g ⊢ _]:[g ⊢ ccsk_same_direction T T'] = sdt in
-let [g ⊢ _]:[g ⊢ ccsk_same_direction U U'] = sdu in
-let {ENT':[g ⊢ enrich T' T'+]}[g ⊢ ex_en ENT'] = total_enrich [g ⊢ T'] in
-let {ENU':[g ⊢ enrich U' U'+]}[g ⊢ ex_en ENU'] = total_enrich [g ⊢ U'] in
-let [g ⊢ SDT+]:[g ⊢ same_direction T+ T'+] = sdir_ccsk_to_ccskp sdt [g ⊢ ENT] [g ⊢ ENT'] in
-let [g ⊢ SDU+]:[g ⊢ same_direction U+ U'+] = sdir_ccsk_to_ccskp sdu [g ⊢ ENU] [g ⊢ ENU'] in
-let [g ⊢ ccsk_it T RT] = hr in
-let {ENRT:[g ⊢ enrich RT RT+]}[g ⊢ ex_en ENRT] = total_enrich [g ⊢ RT] in
-let [g ⊢ HR+]:[g ⊢ inv_tr T+ RT+] = inv_ccsk_to_ccskp hr [g ⊢ ENT] [g ⊢ ENRT] in
-let [g ⊢ it T+ RT+] = [g ⊢ HR+] in
-let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in
-let [g ⊢ _]:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ T] in
-let [g ⊢ _]:[g ⊢ ccsk.step _ (kl_base _ _) _] = [g ⊢ U] in
-let [g ⊢ HT] = enrich_preserves_key [g ⊢ ENT] in
-let [g ⊢ HU] = enrich_preserves_key [g ⊢ ENU] in
-let [g ⊢ HT'] = enrich_preserves_key [g ⊢ ENT'] in
-let [g ⊢ HU'] = enrich_preserves_key [g ⊢ ENU'] in
-let [g ⊢ refpl] = unique_pr_labels_in_diamonds [_ ⊢ T+] [_ ⊢ U'+] [_ ⊢ U+] [_ ⊢ T'+] [_ ⊢ SDT+] [_ ⊢ SDU+] [_ ⊢ HT] [_ ⊢ HT'] in
-let [g ⊢ refpl] = unique_pr_labels_in_diamonds [_ ⊢ U+] [_ ⊢ T'+] [_ ⊢ T+] [_ ⊢ U'+] [_ ⊢ SDU+] [_ ⊢ SDT+] [_ ⊢ HU] [_ ⊢ HU'] in
-[g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
-;}%

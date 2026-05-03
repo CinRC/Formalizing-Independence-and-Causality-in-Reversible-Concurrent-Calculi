@@ -61,7 +61,7 @@ fn b,d ⇒ case b of
     let [g,a:names ⊢ E[..]] = source_is_not_std [g,a:names ⊢ B] [g,a:names ⊢ D] in [g ⊢ E]
 ;
 
-% Source and target of a forward transition are not equal
+% Source and target of a combined transition are not equal
 rec target_is_not_source: (g:ctx) [g ⊢ step X KL X] → [g ⊢ false] =
 / total s (target_is_not_source s _ _ _) /
 fn s ⇒ case s of

@@ -426,9 +426,9 @@ fn f,n ⇒ case f of
     let [g,a:names ⊢ N'] = notin_propagates_to_source_fo [_ ⊢ F] [_ ⊢ N] in [g ⊢ not_nu \a.N']
 ;
 
-% If a process X makes a closed forward transition F into the process X',
-% and a key K does not occur in X (i.e., notin K X holds), then
-% then any key different than K does not occur in X' (notin K X').
+% If a process X makes a closed forward transition F via the proof label T
+% into the process X', a key K does not occur in X (i.e., notin K X holds),
+% and key(T) is different from K, then K does not occur in X' (notin K X').
 rec notin_propagates_to_target_fc: (g:ctx) [g ⊢ fstep_cl X T X'] →
   [g ⊢ key T M[]] → [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
 / total f (notin_propagates_to_target_fc _ _ _ _ _ _ f _ _ _) /
@@ -466,9 +466,9 @@ fn f,h,n,i ⇒ case f of
     let [g,a:names ⊢ N'] = notin_propagates_to_target_fc [_ ⊢ F] [_ ⊢ H[..]] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
 ;
 
-% If a process X makes an open forward transition F into the process X',
-% and a key K does not occur in X (i.e., notin K X holds), then
-% then any key different than K does not occur in X' (notin K X').
+% If a process X makes an open forward transition F via the proof label T
+% into the process X', a key K does not occur in X (i.e., notin K X holds),
+% and key(T) is different from K, then K does not occur in X' (notin K X').
 rec notin_propagates_to_target_fo: (g:ctx) [g ⊢ fstep_op X (open \a.T) X'] →
   [g,a:names ⊢ key T M[]] → [g ⊢ notin K[] X] → [g ⊢ neq M[] K[]] → [g ⊢ notin K[] X'] =
 / total f (notin_propagates_to_target_fo _ _ _ _ _ _ f _ _ _) /
