@@ -67,4 +67,12 @@ LF conn_tr: step X KL1 X' → step Y KL2 Y' → type =
   | ctr: {S1:step X KL1 X'}{S2: step Y KL2 Y'} step* X Y' → conn_tr S1 S2
 ;
 
+
+%%% Type families for equality
+
+% Equality of keyed labels
+LF eqkl: key_lab → key_lab → type =
+  | refkl: eqkl T T
+;
+
 end;

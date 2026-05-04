@@ -747,7 +747,8 @@ fn f,n,i ⇒ case f of
     let [g ⊢ I] = i in
     let [g,a:names ⊢ N'] = notin_propagates_to_target [_ ⊢ F] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
 ;
-%{
+
+
 rec unique_diamonds_ff: (g:ctx) {F1:[g ⊢ ccsk.fstep X (kl_base A K[]) Z1]} {F2:[g ⊢ ccsk.fstep X (kl_base C K[]) Z2]}
   {G1:[g ⊢ ccsk.fstep Y (kl_base B M[]) Z1]} {G2:[g ⊢ ccsk.fstep Y (kl_base D M[]) Z2]} [g ⊢ neq K[] M[]] → [g ⊢ eqp Z1 Z2] =
 / total t1 (unique_diamonds_ff _ _ _ _ _ _ _ _ _ _ _ t1 _ _ _ _) /
@@ -1536,7 +1537,7 @@ mlam F1,F2,G1,G2 ⇒ fn i ⇒ case [_ ⊢ F1] of
     let [g ⊢ I] = i in
     let [g,a:names ⊢ refp] = unique_diamonds_ff [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ G1'] [_ ⊢ G2'] [_ ⊢ I[..]] in [g ⊢ refp]
 ;
-}%
+
 
 rec unique_diamonds_fb: (g:ctx) {F1:[g ⊢ ccsk.fstep X (kl_base A K[]) Z1]} {F2:[g ⊢ ccsk.fstep X (kl_base C K[]) Z2]}
   {G1:[g ⊢ ccsk.fstep Z1 (kl_base B M[]) Y]} {G2:[g ⊢ ccsk.fstep Z2 (kl_base D M[]) Y]} [g ⊢ neq K[] M[]] → [g ⊢ eqp Z1 Z2] =
@@ -2217,23 +2218,298 @@ mlam F1,F2,G1,G2 ⇒ fn i ⇒ case [_ ⊢ F1] of
     let [g,a:names ⊢ refp] = unique_diamonds_fb [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ G1'] [_ ⊢ G2'] [_ ⊢ I[..]] in [g ⊢ refp]
 ;
 
+
+rec unique_diamonds_bb: (g:ctx) {F1:[g ⊢ ccsk.fstep Z1 (kl_base A K[]) X]} {F2:[g ⊢ ccsk.fstep Z2 (kl_base C K[]) X]}
+  {G1:[g ⊢ ccsk.fstep Z1 (kl_base B M[]) Y]} {G2:[g ⊢ ccsk.fstep Z2 (kl_base D M[]) Y]} [g ⊢ neq K[] M[]] → [g ⊢ eqp Z1 Z2] =
+/ total t1 (unique_diamonds_bb _ _ _ _ _ _ _ _ _ _ _ t1 _ _ _ _) /
+mlam F1,F2,G1,G2 ⇒ fn i ⇒ case [_ ⊢ F1] of
+  | [g ⊢ fs_pref _] ⇒ let [g ⊢ fs_pref _] = [g ⊢ G1] in (case [g ⊢ F2] of
+       | [g ⊢ fs_pref _] ⇒ let [g ⊢ fs_pref _] = [g ⊢ G2] in [g ⊢ refp]
+       | [g ⊢ fs_kpref _ DF2] ⇒ impossible irreflexive_neq [g ⊢ DF2])
+  | [g ⊢ fs_kpref F1' DF1] ⇒ let [g ⊢ fs_kpref G1' _] = [g ⊢ G1] in (case [g ⊢ F2] of
+       | [g ⊢ fs_pref _] ⇒  impossible irreflexive_neq [g ⊢ DF1]
+       | [g ⊢ fs_kpref F2' _] ⇒ let [g ⊢ fs_kpref G2' _] = [g ⊢ G2] in
+         let [g ⊢ refp] = unique_diamonds_bb [g ⊢ F1'] [g ⊢ F2'] [g ⊢ G1'] [g ⊢ G2'] i in [g ⊢ refp])
+  | [g ⊢ fs_suml FL1 DF1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_suml FL2 DF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_suml GL1 DG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 DG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_sumr GR2 DG2] ⇒ impossible target_is_not_std [g ⊢ GR2] [g ⊢ DG1])
+            | [g ⊢ fs_sumr GR1 DG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 DG2] ⇒ impossible target_is_not_std [g ⊢ GL2] [g ⊢ DG1]
+                 | [g ⊢ fs_sumr GR2 DG2] ⇒ [g ⊢ refp]))
+       | [g ⊢ fs_sumr FR2 _] ⇒ impossible target_is_not_std [g ⊢ FR2] [g ⊢ DF1])
+  | [g ⊢ fs_sumr FR1 DF1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_suml FL2 _] ⇒ impossible target_is_not_std [g ⊢ FL2] [g ⊢ DF1]
+       | [g ⊢ fs_sumr FR2 DF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_suml GL1 DG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 DG2] ⇒ [g ⊢ refp]
+                 | [g ⊢ fs_sumr GR2 DG2] ⇒ impossible target_is_not_std [g ⊢ GR2] [g ⊢ DG1])
+            | [g ⊢ fs_sumr GR1 DG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 DG2] ⇒ impossible target_is_not_std [g ⊢ GL2] [g ⊢ DG1]
+                 | [g ⊢ fs_sumr GR2 DG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp])))
+  | [g ⊢ fs_parl FL1 NF1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ [g ⊢ refp]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]))
+       | [g ⊢ fs_parr FR2 NF2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ NF1]
+       | [g ⊢ fs_synl FL2 FR2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ NF1]
+       | [g ⊢ fs_synr FL2 FR2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ NF1])
+  | [g ⊢ fs_parr FR1 NF1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ NF1]
+       | [g ⊢ fs_parr FR2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GR1] [g ⊢ GR2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GR1] [g ⊢ GR2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]))
+       | [g ⊢ fs_synl FL2 FR2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ NF1]
+       | [g ⊢ fs_synr FL2 FR2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ NF1])
+  | [g ⊢ fs_synl FL1 FR1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ NF2]
+       | [g ⊢ fs_parr FR2 NF2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ NF2]
+       | [g ⊢ fs_synl FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]))
+       | [g ⊢ fs_synr FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FR1] [g ⊢ FR2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2])))
+  | [g ⊢ fs_synr FL1 FR1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ NF2]
+       | [g ⊢ fs_parr FR2 NF2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ NF2]
+       | [g ⊢ fs_synl FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FR1] [g ⊢ FR2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]))
+       | [g ⊢ fs_synr FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   let [g ⊢ refp] = unique_diamonds_bb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp])))
+  | [g ⊢ fs_nu \a.F1'] ⇒ let [g ⊢ fs_nu \a.F2'] = [g ⊢ F2] in
+    let [g ⊢ fs_nu \a.G1'] = [g ⊢ G1] in
+    let [g ⊢ fs_nu \a.G2'] = [g ⊢ G2] in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ refp] = unique_diamonds_bb [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ G1'] [_ ⊢ G2'] [_ ⊢ I[..]] in [g ⊢ refp]
+;
+
 %{
-(case [g ⊢ F2] of
-       | [g ⊢ fs_parl FL2 NF2] ⇒ ?
-       | [g ⊢ fs_parr FR2 NF2] ⇒ ?
-       | [g ⊢ fs_synl FL2 FR2] ⇒ ?
-       | [g ⊢ fs_synr FL2 FR2] ⇒ ?)
+LF ccsk_equiv_tr_base: ccsk.step P A Q → ccsk.step R A S → type =
+  | ccsk_etb: ccsk_same_direction (T:ccsk.step P A Q) (T':ccsk.step R A S) → ccsk_same_direction (U:ccsk.step P B R) (U':ccsk.step Q B S) → 
+         ccsk_indep_tr T U → ccsk_equiv_tr_base T T'
+;
 
-(case [g ⊢ G1] of
-            | [g ⊢ fs_parl GL1 NG1] ⇒ ?
-            | [g ⊢ fs_parr GR1 NG1] ⇒ ?
-            | [g ⊢ fs_synl GL1 GR1] ⇒ ?
-            | [g ⊢ fs_synr GL1 GR1] ⇒ ?)
+% Equivalence of transitions ~:
+% Reflexive, symmetric and transitive closure of the equiv_tr_base relation.
+LF ccsk_equiv_tr: ccsk.step P A Q → ccsk.step R B S → type =
+  | ccsk_et_base: ccsk_equiv_tr_base T T' → ccsk_equiv_tr T T'
+  | ccsk_et_refl: ccsk_equiv_tr T T
+  | ccsk_et_sym: ccsk_equiv_tr T' T → ccsk_equiv_tr T T'
+  | ccsk_et_trans: ccsk_equiv_tr T T' → ccsk_equiv_tr T' T'' → ccsk_equiv_tr T T''
+;
 
-(case [g ⊢ G2] of
-                 | [g ⊢ fs_parl GL2 NG2] ⇒ ?
-                 | [g ⊢ fs_parr GR2 NG2] ⇒ ?
-                 | [g ⊢ fs_synl GL2 GR2] ⇒ ?
-                 | [g ⊢ fs_synr GL2 GR2] ⇒ ?)
+% Equivalent transitions share the same keyed label
+rec ccsk_equiv_tr_have_same_label: (g:ctx) (T:[g ⊢ ccsk.step P A Q]) (T':[g ⊢ ccsk.step R B S]) 
+  [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ eqkl A B] =
+/ total e (ccsk_equiv_tr_have_same_label _ _ _ _ _ _ _ _ _ e) /
+fn e ⇒ case e of
+  | [_ ⊢ ccsk_et_base _] ⇒ [_ ⊢ refkl]
+  | [_ ⊢ ccsk_et_refl] ⇒ [_ ⊢ refkl]
+  | [_ ⊢ ccsk_et_sym E'] ⇒ let [_ ⊢ refkl] = ccsk_equiv_tr_have_same_label [_ ⊢ E'] in [_ ⊢ refkl]
+  | [_ ⊢ ccsk_et_trans E1 E2] ⇒ let [_ ⊢ refkl] = ccsk_equiv_tr_have_same_label [_ ⊢ E1] in
+                                 let [_ ⊢ refkl] = ccsk_equiv_tr_have_same_label [_ ⊢ E2] in [_ ⊢ refkl]
+;
 
-}%
+
+rec enrich_preserves_equiv_tr_base: (g:ctx) (T:[g ⊢ ccsk.step X A Y]) (U:[g ⊢ ccsk.step X B Z])
+  (U':[g ⊢ ccsk.step Y B W]) (T':[g ⊢ ccsk.step Z A W]) (T+:[g ⊢ ccskp.step X T1 Y])
+  (U+:[g ⊢ ccskp.step X T2 Z]) (U'+:[g ⊢ ccskp.step Y T2' W]) (T'+:[g ⊢ ccskp.step Z T1' W])
+  [g ⊢ ccsk_same_direction T T'] → [g ⊢ ccsk_same_direction U U'] → [g ⊢ ccsk_indep_tr T U] → [g ⊢ enrich T T+]
+  → [g ⊢ enrich U U+] → [g ⊢ indep_tr T+ U+] =
+/ total (enrich_preserves_equiv_tr_base) /
+fn sdt,sdu,itc,ent,enu ⇒ let [g ⊢ _]:[g ⊢ enrich U U+] = enu in
+let [g ⊢ ccsk_ind_tr ENT ENU I CT] = itc in
+let [g ⊢ refst] = functional_enrich ent [g ⊢ ENT] in
+let [g ⊢ refst] = functional_enrich enu [g ⊢ ENU] in [g ⊢ ind_tr I (ct _ _ (st_s* U+))]
+;
+
+rec enrich_preserves_equiv_tr: (g:ctx) {T:[g ⊢ ccsk.step X (kl_base A K[]) Y]} {T':[g ⊢ ccsk.step Z (kl_base A K[]) W]}
+  (T+:[g ⊢ ccskp.step X T1 Y]) (T'+:[g ⊢ ccskp.step Z T1' W]) [g ⊢ ccsk_equiv_tr T T']
+  → [g ⊢ enrich T T+] → [g ⊢ enrich T' T'+] → [g ⊢ equiv_tr T+ T'+] =
+mlam T,T' ⇒ fn e,ent,ent' ⇒ case e of
+  | [g ⊢ ccsk_et_base (ccsk_etb SDT SDU I)] ⇒ let [g ⊢ SDT+] = sdir_ccsk_to_ccskp [g ⊢ SDT] ent ent' in
+    let [g ⊢ SDU]:[g ⊢ ccsk_same_direction U U'] = [g ⊢ SDU] in
+    let [g ⊢ ex_en ENU] = total_enrich [g ⊢ U] in
+    let [g ⊢ ex_en ENU'] = total_enrich [g ⊢ U'] in
+    let [g ⊢ SDU+] = sdir_ccsk_to_ccskp [g ⊢ SDU] [g ⊢ ENU] [g ⊢ ENU'] in
+    ?%let [g ⊢ I+] = enrich_preserves_equiv_tr_base [g ⊢ SDT] [g ⊢ SDU] [g ⊢ I] ent [g ⊢ ENU] in [g ⊢ et_base (etb SDT+ SDU+ I+)]
+  | [g ⊢ ccsk_et_refl] ⇒ let [g ⊢ refst] = functional_enrich ent ent' in [g ⊢ et_refl]
+  | [g ⊢ ccsk_et_sym E] ⇒ let [g ⊢ E'] = enrich_preserves_equiv_tr [g ⊢ T'] [g ⊢ T] [g ⊢ E] ent' ent in [g ⊢ et_sym E']
+  | [g ⊢ ccsk_et_trans E1 E2] ⇒ let [g ⊢ E1]:[g ⊢ ccsk_equiv_tr T T''] = [g ⊢ E1] in
+    let [g ⊢ refkl] = ccsk_equiv_tr_have_same_label [_ ⊢ E1] in
+    let [g ⊢ ex_en ENT''] = total_enrich [g ⊢ T''] in
+    let [g ⊢ E1'] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T''] [g ⊢ E1] ent [g ⊢ ENT''] in
+    let [g ⊢ E2'] = enrich_preserves_equiv_tr [g ⊢ T''] [g ⊢ T'] [g ⊢ E2] [g ⊢ ENT''] ent' in [g ⊢ et_trans E1' E2']
+;}%
