@@ -747,7 +747,7 @@ fn f,n,i ⇒ case f of
     let [g ⊢ I] = i in
     let [g,a:names ⊢ N'] = notin_propagates_to_target [_ ⊢ F] [_ ⊢ N] [_ ⊢ I[..]] in [g ⊢ not_nu \a.N']
 ;
-
+%{
 rec unique_diamonds_ff: (g:ctx) {F1:[g ⊢ ccsk.fstep X (kl_base A K[]) Z1]} {F2:[g ⊢ ccsk.fstep X (kl_base C K[]) Z2]}
   {G1:[g ⊢ ccsk.fstep Y (kl_base B M[]) Z1]} {G2:[g ⊢ ccsk.fstep Y (kl_base D M[]) Z2]} [g ⊢ neq K[] M[]] → [g ⊢ eqp Z1 Z2] =
 / total t1 (unique_diamonds_ff _ _ _ _ _ _ _ _ _ _ _ t1 _ _ _ _) /
@@ -1536,3 +1536,704 @@ mlam F1,F2,G1,G2 ⇒ fn i ⇒ case [_ ⊢ F1] of
     let [g ⊢ I] = i in
     let [g,a:names ⊢ refp] = unique_diamonds_ff [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ G1'] [_ ⊢ G2'] [_ ⊢ I[..]] in [g ⊢ refp]
 ;
+}%
+
+rec unique_diamonds_fb: (g:ctx) {F1:[g ⊢ ccsk.fstep X (kl_base A K[]) Z1]} {F2:[g ⊢ ccsk.fstep X (kl_base C K[]) Z2]}
+  {G1:[g ⊢ ccsk.fstep Z1 (kl_base B M[]) Y]} {G2:[g ⊢ ccsk.fstep Z2 (kl_base D M[]) Y]} [g ⊢ neq K[] M[]] → [g ⊢ eqp Z1 Z2] =
+/ total t1 (unique_diamonds_fb _ _ _ _ _ _ _ _ _ _ _ t1 _ _ _ _) /
+mlam F1,F2,G1,G2 ⇒ fn i ⇒ case [_ ⊢ F1] of
+  | [g ⊢ fs_pref DF1] ⇒ let [g ⊢ fs_pref DF2] = [g ⊢ F2] in
+    let [g ⊢ reffs] = ccsk_unique_fstep [g ⊢ G1] [g ⊢ G2] in [g ⊢ refp]
+  | [g ⊢ fs_kpref F1' _] ⇒ let [g ⊢ fs_kpref F2' _] = [g ⊢ F2] in
+    let [g ⊢ fs_kpref G1' _] = [g ⊢ G1] in
+    let [g ⊢ fs_kpref G2' _] = [g ⊢ G2] in
+    let [g ⊢ refp] = unique_diamonds_fb [g ⊢ F1'] [g ⊢ F2'] [g ⊢ G1'] [g ⊢ G2'] i in [g ⊢ refp]
+  | [g ⊢ fs_suml FL1 _] ⇒ (case [g ⊢ G1] of
+       | [g ⊢ fs_suml GL1 _] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fs_suml FL2 DF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 _] ⇒ 
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_sumr GR2 _] ⇒ impossible target_is_not_std [g ⊢ GR2] [g ⊢ DF2])
+            | [g ⊢ fs_sumr FR2 DF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml _ DG2] ⇒ impossible target_is_not_std [g ⊢ FR2] [g ⊢ DG2]
+                 | [g ⊢ fs_sumr GR2 _] ⇒ let [g ⊢ I]:[g ⊢ neq K[] M[]] = i in
+                   let [g ⊢ N] = no_key_in_std [⊢ M] [g ⊢ DF2] in
+                   impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ N]))
+       | [g ⊢ fs_sumr _ DG1] ⇒ impossible target_is_not_std [g ⊢ FL1] [g ⊢ DG1])
+  | [g ⊢ fs_sumr FR1 _] ⇒ (case [g ⊢ G1] of
+       | [g ⊢ fs_suml _ DG1] ⇒ impossible target_is_not_std [g ⊢ FR1] [g ⊢ DG1]
+       | [g ⊢ fs_sumr GR1 _] ⇒ (case [g ⊢ F2] of
+            | [g ⊢ fs_suml FL2 DF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml GL2 _] ⇒ let [g ⊢ I]:[g ⊢ neq K[] M[]] = i in
+                   let [g ⊢ N] = no_key_in_std [⊢ M] [g ⊢ DF2] in 
+                   impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ N]
+                 | [g ⊢ fs_sumr _ DG2] ⇒ impossible target_is_not_std [g ⊢ FL2] [g ⊢ DG2])
+            | [g ⊢ fs_sumr FR2 DF2] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_suml _ DG2] ⇒ impossible target_is_not_std [g ⊢ FR2] [g ⊢ DG2]
+                 | [g ⊢ fs_sumr GR2 _] ⇒ 
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp])))
+  | [g ⊢ fs_parl FL1 NF1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ [g ⊢ refp]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]))
+       | [g ⊢ fs_parr FR2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N'])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ NF2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']))
+       | [g ⊢ fs_synl FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ NF1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N'])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N'])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']))
+       | [g ⊢ fs_synr FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ NF1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N'])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N'])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR2] [g ⊢ N'])))
+  | [g ⊢ fs_parr FR1 NF1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ NF1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']))
+       | [g ⊢ fs_parr FR2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GR1] [g ⊢ GR2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GR1] [g ⊢ GR2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]))
+       | [g ⊢ fs_synl FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ NF1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']))
+       | [g ⊢ fs_synr FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ NF1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ NF1] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL1] [g ⊢ NF1] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL2] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL2] [g ⊢ N'])))
+  | [g ⊢ fs_synl FL1 FR1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ NF2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N'])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']))
+       | [g ⊢ fs_parr FR2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N'])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ NF2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']))
+       | [g ⊢ fs_synl FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]))
+       | [g ⊢ fs_synr FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FR1] [g ⊢ FR2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2])))
+  | [g ⊢ fs_synr FL1 FR1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ NF2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N'])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GR2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GR1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FR1] [g ⊢ N']))
+       | [g ⊢ fs_parr FR2 NF2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N'])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ NF2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N'])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ NF2] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ let [g ⊢ N] = notin_propagates_to_target [g ⊢ GL2] [g ⊢ NF2] (symmetric_neq i) in
+                   let [g ⊢ N'] = notin_propagates_to_source [g ⊢ GL1] [g ⊢ N] in
+                   impossible key_in_target_of_fstep [g ⊢ FL1] [g ⊢ N']))
+       | [g ⊢ fs_synl FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FR1] [g ⊢ FR2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ FL1] [g ⊢ FL2]))
+       | [g ⊢ fs_synr FL2 FR2] ⇒ (case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in [g ⊢ refp]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR2] [g ⊢ NG1])
+            | [g ⊢ fs_parr GR1 NG1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL2] [g ⊢ NG1])
+            | [g ⊢ fs_synl GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2])
+            | [g ⊢ fs_synr GL1 GR1] ⇒ (case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GR1] [g ⊢ NG2]
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ impossible key_in_target_of_fstep [g ⊢ GL1] [g ⊢ NG2]
+                 | [g ⊢ fs_synl GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   impossible ccsk_unique_fstep [g ⊢ GL1] [g ⊢ GL2]
+                 | [g ⊢ fs_synr GL2 GR2] ⇒
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FL1] [g ⊢ FL2] [g ⊢ GL1] [g ⊢ GL2] i in
+                   let [g ⊢ refp] = unique_diamonds_fb [g ⊢ FR1] [g ⊢ FR2] [g ⊢ GR1] [g ⊢ GR2] i in [g ⊢ refp])))
+  | [g ⊢ fs_nu \a.F1'] ⇒ let [g ⊢ fs_nu \a.F2'] = [g ⊢ F2] in
+    let [g ⊢ fs_nu \a.G1'] = [g ⊢ G1] in
+    let [g ⊢ fs_nu \a.G2'] = [g ⊢ G2] in
+    let [g ⊢ I] = i in
+    let [g,a:names ⊢ refp] = unique_diamonds_fb [_ ⊢ F1'] [_ ⊢ F2'] [_ ⊢ G1'] [_ ⊢ G2'] [_ ⊢ I[..]] in [g ⊢ refp]
+;
+
+%{
+(case [g ⊢ F2] of
+       | [g ⊢ fs_parl FL2 NF2] ⇒ ?
+       | [g ⊢ fs_parr FR2 NF2] ⇒ ?
+       | [g ⊢ fs_synl FL2 FR2] ⇒ ?
+       | [g ⊢ fs_synr FL2 FR2] ⇒ ?)
+
+(case [g ⊢ G1] of
+            | [g ⊢ fs_parl GL1 NG1] ⇒ ?
+            | [g ⊢ fs_parr GR1 NG1] ⇒ ?
+            | [g ⊢ fs_synl GL1 GR1] ⇒ ?
+            | [g ⊢ fs_synr GL1 GR1] ⇒ ?)
+
+(case [g ⊢ G2] of
+                 | [g ⊢ fs_parl GL2 NG2] ⇒ ?
+                 | [g ⊢ fs_parr GR2 NG2] ⇒ ?
+                 | [g ⊢ fs_synl GL2 GR2] ⇒ ?
+                 | [g ⊢ fs_synr GL2 GR2] ⇒ ?)
+
+}%
