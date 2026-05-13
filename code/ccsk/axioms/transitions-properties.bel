@@ -416,7 +416,7 @@ fn f,n ⇒ case f of
 % If a process X makes a forward transition F into the process X',
 % and a key K does not occur in X' (i.e., notin K X' holds), then K does
 % not occur in X as well (notin K X).
-rec notin_propagates_to_source: (g:ctx) [g ⊢ ccsk.fstep X T X'] →
+rec notin_propagates_to_source: (g:ctx) [g ⊢ ccsk.fstep X KL X'] →
    [g ⊢ notin K[] X'] → [g ⊢ notin K[] X] =
 / total f (notin_propagates_to_source _ _ _ _ _ f _) /
 fn f,n ⇒ case f of
@@ -2205,15 +2205,15 @@ mlam T1,T2,U1,U2 ⇒ fn sdt,sdu,i ⇒ case sdt of
 
 
 % Base case of the definition of equivalence of CCSK transitions
-LF ccsk_equiv_tr_base: ccsk.step P (kl_base A K) Q → ccsk.step R (kl_base A K) S → type =
-  | ccsk_etb: ccsk_same_direction (T:ccsk.step P (kl_base A K) Q) (T':ccsk.step R (kl_base A K) S) 
-            → ccsk_same_direction (U:ccsk.step P (kl_base B M) R) (U':ccsk.step Q (kl_base B M) S)
+LF ccsk_equiv_tr_base: ccsk.step P KL Q → ccsk.step R KL S → type =
+  | ccsk_etb: ccsk_same_direction (T:ccsk.step P KL1 Q) (T':ccsk.step R KL1 S) 
+            → ccsk_same_direction (U:ccsk.step P KL2 R) (U':ccsk.step Q KL2 S)
             → ccsk_indep_tr T U → ccsk_equiv_tr_base T T'
 ;
 
 % Equivalence of CCSK transitions ~:
 % Reflexive, symmetric and transitive closure of the ccsk_equiv_tr_base relation.
-LF ccsk_equiv_tr: ccsk.step P (kl_base A K) Q → ccsk.step R (kl_base B M) S → type =
+LF ccsk_equiv_tr: ccsk.step P KL1 Q → ccsk.step R KL2 S → type =
   | ccsk_et_base: ccsk_equiv_tr_base T T' → ccsk_equiv_tr T T'
   | ccsk_et_refl: ccsk_equiv_tr T T
   | ccsk_et_sym: ccsk_equiv_tr T' T → ccsk_equiv_tr T T'
@@ -2221,9 +2221,9 @@ LF ccsk_equiv_tr: ccsk.step P (kl_base A K) Q → ccsk.step R (kl_base B M) S �
 ;
 
 % Equivalent CCSK transitions share the same keyed label
-rec ccsk_equiv_tr_have_same_label: (g:ctx) (T:[g ⊢ ccsk.step P (kl_base A K[]) Q]) (T':[g ⊢ ccsk.step R (kl_base B M[]) S]) 
-  [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ eqkl (kl_base A K[]) (kl_base B M[])] =
-/ total e (ccsk_equiv_tr_have_same_label _ _ _ _ _ _ _ _ _ _ _ e) /
+rec ccsk_equiv_tr_have_same_label: (g:ctx) (T:[g ⊢ ccsk.step P KL1 Q]) (T':[g ⊢ ccsk.step R KL2 S]) 
+  [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ eqkl KL1 KL2] =
+/ total e (ccsk_equiv_tr_have_same_label _ _ _ _ _ _ _ _ _ e) /
 fn e ⇒ case e of
   | [_ ⊢ ccsk_et_base _] ⇒ [_ ⊢ refkl]
   | [_ ⊢ ccsk_et_refl] ⇒ [_ ⊢ refkl]
@@ -2233,9 +2233,10 @@ fn e ⇒ case e of
 ;
 
 % If two CCSK transitions are equivalent, then their enriched versions are equivalent
-rec enrich_preserves_equiv_tr: (g:ctx) {T:[g ⊢ ccsk.step X (kl_base A K[]) Y]} {T':[g ⊢ ccsk.step Z (kl_base A K[]) W]}
+rec enrich_preserves_equiv_tr: (g:ctx) {T:[g ⊢ ccsk.step X KL1 Y]} {T':[g ⊢ ccsk.step Z KL2 W]}
   (T+:[g ⊢ ccskp.step X T1 Y]) (T'+:[g ⊢ ccskp.step Z T1' W]) [g ⊢ ccsk_equiv_tr T T']
   → [g ⊢ enrich T T+] → [g ⊢ enrich T' T'+] → [g ⊢ equiv_tr T+ T'+] =
+/ total e (enrich_preserves_equiv_tr _ _ _ _ _ _ _ _ _ _ _ _ _ e _ _) /
 mlam T,T' ⇒ fn e,ent,ent' ⇒ case e of
   | [g ⊢ ccsk_et_base (ccsk_etb SDT SDU I)] ⇒
     % We apply the auxiliary lemma sdir_ccsk_to_ccskp to infer that T+ and T'+ have same direction
@@ -2298,7 +2299,6 @@ mlam T,T' ⇒ fn e,ent,ent' ⇒ case e of
   | [g ⊢ ccsk_et_refl] ⇒ let [g ⊢ refst] = functional_enrich ent ent' in [g ⊢ et_refl]
   | [g ⊢ ccsk_et_sym E] ⇒ let [g ⊢ E'] = enrich_preserves_equiv_tr [g ⊢ T'] [g ⊢ T] [g ⊢ E] ent' ent in [g ⊢ et_sym E']
   | [g ⊢ ccsk_et_trans E1 E2] ⇒ let [g ⊢ E1]:[g ⊢ ccsk_equiv_tr T T''] = [g ⊢ E1] in
-    let [g ⊢ refkl] = ccsk_equiv_tr_have_same_label [_ ⊢ E1] in
     let [g ⊢ ex_en ENT''] = total_enrich [g ⊢ T''] in
     let [g ⊢ E1'] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T''] [g ⊢ E1] ent [g ⊢ ENT''] in
     let [g ⊢ E2'] = enrich_preserves_equiv_tr [g ⊢ T''] [g ⊢ T'] [g ⊢ E2] [g ⊢ ENT''] ent' in [g ⊢ et_trans E1' E2']
@@ -2331,13 +2331,61 @@ let [g ⊢ HR+]:[g ⊢ inv_tr T+ RT+] = inv_ccsk_to_ccskp hr [g ⊢ ENT] [g ⊢ 
 let [g ⊢ it T+ RT+] = [g ⊢ HR+] in
 % Since T+ and U+ are independent, U+ and T+ are also independent (symmetry of independence)
 let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in
-% Since U and U' are equivalent, U+ and U'+ are also equivalent. Before applying the lemma, we need auxiliary type annotations
-let [g ⊢ T]:[g ⊢ ccsk.step _ (kl_base _ K[]) _] = [g ⊢ T] in
-let [g ⊢ U]:[g ⊢ ccsk.step _ (kl_base _ M[]) _] = [g ⊢ U] in
+% Since U and U' are equivalent, U+ and U'+ are also equivalent
 let [g ⊢ EU+] = enrich_preserves_equiv_tr [g ⊢ U] [g ⊢ U']
     [g ⊢ ccsk_et_base (ccsk_etb SDU SDT (ccsk_ind_tr ENU ENT I' (ctr _ _ (ccsk.st_s* T))))] [g ⊢ ENU] [g ⊢ ENU'] in
 % Since U+ and U'+ are equivalent, they have the same proof label
 let [g ⊢ refpl] = equiv_tr_have_same_label [g ⊢ EU+] in
 % We conclude by observing that U' and RT are independent, since the proof labels of their enriched versions are independent
 [g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
+;
+
+
+% Proof that step is symmetric
+rec ccsk_symmetric_step: (g:ctx) [g ⊢ ccsk.step X KL Y] → [g ⊢ ccsk.step Y KL X] =
+/ total s (ccsk_symmetric_step _ _ _ s) /
+fn s ⇒ case s of
+    | [g ⊢ fw F] ⇒ let [g ⊢ B] = ccsk_loop_lemma_one [g ⊢ F] in [g ⊢ bw B]
+    | [g ⊢ bw B] ⇒ let [g ⊢ F] = ccsk_loop_lemma_two [g ⊢ B] in [g ⊢ fw F]
+;
+
+% Proof that step* is symmetric
+rec ccsk_symmetric_step*: (g:ctx) [g ⊢ ccsk.step* X Y] → [g ⊢ ccsk.step* Y X] =
+/ total s (ccsk_symmetric_step* _ _ _ s) /
+fn s ⇒ case s of
+  | [g ⊢ ccsk.id_s*] ⇒ [g ⊢ ccsk.id_s*]
+  | [g ⊢ ccsk.st_s* S] ⇒ let [g ⊢ S'] = ccsk_symmetric_step [g ⊢ S] in [g ⊢ ccsk.st_s* S']
+  | [g ⊢ ccsk.tr_s* S1* S2*] ⇒ let [g ⊢ S1*'] = ccsk_symmetric_step* [g ⊢ S1*] in
+       let [g ⊢ S2*'] = ccsk_symmetric_step* [g ⊢ S2*] in [g ⊢ ccsk.tr_s* S2*' S1*']
+;
+
+% Equivalent transitions are connected
+rec ccsk_equiv_tr_are_connected: (g:ctx) (T:[g ⊢ ccsk.step P A Q]) (T':[g ⊢ ccsk.step R B S])
+  [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ ccsk.conn_tr T T'] =
+/ total e (ccsk_equiv_tr_are_connected _ _ _ _ _ _ _ _ _ e) /
+fn e ⇒ case e of
+  | [_ ⊢ ccsk_et_base (ccsk_etb _ SD2 _)]:[_ ⊢ ccsk_equiv_tr T T'] ⇒
+    let [_ ⊢ _]:[_ ⊢ ccsk_same_direction U _] = [_ ⊢ SD2] in
+    [_ ⊢ ctr T T' (ccsk.tr_s* (ccsk.st_s* U) (ccsk.st_s* T'))]
+  | [_ ⊢ ccsk_et_refl] ⇒ let [_ ⊢ _]:[_ ⊢ ccsk_equiv_tr T T] = e in [_ ⊢ ctr _ _ (ccsk.st_s* T)]
+  | [_ ⊢ ccsk_et_sym E'] ⇒ let [g ⊢ ctr T' T S*] = ccsk_equiv_tr_are_connected [_ ⊢ E'] in
+                 let [g ⊢ S*'] = ccsk_symmetric_step* [g ⊢ S*] in [g ⊢ ctr _ _ (ccsk.tr_s* (ccsk.st_s* T) (ccsk.tr_s* S*' (ccsk.st_s* T')))]
+  | [_ ⊢ ccsk_et_trans E1 E2] ⇒ let [g ⊢ ctr _ T S1*] = ccsk_equiv_tr_are_connected [_ ⊢ E1] in
+                      let [g ⊢ ctr _ _ S2*] = ccsk_equiv_tr_are_connected [_ ⊢ E2] in
+                      let [g ⊢ RT] = ccsk_symmetric_step [g ⊢ T] in [g ⊢ ctr _ _ (ccsk.tr_s* S1* (ccsk.tr_s* (ccsk.st_s* RT) S2*))]
+;
+
+% Independence respects events (IRE):
+% Given three transitions t,t' and u, if t~t' (t and t' are equivalent) and t' and u are independent,
+% then also t and u are independent.
+rec ccsk_ire: (g:ctx) {T:[g ⊢ ccsk.step X1 KL1 Y1]} {T':[g ⊢ ccsk.step X2 KL2 Y2]} {U:[g ⊢ ccsk.step X3 KL3 Y3]} 
+  [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ ccsk_indep_tr T' U] → [g ⊢ ccsk_indep_tr T U] =
+/ total e (ccsk_ire _ _ _ _ _ _ _ _ _ _ _ _ _ e _) /
+mlam T,T',U ⇒ fn e,i ⇒ let [g ⊢ ccsk_ind_tr ENT' ENU I (ctr _ _ S'*)] = i in
+let {ENT:[g ⊢ enrich T T+]}[g ⊢ ex_en ENT] = total_enrich [g ⊢ T] in
+let [_ ⊢ refkl] = ccsk_equiv_tr_have_same_label e in
+let [g ⊢ E+] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T'] e [g ⊢ ENT] [g ⊢ ENT'] in
+let [_ ⊢ refpl] = equiv_tr_have_same_label [g ⊢ E+] in
+let [g ⊢ ctr _ _ S*] = ccsk_equiv_tr_are_connected e in
+let [g ⊢ RT'] = ccsk_symmetric_step [g ⊢ T'] in [_ ⊢ ccsk_ind_tr ENT ENU I (ctr _ _ (ccsk.tr_s* S* (ccsk.tr_s* (ccsk.st_s* RT') S'*)))]
 ;

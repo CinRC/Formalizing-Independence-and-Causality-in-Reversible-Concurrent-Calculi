@@ -147,5 +147,5 @@ rec ire: (g:ctx) (T:[g ⊢ step X1 T1 Y1]) (T':[g ⊢ step X2 T2 Y2]) (U:[g ⊢ 
 fn e,i ⇒ let [g ⊢ ind_tr I (ct T' _ S'*)] = i in
 let [_ ⊢ refpl] = equiv_tr_have_same_label e in 
 let [g ⊢ ct _ _ S*] = equiv_tr_are_connected e in
-let [g ⊢ RT'] = symmetric_step [g ⊢ T'] in [_ ⊢ ind_tr I (ct _ _ ((tr_s* S* (tr_s* (st_s* RT') S'*))))]
+let [g ⊢ RT'] = symmetric_step [g ⊢ T'] in [_ ⊢ ind_tr I (ct _ _ (tr_s* S* (tr_s* (st_s* RT') S'*)))]
 ;
