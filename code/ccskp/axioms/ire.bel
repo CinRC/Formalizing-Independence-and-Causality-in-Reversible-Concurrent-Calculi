@@ -103,29 +103,17 @@ case [g ⊢ SD1] of
 
 % Equivalence of transitions ~:
 % Reflexive, symmetric and transitive closure of the equiv_tr_base relation.
-LF equiv_tr: step P A Q → step R B S → type =
+LF equiv_tr: step P A Q → step R A S → type =
   | et_base: equiv_tr_base T T' → equiv_tr T T'
   | et_refl: equiv_tr T T
   | et_sym: equiv_tr T' T → equiv_tr T T'
   | et_trans: equiv_tr T T' → equiv_tr T' T'' → equiv_tr T T''
 ;
 
-% Equivalent transitions share the same proof label
-rec equiv_tr_have_same_label: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R B S]) 
-  [g ⊢ equiv_tr T T'] → [g ⊢ eqpl A B] =
-/ total e (equiv_tr_have_same_label _ _ _ _ _ _ _ _ _ e) /
-fn e ⇒ case e of
-  | [_ ⊢ et_base _] ⇒ [_ ⊢ refpl]
-  | [_ ⊢ et_refl] ⇒ [_ ⊢ refpl]
-  | [_ ⊢ et_sym E'] ⇒ let [_ ⊢ refpl] = equiv_tr_have_same_label [_ ⊢ E'] in [_ ⊢ refpl]
-  | [_ ⊢ et_trans E1 E2] ⇒ let [_ ⊢ refpl] = equiv_tr_have_same_label [_ ⊢ E1] in
-                            let [_ ⊢ refpl] = equiv_tr_have_same_label [_ ⊢ E2] in [_ ⊢ refpl]
-;
-
 % Equivalent transitions are connected
-rec equiv_tr_are_connected: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R B S])
+rec equiv_tr_are_connected: (g:ctx) (T:[g ⊢ step P A Q]) (T':[g ⊢ step R A S])
   [g ⊢ equiv_tr T T'] → [g ⊢ conn_tr T T'] =
-/ total e (equiv_tr_are_connected _ _ _ _ _ _ _ _ _ e) /
+/ total e (equiv_tr_are_connected _ _ _ _ _ _ _ _ e) /
 fn e ⇒ case e of
   | [_ ⊢ et_base (etb _ SD2 _)]:[_ ⊢ equiv_tr T T'] ⇒
     let [_ ⊢ _]:[_ ⊢ same_direction U _] = [_ ⊢ SD2] in
@@ -141,11 +129,10 @@ fn e ⇒ case e of
 % Independence respects events (IRE):
 % Given three transitions t,t' and u, if t~t' (t and t' are equivalent) and t' and u are independent,
 % then also t and u are independent.
-rec ire: (g:ctx) (T:[g ⊢ step X1 T1 Y1]) (T':[g ⊢ step X2 T2 Y2]) (U:[g ⊢ step X3 T3 Y3]) 
+rec ire: (g:ctx) (T:[g ⊢ step X1 T1 Y1]) (T':[g ⊢ step X2 T1 Y2]) (U:[g ⊢ step X3 T3 Y3])
   [g ⊢ equiv_tr T T'] → [g ⊢ indep_tr T' U] → [g ⊢ indep_tr T U] =
-/ total e (ire _ _ _ _ _ _ _ _ _ _ _ _ _ e _) /
+/ total e (ire _ _ _ _ _ _ _ _ _ _ _ _ e _) /
 fn e,i ⇒ let [g ⊢ ind_tr I (ct T' _ S'*)] = i in
-let [_ ⊢ refpl] = equiv_tr_have_same_label e in 
 let [g ⊢ ct _ _ S*] = equiv_tr_are_connected e in
 let [g ⊢ RT'] = symmetric_step [g ⊢ T'] in [_ ⊢ ind_tr I (ct _ _ (tr_s* S* (tr_s* (st_s* RT') S'*)))]
 ;

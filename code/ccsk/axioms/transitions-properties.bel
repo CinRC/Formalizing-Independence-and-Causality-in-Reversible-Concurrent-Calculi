@@ -2213,30 +2213,31 @@ LF ccsk_equiv_tr_base: ccsk.step P KL Q → ccsk.step R KL S → type =
 
 % Equivalence of CCSK transitions ~:
 % Reflexive, symmetric and transitive closure of the ccsk_equiv_tr_base relation.
-LF ccsk_equiv_tr: ccsk.step P KL1 Q → ccsk.step R KL2 S → type =
+LF ccsk_equiv_tr: ccsk.step P KL Q → ccsk.step R KL S → type =
   | ccsk_et_base: ccsk_equiv_tr_base T T' → ccsk_equiv_tr T T'
   | ccsk_et_refl: ccsk_equiv_tr T T
   | ccsk_et_sym: ccsk_equiv_tr T' T → ccsk_equiv_tr T T'
   | ccsk_et_trans: ccsk_equiv_tr T T' → ccsk_equiv_tr T' T'' → ccsk_equiv_tr T T''
 ;
 
-% Equivalent CCSK transitions share the same keyed label
-rec ccsk_equiv_tr_have_same_label: (g:ctx) (T:[g ⊢ ccsk.step P KL1 Q]) (T':[g ⊢ ccsk.step R KL2 S]) 
-  [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ eqkl KL1 KL2] =
-/ total e (ccsk_equiv_tr_have_same_label _ _ _ _ _ _ _ _ _ e) /
-fn e ⇒ case e of
-  | [_ ⊢ ccsk_et_base _] ⇒ [_ ⊢ refkl]
-  | [_ ⊢ ccsk_et_refl] ⇒ [_ ⊢ refkl]
-  | [_ ⊢ ccsk_et_sym E'] ⇒ let [_ ⊢ refkl] = ccsk_equiv_tr_have_same_label [_ ⊢ E'] in [_ ⊢ refkl]
-  | [_ ⊢ ccsk_et_trans E1 E2] ⇒ let [_ ⊢ refkl] = ccsk_equiv_tr_have_same_label [_ ⊢ E1] in
-                                 let [_ ⊢ refkl] = ccsk_equiv_tr_have_same_label [_ ⊢ E2] in [_ ⊢ refkl]
+% Given two CCSK transitions t and t' that use the same keyed label, their enriched versions
+% t+ and t'+ may in general use different proof labels. However, if t and t' are equivalent,
+% t+ and t'+ are also equivalent and, as a consequence, use the same proof label.
+
+% To state the result in full generality, t+ and t'+ must initially be allowed to use
+% different proof labels. However, the conclusion equiv_tr t+ t'+ would not type-check,
+% since equiv_tr requires its arguments to share the same proof label. For this reason,
+% we introduce the auxiliary type same_labels_and_equiv_tr, which wraps equiv_tr while
+% allowing the proof labels of t+ and t'+ to differ initially.
+LF same_labels_and_equiv_tr: ccskp.step X T Y → ccskp.step Z T' W → type =
+  | sl_et: equiv_tr (T+:ccskp.step X T Y) (T'+:ccskp.step Z T W) → same_labels_and_equiv_tr T+ T'+
 ;
 
 % If two CCSK transitions are equivalent, then their enriched versions are equivalent
-rec enrich_preserves_equiv_tr: (g:ctx) {T:[g ⊢ ccsk.step X KL1 Y]} {T':[g ⊢ ccsk.step Z KL2 W]}
-  (T+:[g ⊢ ccskp.step X T1 Y]) (T'+:[g ⊢ ccskp.step Z T1' W]) [g ⊢ ccsk_equiv_tr T T']
-  → [g ⊢ enrich T T+] → [g ⊢ enrich T' T'+] → [g ⊢ equiv_tr T+ T'+] =
-/ total e (enrich_preserves_equiv_tr _ _ _ _ _ _ _ _ _ _ _ _ _ e _ _) /
+rec enrich_preserves_equiv_tr: (g:ctx) {T:[g ⊢ ccsk.step X KL Y]} {T':[g ⊢ ccsk.step Z KL W]}
+  (T+:[g ⊢ ccskp.step X T1 Y]) (T'+:[g ⊢ ccskp.step Z T2 W]) [g ⊢ ccsk_equiv_tr T T']
+  → [g ⊢ enrich T T+] → [g ⊢ enrich T' T'+] → [g ⊢ same_labels_and_equiv_tr T+ T'+] =
+/ total e (enrich_preserves_equiv_tr _ _ _ _ _ _ _ _ _ _ _ _ e _ _) /
 mlam T,T' ⇒ fn e,ent,ent' ⇒ case e of
   | [g ⊢ ccsk_et_base (ccsk_etb SDT SDU I)] ⇒
     % We apply the auxiliary lemma sdir_ccsk_to_ccskp to infer that T+ and T'+ have same direction
@@ -2295,13 +2296,13 @@ mlam T,T' ⇒ fn e,ent,ent' ⇒ case e of
          let [g ⊢ refst] = unique_step [g ⊢ T'+] [g ⊢ T''+] in
          let [g ⊢ refst] = unique_step [g ⊢ U'+] [g ⊢ U''+] in
          % We can finally say that T+ and T'+ are equivalent
-         [g ⊢ et_base (etb SDT+ SDU+ (ind_tr I+ (ct T+ U+ (st_s* U+))))])
-  | [g ⊢ ccsk_et_refl] ⇒ let [g ⊢ refst] = functional_enrich ent ent' in [g ⊢ et_refl]
-  | [g ⊢ ccsk_et_sym E] ⇒ let [g ⊢ E'] = enrich_preserves_equiv_tr [g ⊢ T'] [g ⊢ T] [g ⊢ E] ent' ent in [g ⊢ et_sym E']
+         [g ⊢ sl_et (et_base (etb SDT+ SDU+ (ind_tr I+ (ct T+ U+ (st_s* U+)))))])
+  | [g ⊢ ccsk_et_refl] ⇒ let [g ⊢ refst] = functional_enrich ent ent' in [g ⊢ sl_et et_refl]
+  | [g ⊢ ccsk_et_sym E] ⇒ let [g ⊢ sl_et E'] = enrich_preserves_equiv_tr [g ⊢ T'] [g ⊢ T] [g ⊢ E] ent' ent in [g ⊢ sl_et (et_sym E')]
   | [g ⊢ ccsk_et_trans E1 E2] ⇒ let [g ⊢ E1]:[g ⊢ ccsk_equiv_tr T T''] = [g ⊢ E1] in
     let [g ⊢ ex_en ENT''] = total_enrich [g ⊢ T''] in
-    let [g ⊢ E1'] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T''] [g ⊢ E1] ent [g ⊢ ENT''] in
-    let [g ⊢ E2'] = enrich_preserves_equiv_tr [g ⊢ T''] [g ⊢ T'] [g ⊢ E2] [g ⊢ ENT''] ent' in [g ⊢ et_trans E1' E2']
+    let [g ⊢ sl_et E1'] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T''] [g ⊢ E1] ent [g ⊢ ENT''] in
+    let [g ⊢ sl_et E2'] = enrich_preserves_equiv_tr [g ⊢ T''] [g ⊢ T'] [g ⊢ E2] [g ⊢ ENT''] ent' in [g ⊢ sl_et (et_trans E1' E2')]
 ;
 
 % Propagation of coinitial independence (PCI):
@@ -2332,10 +2333,8 @@ let [g ⊢ it T+ RT+] = [g ⊢ HR+] in
 % Since T+ and U+ are independent, U+ and T+ are also independent (symmetry of independence)
 let [g ⊢ I'] = symmetric_indep_pl [g ⊢ I] in
 % Since U and U' are equivalent, U+ and U'+ are also equivalent
-let [g ⊢ EU+] = enrich_preserves_equiv_tr [g ⊢ U] [g ⊢ U']
+let [g ⊢ sl_et EU+] = enrich_preserves_equiv_tr [g ⊢ U] [g ⊢ U']
     [g ⊢ ccsk_et_base (ccsk_etb SDU SDT (ccsk_ind_tr ENU ENT I' (ctr _ _ (ccsk.st_s* T))))] [g ⊢ ENU] [g ⊢ ENU'] in
-% Since U+ and U'+ are equivalent, they have the same proof label
-let [g ⊢ refpl] = equiv_tr_have_same_label [g ⊢ EU+] in
 % We conclude by observing that U' and RT are independent, since the proof labels of their enriched versions are independent
 [g ⊢ ccsk_ind_tr ENU' ENRT I' (ctr _ _ (ccsk.st_s* RT))]
 ;
@@ -2360,9 +2359,9 @@ fn s ⇒ case s of
 ;
 
 % Equivalent transitions are connected
-rec ccsk_equiv_tr_are_connected: (g:ctx) (T:[g ⊢ ccsk.step P A Q]) (T':[g ⊢ ccsk.step R B S])
+rec ccsk_equiv_tr_are_connected: (g:ctx) (T:[g ⊢ ccsk.step P A Q]) (T':[g ⊢ ccsk.step R A S])
   [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ ccsk.conn_tr T T'] =
-/ total e (ccsk_equiv_tr_are_connected _ _ _ _ _ _ _ _ _ e) /
+/ total e (ccsk_equiv_tr_are_connected _ _ _ _ _ _ _ _ e) /
 fn e ⇒ case e of
   | [_ ⊢ ccsk_et_base (ccsk_etb _ SD2 _)]:[_ ⊢ ccsk_equiv_tr T T'] ⇒
     let [_ ⊢ _]:[_ ⊢ ccsk_same_direction U _] = [_ ⊢ SD2] in
@@ -2378,14 +2377,12 @@ fn e ⇒ case e of
 % Independence respects events (IRE):
 % Given three transitions t,t' and u, if t~t' (t and t' are equivalent) and t' and u are independent,
 % then also t and u are independent.
-rec ccsk_ire: (g:ctx) {T:[g ⊢ ccsk.step X1 KL1 Y1]} {T':[g ⊢ ccsk.step X2 KL2 Y2]} {U:[g ⊢ ccsk.step X3 KL3 Y3]} 
+rec ccsk_ire: (g:ctx) {T:[g ⊢ ccsk.step X1 KL1 Y1]} {T':[g ⊢ ccsk.step X2 KL1 Y2]} {U:[g ⊢ ccsk.step X3 KL3 Y3]} 
   [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ ccsk_indep_tr T' U] → [g ⊢ ccsk_indep_tr T U] =
-/ total e (ccsk_ire _ _ _ _ _ _ _ _ _ _ _ _ _ e _) /
+/ total e (ccsk_ire _ _ _ _ _ _ _ _ _ _ _ _ e _) /
 mlam T,T',U ⇒ fn e,i ⇒ let [g ⊢ ccsk_ind_tr ENT' ENU I (ctr _ _ S'*)] = i in
 let {ENT:[g ⊢ enrich T T+]}[g ⊢ ex_en ENT] = total_enrich [g ⊢ T] in
-let [_ ⊢ refkl] = ccsk_equiv_tr_have_same_label e in
-let [g ⊢ E+] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T'] e [g ⊢ ENT] [g ⊢ ENT'] in
-let [_ ⊢ refpl] = equiv_tr_have_same_label [g ⊢ E+] in
+let [g ⊢ sl_et E+] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T'] e [g ⊢ ENT] [g ⊢ ENT'] in
 let [g ⊢ ctr _ _ S*] = ccsk_equiv_tr_are_connected e in
 let [g ⊢ RT'] = ccsk_symmetric_step [g ⊢ T'] in [_ ⊢ ccsk_ind_tr ENT ENU I (ctr _ _ (ccsk.tr_s* S* (ccsk.tr_s* (ccsk.st_s* RT') S'*)))]
 ;
