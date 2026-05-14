@@ -2381,8 +2381,25 @@ rec ccsk_ire: (g:ctx) {T:[g ⊢ ccsk.step X1 KL1 Y1]} {T':[g ⊢ ccsk.step X2 KL
   [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ ccsk_indep_tr T' U] → [g ⊢ ccsk_indep_tr T U] =
 / total e (ccsk_ire _ _ _ _ _ _ _ _ _ _ _ _ e _) /
 mlam T,T',U ⇒ fn e,i ⇒ let [g ⊢ ccsk_ind_tr ENT' ENU I (ctr _ _ S'*)] = i in
-let {ENT:[g ⊢ enrich T T+]}[g ⊢ ex_en ENT] = total_enrich [g ⊢ T] in
-let [g ⊢ sl_et E+] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T'] e [g ⊢ ENT] [g ⊢ ENT'] in
+let [g ⊢ ex_en ENT] = total_enrich [g ⊢ T] in
+let [g ⊢ sl_et _] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T'] e [g ⊢ ENT] [g ⊢ ENT'] in
 let [g ⊢ ctr _ _ S*] = ccsk_equiv_tr_are_connected e in
-let [g ⊢ RT'] = ccsk_symmetric_step [g ⊢ T'] in [_ ⊢ ccsk_ind_tr ENT ENU I (ctr _ _ (ccsk.tr_s* S* (ccsk.tr_s* (ccsk.st_s* RT') S'*)))]
+let [g ⊢ RT'] = ccsk_symmetric_step [g ⊢ T'] in [g ⊢ ccsk_ind_tr ENT ENU I (ctr _ _ (ccsk.tr_s* S* (ccsk.tr_s* (ccsk.st_s* RT') S'*)))]
+;
+
+%%% CIRE: coinitial independence respects events
+
+% Coinitial independence respects events (CIRE):
+% Given four transitions t,t',u and u', if t~t', u~u', t and u are coinitial,
+% t' and u' are coinitial, and t' and u' are independent, then also t and u are independent.
+rec ccsk_cire: (g:ctx) {T:[g ⊢ ccsk.step X1 KL1 Y1]} {T':[g ⊢ ccsk.step X2 KL1 Y2]} {U:[g ⊢ ccsk.step X1 KL2 Y3]}
+  {U':[g ⊢ ccsk.step X2 KL2 Y4]} [g ⊢ ccsk_equiv_tr T T'] → [g ⊢ ccsk_equiv_tr U U'] → [g ⊢ ccsk_indep_tr T' U']
+  → [g ⊢ ccsk_indep_tr T U] =
+/ total e (ccsk_cire _ _ _ _ _ _ _ _ _ _ _ _ _ e _ _) /
+mlam T,T',U,U' ⇒ fn et,eu,i ⇒ let [g ⊢ ex_en ENT] = total_enrich [_ ⊢ T] in
+let [g ⊢ ex_en ENU] = total_enrich [g ⊢ U] in
+let [g ⊢ ccsk_ind_tr ENT' ENU' I _] = i in
+let [g ⊢ sl_et _] = enrich_preserves_equiv_tr [g ⊢ T] [g ⊢ T'] et [g ⊢ ENT] [g ⊢ ENT'] in
+let [g ⊢ sl_et _] = enrich_preserves_equiv_tr [g ⊢ U] [g ⊢ U'] eu [g ⊢ ENU] [g ⊢ ENU'] in
+[g ⊢ ccsk_ind_tr ENT ENU I (ctr _ _ (ccsk.st_s* U))]
 ;
