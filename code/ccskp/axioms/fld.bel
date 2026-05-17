@@ -1,0 +1,162 @@
+%%% FLD: forward label determinism
+
+% Forward label determinism for closed transitions:
+% Two coinitial forward closed transitions with the same proof label are equal.
+rec fld_fc: (g:ctx) {F1:[g ⊢ fstep_cl X T Y1]} {F2:[g ⊢ fstep_cl X T Y2]} [g ⊢ eqfc F1 F2] =
+/ total f1 (fld_fc _ _ _ _ _ f1 _) /
+mlam F1 F2 ⇒ case [_ ⊢ F1] of
+  | [g ⊢ fc_pref D1] ⇒ let [g ⊢ fc_pref D2] = [g ⊢ F2] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ reffc]
+  | [g ⊢ fc_kpref F1' H1 I1] ⇒ let [g ⊢ fc_kpref F2' H2 I2] = [g ⊢ F2] in
+    let [g ⊢ reffc] = fld_fc [g ⊢ F1'] [g ⊢ F2'] in
+    let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
+    let refnq [g ⊢ I1] = unique_neq [g ⊢ I1] [g ⊢ I2] in [g ⊢ reffc]
+  | [g ⊢ fc_suml F1' D1] ⇒ let [g ⊢ fc_suml F2' D2] = [g ⊢ F2] in
+    let [g ⊢ reffc] = fld_fc [g ⊢ F1'] [g ⊢ F2'] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ reffc]
+  | [g ⊢ fc_sumr F1' D1] ⇒ let [g ⊢ fc_sumr F2' D2] = [g ⊢ F2] in
+    let [g ⊢ reffc] = fld_fc [g ⊢ F1'] [g ⊢ F2'] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ reffc]
+  | [g ⊢ fc_parl F1' H1 N1] ⇒ let [g ⊢ fc_parl F2' H2 N2] = [g ⊢ F2] in
+    let [g ⊢ reffc] = fld_fc [g ⊢ F1'] [g ⊢ F2'] in
+    let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ reffc]
+  | [g ⊢ fc_parr F1' H1 N1] ⇒ let [g ⊢ fc_parr F2' H2 N2] = [g ⊢ F2] in
+    let [g ⊢ reffc] = fld_fc [g ⊢ F1'] [g ⊢ F2'] in
+    let [g ⊢ refky] = unique_key [g ⊢ H1] [g ⊢ H2] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ reffc]
+  | [g ⊢ fc_synl FL1 LL1 HL1 FR1 LR1 HR1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fc_synl FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ reffc] = fld_fc [g ⊢ FL1] [g ⊢ FL2] in
+         let [g ⊢ reflb] = unique_lab [g ⊢ LL1] [g ⊢ LL2] in
+         let [g ⊢ refky] = unique_key [g ⊢ HL1] [g ⊢ HL2] in
+         let [g ⊢ reffc] = fld_fc [g ⊢ FR1] [g ⊢ FR2] in
+         let [g ⊢ reflb] = unique_lab [g ⊢ LR1] [g ⊢ LR2] in
+         let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in [g ⊢ reffc]
+       | [g ⊢ fc_synr FL2 LL2 _ _ _ _] ⇒ let [g ⊢ reffc] = fld_fc [g ⊢ FL1] [g ⊢ FL2] in
+         impossible unique_lab [g ⊢ LL1] [g ⊢ LL2])
+  | [g ⊢ fc_synr FL1 LL1 HL1 FR1 LR1 HR1] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fc_synl FL2 LL2 _ _ _ _] ⇒ let [g ⊢ reffc] = fld_fc [g ⊢ FL1] [g ⊢ FL2] in
+         impossible unique_lab [g ⊢ LL1] [g ⊢ LL2]
+       | [g ⊢ fc_synr FL2 LL2 HL2 FR2 LR2 HR2] ⇒ let [g ⊢ reffc] = fld_fc [g ⊢ FL1] [g ⊢ FL2] in
+         let [g ⊢ reflb] = unique_lab [g ⊢ LL1] [g ⊢ LL2] in
+         let [g ⊢ refky] = unique_key [g ⊢ HL1] [g ⊢ HL2] in
+         let [g ⊢ reffc] = fld_fc [g ⊢ FR1] [g ⊢ FR2] in
+         let [g ⊢ reflb] = unique_lab [g ⊢ LR1] [g ⊢ LR2] in
+         let [g ⊢ refky] = unique_key [g ⊢ HR1] [g ⊢ HR2] in [g ⊢ reffc])
+  | [g ⊢ fc_nu \a.F1'] ⇒ let [g ⊢ fc_nu \a.F2'] = [g ⊢ F2] in
+    let [g,a:names ⊢ reffc] = fld_fc [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffc]
+;
+
+% First auxiliary lemma 
+rec no_fstep_cl_and_op_fld_two: (g:ctx) [g,a:names,b:names ⊢ fstep_cl X T[..,a] Y1] → [g,a:names,b:names ⊢ fstep_cl X T[..,b] Y2] →
+  [g,a:names,b:names ⊢ occurs b T[..,b]] → [g ⊢ false] =
+/ total f1 (no_fstep_cl_and_op_fld_two _ _ _ _ _ _ f1 _) /
+fn f1,f2,o ⇒ case f1 of
+  | [g,a:names,b:names ⊢ fc_pref D1] ⇒ let [g,a:names,b:names ⊢ fc_pref D2] = f2 in impossible occur_imp o
+  | [g,a:names,b:names ⊢ fc_kpref F1 _ _] ⇒ let [g,a:names,b:names ⊢ fc_kpref F2 _ _] = f2 in
+    impossible no_fstep_cl_and_op_fld_two [_ ⊢ F1] [_ ⊢ F2] o
+  | [g,a:names,b:names ⊢ fc_suml F1 _] ⇒ let [g,a:names,b:names ⊢ fc_suml F2 _] = f2 in 
+    let [g,a:names,b:names ⊢ occ_suml O] = o in
+    impossible no_fstep_cl_and_op_fld_two [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O]
+  | [g,a:names,b:names ⊢ fc_sumr F1 _] ⇒ let [g,a:names,b:names ⊢ fc_sumr F2 _] = f2 in 
+    let [g,a:names,b:names ⊢ occ_sumr O] = o in
+    impossible no_fstep_cl_and_op_fld_two [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O]
+  | [g,a:names,b:names ⊢ fc_parl F1 _ _] ⇒ let [g,a:names,b:names ⊢ fc_parl F2 _ _] = f2 in 
+    let [g,a:names,b:names ⊢ occ_parl O] = o in
+    impossible no_fstep_cl_and_op_fld_two [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O]
+  | [g,a:names,b:names ⊢ fc_parr F1 _ _] ⇒ let [g,a:names,b:names ⊢ fc_parr F2 _ _] = f2 in 
+    let [g,a:names,b:names ⊢ occ_parr O] = o in
+    impossible no_fstep_cl_and_op_fld_two [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O]
+  | [g,a:names,b:names ⊢ fc_synl FL1 LL1 _ _ _ _] ⇒ (case f2 of
+       | [g,a:names,b:names ⊢ fc_synl FL2 _ _ _ _ _] ⇒ let [g,a:names,b:names ⊢ occ_sync O] = o in
+         impossible no_fstep_cl_and_op_fld_two [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ O]
+       | [g,a:names,b:names ⊢ fc_synr _ LL2[..,b,a] _ _ _ _] ⇒ impossible unique_lab [_ ⊢ LL1] [_ ⊢ LL2])
+  | [g,a:names,b:names ⊢ fc_synr FL1 LL1 _ _ _ _] ⇒ (case f2 of
+       | [g,a:names,b:names ⊢ fc_synl _ LL2[..,b,a] _ _ _ _] ⇒ impossible unique_lab [_ ⊢ LL1] [_ ⊢ LL2]
+       | [g,a:names,b:names ⊢ fc_synr FL2 _ _ _ _ _] ⇒ let [g,a:names,b:names ⊢ occ_sync O] = o in
+         impossible no_fstep_cl_and_op_fld_two [_ ⊢ FL1] [_ ⊢ FL2] [_ ⊢ O])
+  | [g,a:names,b:names ⊢ fc_nu \c.F1[..,c,a,b]] ⇒ let [g,a:names,b:names ⊢ fc_nu \c.F2[..,c,a,b]] = f2 in
+    let [g,a:names,b:names ⊢ O] = o in
+    impossible no_fstep_cl_and_op_fld_two [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O[..]]
+;
+
+
+% Second auxiliary lemma
+rec no_fstep_cl_and_op_fld: (g:ctx) [g,a:names ⊢ fstep_cl X T Y1] → [g,a:names ⊢ fstep_op X (open \a.T[..]) Y2] →
+ [g,a:names ⊢ occurs a T] → [g,a:names ⊢ lab T A[..]] → [g ⊢ false] =
+/ total f1 (no_fstep_cl_and_op_fld _ _ _ _ _ _ f1 _ _ _) /
+fn f1,f2,o1,l1 ⇒ case f1 of
+  | [g,a:names ⊢ fc_pref D1] ⇒ impossible f2
+  | [g,a:names ⊢ fc_kpref F1 _ _] ⇒ let [g,a:names ⊢ fo_kpref F2 (\_._) _] = f2 in
+    impossible no_fstep_cl_and_op_fld [_ ⊢ F1] [_ ⊢ F2] o1 l1
+  | [g,a:names ⊢ fc_suml F1 _] ⇒ let [g,a:names ⊢ fo_suml F2 _] = f2 in 
+    let [g,a:names ⊢ occ_suml O1] = o1 in
+    let [g,a:names ⊢ lab_suml L1] = l1 in
+    impossible no_fstep_cl_and_op_fld [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O1] [_ ⊢ L1]
+  | [g,a:names ⊢ fc_sumr F1 _] ⇒ let [g,a:names ⊢ fo_sumr F2 _] = f2 in
+    let [g,a:names ⊢ occ_sumr O1] = o1 in
+    let [g,a:names ⊢ lab_sumr L1] = l1 in
+    impossible no_fstep_cl_and_op_fld [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O1] [_ ⊢ L1]
+  | [g,a:names ⊢ fc_parl F1 _ _] ⇒ let [g,a:names ⊢ fo_parl F2 (\_._) _] = f2 in
+    let [g,a:names ⊢ occ_parl O1] = o1 in
+    let [g,a:names ⊢ lab_parl L1] = l1 in
+    impossible no_fstep_cl_and_op_fld [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O1] [_ ⊢ L1]
+  | [g,a:names ⊢ fc_parr F1 _ _] ⇒ let [g,a:names ⊢ fo_parr F2 (\_._) _] = f2 in
+    let [g,a:names ⊢ occ_parr O1] = o1 in
+    let [g,a:names ⊢ lab_parr L1] = l1 in
+    impossible no_fstep_cl_and_op_fld [_ ⊢ F1] [_ ⊢ F2] [_ ⊢ O1] [_ ⊢ L1]
+  | [g,a:names ⊢ fc_synl _ _ _ _ _ _] ⇒ impossible f2
+  | [g,a:names ⊢ fc_synr _ _ _ _ _ _] ⇒ impossible f2
+  | [g,a:names ⊢ fc_nu \b.F1[..,b,a]] ⇒ (case f2 of
+       | [g,a:names ⊢ fo_nu_cl (\b.O2) (\b.L2) (\b.F2[..,b,a])] ⇒ let [g,a:names ⊢ O1] = o1 in
+         impossible no_fstep_cl_and_op_fld_two [g,b:names,a:names ⊢ F1[..,a,b]] [g,b:names,a:names ⊢ F2[..,a,b]] [_ ⊢ O1[..]]
+       | [g,a:names ⊢ fo_nu_op \b.F2[..,b,a]] ⇒ let [g,a:names ⊢ O1] = o1 in
+         let [g,a:names ⊢ L1] = l1 in
+         let [g,b:names,a:names ⊢ E[..,b]] = no_fstep_cl_and_op_fld [g,a:names,b:names ⊢ F1] [g,a:names,b:names ⊢ F2]
+             [g,b:names,a:names ⊢ O1[..,a]] [g,b:names,a:names ⊢ L1[..,a]] in [g,a:names ⊢ E])
+;
+
+% Forward label determinism for open transitions:
+% Two coinitial forward open transitions with the same proof label are equal.
+rec fld_fo: (g:ctx) {F1:[g ⊢ fstep_op X T Y1]} {F2:[g ⊢ fstep_op X T Y2]} [g ⊢ eqfo F1 F2] =
+/ total f1 (fld_fo _ _ _ _ _ f1 _) /
+mlam F1 F2 ⇒ case [_ ⊢ F1] of
+  | [g ⊢ fo_nu_cl (\a.O1) (\a.L1) (\a.F1')] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fo_nu_cl (\a.O2) (\a.L2) (\a.F2')] ⇒
+         let [g,a:names ⊢ reffc] = fld_fc [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in
+         let [g,a:names ⊢ reflb] = unique_lab [g,a:names ⊢ L1] [g,a:names ⊢ L2] in
+         let [g,a:names ⊢ refoc] = unique_occ [g,a:names ⊢ O1] [g,a:names ⊢ O2] in [g ⊢ reffo]
+       | [g ⊢ fo_nu_op \a.F2'] ⇒ impossible no_fstep_cl_and_op_fld [g,a:names ⊢ F1'] [_ ⊢ F2'] [_ ⊢ O1] [_ ⊢ L1])
+  | [g ⊢ fo_kpref F1' (\a.H1) I1] ⇒ let [g ⊢ fo_kpref F2' (\a.H2) I2] = [g ⊢ F2] in
+    let [g ⊢ reffo] = fld_fo [g ⊢ F1'] [g ⊢ F2'] in
+    let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
+    let refnq [g ⊢ I1] = unique_neq [g ⊢ I1] [g ⊢ I2] in [g ⊢ reffo]
+  | [g ⊢ fo_suml F1' D1] ⇒ let [g ⊢ fo_suml F2' D2] = [g ⊢ F2] in
+    let [g ⊢ reffo] = fld_fo [g ⊢ F1'] [g ⊢ F2'] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ reffo]
+  | [g ⊢ fo_sumr F1' D1] ⇒ let [g ⊢ fo_sumr F2' D2] = [g ⊢ F2] in
+    let [g ⊢ reffo] = fld_fo [g ⊢ F1'] [g ⊢ F2'] in
+    let [g ⊢ refsd] = unique_std [g ⊢ D1] [g ⊢ D2] in [g ⊢ reffo]
+  | [g ⊢ fo_parl F1' (\a.H1) N1] ⇒ let [g ⊢ fo_parl F2' (\a.H2) N2] = [g ⊢ F2] in
+    let [g ⊢ reffo] = fld_fo [g ⊢ F1'] [g ⊢ F2'] in
+    let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ reffo]
+  | [g ⊢ fo_parr F1' (\a.H1) N1] ⇒ let [g ⊢ fo_parr F2' (\a.H2) N2] = [g ⊢ F2] in
+    let [g ⊢ reffo] = fld_fo [g ⊢ F1'] [g ⊢ F2'] in
+    let [g,a:names ⊢ refky] = unique_key [g,a:names ⊢ H1] [g,a:names ⊢ H2] in
+    let [g ⊢ refn] = unique_notin [g ⊢ N1] [g ⊢ N2] in [g ⊢ reffo]
+  | [g ⊢ fo_nu_op \a.F1'] ⇒ (case [g ⊢ F2] of
+       | [g ⊢ fo_nu_cl (\a.O2) (\a.L2) (\a.F2')] ⇒ impossible no_fstep_cl_and_op_fld [g,a:names ⊢ F2'] [_ ⊢ F1'] [_ ⊢ O2] [_ ⊢ L2]
+       | [g ⊢ fo_nu_op \a.F2'] ⇒ let [g,a:names ⊢ reffo] = fld_fo [g,a:names ⊢ F1'] [g,a:names ⊢ F2'] in [g ⊢ reffo])
+;
+
+% Forward label determinism:
+% Two coinitial forward transitions with the same proof label are equal.
+rec fld: (g:ctx) {F1:[g ⊢ fstep X T Y1]} {F2:[g ⊢ fstep X T Y2]} [g ⊢ eqf F1 F2] =
+/ total f1 (fld _ _ _ _ _ f1 _) /
+mlam F1 F2 ⇒ case [_ ⊢ F1] of
+  | [g ⊢ fc F1'] ⇒ let [g ⊢ fc F2'] = [g ⊢ F2] in
+    let [g ⊢ reffc] = fld_fc [g ⊢ F1'] [g ⊢ F2'] in [g ⊢ reff]
+  | [g ⊢ fo F1'] ⇒ let [g ⊢ fo F2'] = [g ⊢ F2] in
+    let [g ⊢ reffo] = fld_fo [g ⊢ F1'] [g ⊢ F2'] in [g ⊢ reff]
+;

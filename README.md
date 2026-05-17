@@ -68,6 +68,8 @@ to perform the type reconstruction of the formalization. Expected result, after 
 ## Type Reconstruction done:  run/../code/ccskp/axioms/wf.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/axioms/pci.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/axioms/pci.bel ##
+## Type Reconstruction begin: run/../code/ccskp/axioms/fld.bel ##
+## Type Reconstruction done:  run/../code/ccskp/axioms/fld.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/axioms/ire.bel ##
 ## Type Reconstruction done:  run/../code/ccskp/axioms/ire.bel ##
 ## Type Reconstruction begin: run/../code/ccskp/axioms/cire.bel ##
@@ -218,6 +220,7 @@ opam install --deps-only ./beluga.opam
       - `sp.bel`: … SP (square property)
       - `wf.bel`: … WF (well-foundedness)
       - `pci.bel`: … PCI (propagation of coinitial independence)
+      - `fld.bel`: … FLD (forward label determinism)
       - `ire.bel`: … IRE (independence respects events)
       - `cire.bel`: … CIRE (coinitial independence respects events)
       - `rpi.bel`: … RPI (reversing preserves independence)
